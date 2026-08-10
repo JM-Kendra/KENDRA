@@ -1,0 +1,80 @@
+# Workspace-only project context (not part of Kendra)
+/AGENTS.md
+/sources/
+
+# Secrets and local environment overrides
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+secrets/
+
+# Uploaded and canonical document repositories
+/data/
+/documents/
+/document-repository/
+/uploads/
+
+# Databases and local state
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.duckdb
+
+# Vector stores and search indexes
+/indexes/
+/vector-indexes/
+/chroma/
+/qdrant_storage/
+/lancedb/
+*.faiss
+*.hnsw
+
+# Models and model weights
+/models/
+*.safetensors
+*.gguf
+*.onnx
+*.pt
+*.pth
+*.ckpt
+
+# Generated evaluation output (case definitions remain tracked)
+/evaluation/artifacts/
+/evaluation/reports/
+/evaluation/results/
+/evaluation/runs/
+
+# Language and tool caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+.cache/
+node_modules/
+.npm/
+.pnpm-store/
+
+# Build and generated output
+/build/
+/dist/
+/out/
+/tmp/
+*.log
+
+# Editor and operating-system noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
