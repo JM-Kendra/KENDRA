@@ -1,0 +1,121 @@
+name: kendra
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${KENDRA_POSTGRES_DATABASE:-kendra}
+      POSTGRES_USER: ${KENDRA_POSTGRES_USER:-kendra}
+      POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:-kendra-local-only-change-me}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U "$${POSTGRES_USER}" -d "$${POSTGRES_DB}"
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+    networks: [kendra_private]
+
+  qdrant:
+    image: qdrant/qdrant:v1.18.2
+    volumes:
+      - qdrant_data:/qdrant/storage
+    restart: unless-stopped
+    networks: [kendra_private]
+
+  ollama:
+    image: ollama/ollama:0.32.0
+    volumes:
+      - ollama_data:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 15s
+    restart: unless-stopped
+    networks: [kendra_private]
+
+  api:
+    build:
+      context: ./apps/api
+      target: runtime
+    environment:
+      KENDRA_ENVIRONMENT: ${KENDRA_ENVIRONMENT:-development}
+      KENDRA_LOG_LEVEL: ${KENDRA_LOG_LEVEL:-INFO}
+      KENDRA_API_HOST: 0.0.0.0
+      KENDRA_API_PORT: 8000
+      KENDRA_CORS_ORIGINS: ${KENDRA_CORS_ORIGINS:-["http://127.0.0.1:3000"]}
+      KENDRA_READINESS_TIMEOUT_SECONDS: ${KENDRA_READINESS_TIMEOUT_SECONDS:-3}
+      KENDRA_POSTGRES_HOST: ${KENDRA_POSTGRES_HOST:-postgres}
+      KENDRA_POSTGRES_PORT: ${KENDRA_POSTGRES_PORT:-5432}
+      KENDRA_POSTGRES_DATABASE: ${KENDRA_POSTGRES_DATABASE:-kendra}
+      KENDRA_POSTGRES_USER: ${KENDRA_POSTGRES_USER:-kendra}
+      KENDRA_POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:-kendra-local-only-change-me}
+      KENDRA_QDRANT_URL: ${KENDRA_QDRANT_URL:-http://qdrant:6333}
+      KENDRA_QDRANT_API_KEY: ${KENDRA_QDRANT_API_KEY:-}
+      KENDRA_OLLAMA_URL: ${KENDRA_OLLAMA_URL:-http://ollama:11434}
+      KENDRA_DOCUMENT_STORE_ROOT: ${KENDRA_DOCUMENT_STORE_ROOT:-/documents}
+    volumes:
+      - type: bind
+        source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}
+        target: ${KENDRA_DOCUMENT_STORE_ROOT:-/documents}
+        read_only: true
+    ports:
+      - ${KENDRA_API_BIND_HOST:-127.0.0.1}:${KENDRA_API_PORT:-8000}:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=3)
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    networks: [kendra_private]
+
+  web:
+    build:
+      context: ./apps/web
+      target: runtime
+      args:
+        NEXT_PUBLIC_KENDRA_API_BASE_URL: ${NEXT_PUBLIC_KENDRA_API_BASE_URL:-http://127.0.0.1:8000}
+    environment:
+      NODE_ENV: production
+    ports:
+      - ${KENDRA_WEB_BIND_HOST:-127.0.0.1}:${KENDRA_WEB_PORT:-3000}:3000
+    depends_on:
+      api:
+        condition: service_started
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    restart: unless-stopped
+    networks: [kendra_private]
+
+networks:
+  kendra_private:
+    internal: true
+
+volumes:
+  postgres_data:
+  qdrant_data:
+  ollama_data:

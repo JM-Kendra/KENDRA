@@ -53,6 +53,8 @@ secrets/
 # Language and tool caches
 __pycache__/
 *.py[cod]
+*.egg-info/
+.venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
@@ -61,6 +63,8 @@ coverage.xml
 htmlcov/
 .cache/
 node_modules/
+.next/
+*.tsbuildinfo
 .npm/
 .pnpm-store/
 
