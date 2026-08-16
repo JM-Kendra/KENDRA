@@ -21,6 +21,15 @@ def test_settings_are_typed_and_secret_safe() -> None:
     assert "do-not-expose" in settings.postgres_dsn
 
 
+def test_postgres_password_must_be_supplied() -> None:
+    with pytest.raises(ValidationError, match="postgres_password"):
+        Settings(_env_file=None)
+
+
 def test_document_store_root_must_be_absolute() -> None:
     with pytest.raises(ValidationError):
-        Settings(_env_file=None, document_store_root=Path("relative/path"))
+        Settings(
+            _env_file=None,
+            postgres_password="test-only",
+            document_store_root=Path("relative/path"),
+        )

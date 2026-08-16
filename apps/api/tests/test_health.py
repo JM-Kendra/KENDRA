@@ -48,7 +48,7 @@ async def test_health_returns_ready_without_configuration_details() -> None:
 @pytest.mark.asyncio
 async def test_health_returns_503_when_a_dependency_is_unavailable() -> None:
     app = create_app(
-        Settings(_env_file=None),
+        Settings(_env_file=None, postgres_password="test-only"),
         probes=[
             FakeProbe("postgres", False, "unreachable"),
             FakeProbe("document_store", True, "available"),

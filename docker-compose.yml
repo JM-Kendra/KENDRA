@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${KENDRA_POSTGRES_DATABASE:-kendra}
       POSTGRES_USER: ${KENDRA_POSTGRES_USER:-kendra}
-      POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:-kendra-local-only-change-me}
+      POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:?Copy .env.example to .env and set KENDRA_POSTGRES_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -55,7 +55,7 @@ services:
       KENDRA_POSTGRES_PORT: ${KENDRA_POSTGRES_PORT:-5432}
       KENDRA_POSTGRES_DATABASE: ${KENDRA_POSTGRES_DATABASE:-kendra}
       KENDRA_POSTGRES_USER: ${KENDRA_POSTGRES_USER:-kendra}
-      KENDRA_POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:-kendra-local-only-change-me}
+      KENDRA_POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:?Copy .env.example to .env and set KENDRA_POSTGRES_PASSWORD}
       KENDRA_QDRANT_URL: ${KENDRA_QDRANT_URL:-http://qdrant:6333}
       KENDRA_QDRANT_API_KEY: ${KENDRA_QDRANT_API_KEY:-}
       KENDRA_OLLAMA_URL: ${KENDRA_OLLAMA_URL:-http://ollama:11434}
@@ -90,7 +90,7 @@ services:
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
     restart: unless-stopped
-    networks: [kendra_private]
+    networks: [kendra_private, kendra_edge]
 
   web:
     build:
@@ -109,11 +109,13 @@ services:
     tmpfs: [/tmp]
     security_opt: [no-new-privileges:true]
     restart: unless-stopped
-    networks: [kendra_private]
+    networks: [kendra_edge]
 
 networks:
   kendra_private:
     internal: true
+  kendra_edge:
+    driver: bridge
 
 volumes:
   postgres_data:

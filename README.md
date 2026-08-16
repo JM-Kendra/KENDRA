@@ -112,7 +112,7 @@ docker build --target test -t kendra-web-test ./apps/web
 Validate the resolved Compose configuration without starting services:
 
 ```bash
-docker compose config --quiet
+docker compose --env-file .env.example config --quiet
 ```
 
 ## Troubleshooting

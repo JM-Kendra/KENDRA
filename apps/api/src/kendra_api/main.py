@@ -30,8 +30,11 @@ def create_app(
     settings: Settings | None = None,
     probes: Sequence[ReadinessProbe] | None = None,
 ) -> FastAPI:
-    resolved_settings = settings or Settings()
-    readiness_probes = list(probes) if probes is not None else _default_probes(resolved_settings)
+    # Required secrets are supplied by BaseSettings from the runtime environment.
+    resolved_settings = settings or Settings()  # type: ignore[call-arg]
+    readiness_probes = (
+        list(probes) if probes is not None else _default_probes(resolved_settings)
+    )
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
@@ -62,6 +65,3 @@ def create_app(
     )
     application.include_router(health_router)
     return application
-
-
-app = create_app()

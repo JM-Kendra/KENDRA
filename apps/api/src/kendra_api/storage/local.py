@@ -86,7 +86,9 @@ class LocalDocumentStore(DocumentStore):
 
     def verify_sha256(self, document_id: str, version_id: str, expected: str) -> bool:
         if not _SHA256.fullmatch(expected):
-            raise ValueError("expected checksum must be 64 lowercase hexadecimal characters")
+            raise ValueError(
+                "expected checksum must be 64 lowercase hexadecimal characters"
+            )
         digest = hashlib.sha256()
         with self.open_source(document_id, version_id) as source:
             for block in iter(lambda: source.read(1024 * 1024), b""):

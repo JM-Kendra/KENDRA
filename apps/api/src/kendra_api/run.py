@@ -6,9 +6,10 @@ from kendra_api.config import Settings
 
 
 def main() -> None:
-    settings = Settings()
+    # Required secrets are supplied by BaseSettings from the runtime environment.
+    settings = Settings()  # type: ignore[call-arg]
     uvicorn.run(
-        "kendra_api.main:app",
+        "kendra_api.asgi:app",
         host=settings.api_host,
         port=settings.api_port,
         log_level=settings.log_level.lower(),

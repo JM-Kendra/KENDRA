@@ -17,7 +17,9 @@ def _write_version(root: Path, content: bytes) -> None:
     manifest.write_text(json.dumps({"document_id": "doc-1"}), encoding="utf-8")
 
 
-def test_local_root_can_be_replaced_without_changing_store_calls(tmp_path: Path) -> None:
+def test_local_root_can_be_replaced_without_changing_store_calls(
+    tmp_path: Path,
+) -> None:
     first_root = tmp_path / "local"
     second_root = tmp_path / "nas-mount"
     _write_version(first_root, b"first-source")
@@ -31,9 +33,10 @@ def test_local_root_can_be_replaced_without_changing_store_calls(tmp_path: Path)
     assert [
         store.read_source_range("doc-1", "version-1", 0, 6) for store in stores
     ] == [b"first-", b"second"]
-    assert stores[0].source_info("doc-1", "version-1").logical_uri == stores[
-        1
-    ].source_info("doc-1", "version-1").logical_uri
+    assert (
+        stores[0].source_info("doc-1", "version-1").logical_uri
+        == stores[1].source_info("doc-1", "version-1").logical_uri
+    )
 
 
 def test_local_store_reads_manifest_and_verifies_checksum(tmp_path: Path) -> None:

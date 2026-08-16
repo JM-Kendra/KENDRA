@@ -34,7 +34,9 @@ class ReadyPostgresConnection:
 
 
 @pytest.mark.asyncio
-async def test_postgres_connection_opens_checks_and_closes(monkeypatch: pytest.MonkeyPatch) -> None:
+async def test_postgres_connection_opens_checks_and_closes(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     fake_connection = ReadyPostgresConnection()
 
     async def fake_connect(*, dsn: str, timeout: float) -> ReadyPostgresConnection:
@@ -47,7 +49,9 @@ async def test_postgres_connection_opens_checks_and_closes(monkeypatch: pytest.M
         fake_connect,
     )
 
-    result = await PostgresConnection(Settings(_env_file=None)).check()
+    result = await PostgresConnection(
+        Settings(_env_file=None, postgres_password="test-only")
+    ).check()
 
     assert (result.ready, result.code) == (True, "reachable")
     assert fake_connection.closed is True
@@ -55,10 +59,11 @@ async def test_postgres_connection_opens_checks_and_closes(monkeypatch: pytest.M
 
 @pytest.mark.asyncio
 async def test_qdrant_connection_reports_sanitized_readiness() -> None:
-    settings = Settings(_env_file=None)
+    settings = Settings(_env_file=None, postgres_password="test-only")
     ready = await QdrantConnection(settings, client=ReadyQdrantClient()).check()  # type: ignore[arg-type]
     unavailable = await QdrantConnection(
-        settings, client=UnavailableQdrantClient()  # type: ignore[arg-type]
+        settings,
+        client=UnavailableQdrantClient(),  # type: ignore[arg-type]
     ).check()
 
     assert (ready.ready, ready.code) == (True, "reachable")
@@ -78,7 +83,9 @@ async def test_ollama_connection_checks_local_tags_endpoint() -> None:
         transport=httpx.MockTransport(handler),
         base_url="http://ollama:11434",
     )
-    connection = OllamaConnection(Settings(_env_file=None), client=client)
+    connection = OllamaConnection(
+        Settings(_env_file=None, postgres_password="test-only"), client=client
+    )
 
     result = await connection.check()
     await connection.close()

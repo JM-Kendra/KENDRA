@@ -25,13 +25,13 @@ class Settings(BaseSettings):
     api_host: str = "0.0.0.0"
     api_port: int = Field(default=8000, ge=1, le=65535)
     cors_origins: list[AnyHttpUrl] = [AnyHttpUrl("http://127.0.0.1:3000")]
-    readiness_timeout_seconds: float = Field(default=3.0, gt=0, le=30)
+    readiness_timeout_seconds: int = Field(default=3, gt=0, le=30)
 
     postgres_host: str = "postgres"
     postgres_port: int = Field(default=5432, ge=1, le=65535)
     postgres_database: str = "kendra"
     postgres_user: str = "kendra"
-    postgres_password: SecretStr = SecretStr("kendra-local-only-change-me")
+    postgres_password: SecretStr
 
     qdrant_url: AnyHttpUrl = AnyHttpUrl("http://qdrant:6333")
     qdrant_api_key: SecretStr | None = None
@@ -43,7 +43,9 @@ class Settings(BaseSettings):
     @classmethod
     def document_store_root_must_be_absolute(cls, value: Path) -> Path:
         if not value.is_absolute():
-            raise ValueError("KENDRA_DOCUMENT_STORE_ROOT must be an absolute container path")
+            raise ValueError(
+                "KENDRA_DOCUMENT_STORE_ROOT must be an absolute container path"
+            )
         return value
 
     @cached_property
