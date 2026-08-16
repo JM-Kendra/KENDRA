@@ -277,7 +277,7 @@ The exact Qwen model, quantization, context limit, BGE-M3 runtime, CPU/GPU alloc
 
 ## 12. Small experiments required before implementation
 
-These experiments are architecture gates, not optional tuning after the system is built.
+These experiments are architecture gates, not optional tuning after the system is built. The time-boxed plans, controlled inputs, metrics, and pass/fail criteria for EXP-01 through EXP-06 are defined in [EXPERIMENT_PLAN.md](EXPERIMENT_PLAN.md).
 
 | ID | Question | Smallest useful experiment | Decision produced |
 |---|---|---|---|
@@ -292,7 +292,7 @@ These experiments are architecture gates, not optional tuning after the system i
 | EXP-09 | Are parser limits adequate for hostile or accidental inputs? | Use safe malformed, oversized, high-page-count, and image-heavy fixtures under CPU/memory/time limits | Intake limits, quarantine states, and whether stronger isolation is required before broader ingestion |
 | EXP-10 | Does the storage abstraction survive a mount change? | Run the same checksum, stream, range-read, atomic-admission, and rebuild tests against two local mount points; use a controlled NAS test only after approval | `DocumentStore` contract and NAS prerequisites without promising NAS compatibility |
 
-Implementation should not begin until EXP-01 through EXP-06 have at least a time-boxed spike plan and pass/fail criteria. EXP-07 through EXP-10 must pass before the architecture is described as offline-ready, generation-safe, or NAS-ready.
+EXP-01 through EXP-06 now have time-boxed spike plans and fail-closed pass/fail criteria, which satisfies the planning prerequisite and permits Milestone 8 scaffolding to begin. The later implementation milestones still cannot pass until their assigned experiments pass; no experiment result is claimed by the plan. EXP-07 through EXP-10 remain required before the architecture is described as offline-ready, generation-safe, or NAS-ready.
 
 ## 13. Alternatives considered
 
