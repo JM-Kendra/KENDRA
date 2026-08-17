@@ -58,8 +58,14 @@ CREATE TABLE IF NOT EXISTS pages (
     extraction_method text NOT NULL,
     quality_result text NOT NULL,
     docling_text_chars integer NOT NULL CHECK (docling_text_chars >= 0),
+    source_pointer text NOT NULL,
     PRIMARY KEY (processing_run_id, page_number)
 );
+ALTER TABLE pages ADD COLUMN IF NOT EXISTS source_pointer text;
+UPDATE pages
+SET source_pointer = 'pdf-page:' || page_number || ';block:whole-page;method:' || extraction_method
+WHERE source_pointer IS NULL;
+ALTER TABLE pages ALTER COLUMN source_pointer SET NOT NULL;
 CREATE TABLE IF NOT EXISTS chunks (
     chunk_id uuid PRIMARY KEY,
     version_id text NOT NULL REFERENCES document_versions(version_id),
@@ -211,7 +217,8 @@ class PostgresRegistry:
                     """INSERT INTO pages(
                         version_id, processing_run_id, page_number, text,
                         extraction_method, quality_result, docling_text_chars
-                    ) VALUES($1,$2,$3,$4,$5,$6,$7)""",
+                        , source_pointer
+                    ) VALUES($1,$2,$3,$4,$5,$6,$7,$8)""",
                     [
                         (
                             page.version_id,
@@ -221,6 +228,7 @@ class PostgresRegistry:
                             page.extraction_method.value,
                             page.quality_result,
                             page.docling_text_chars,
+                            page.source_pointer,
                         )
                         for page in pages
                     ],

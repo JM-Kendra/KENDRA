@@ -16,6 +16,7 @@ from kendra_api.ingestion.errors import IngestionError
 from kendra_api.ingestion.extraction import (
     DoclingPageTextExtractor,
     PageExtractionPipeline,
+    PopplerPageTextExtractor,
     TesseractPageOcr,
 )
 from kendra_api.ingestion.pipeline import IngestionPipeline
@@ -54,8 +55,10 @@ async def _run(pdf: str, manifest_arg: str) -> None:
                 max_bytes=settings.pdf_max_bytes,
                 artifacts_path=settings.docling_artifacts_path,
             ),
+            PopplerPageTextExtractor(settings.ingestion_tool_timeout_seconds),
             TesseractPageOcr(settings.ingestion_tool_timeout_seconds),
             settings.minimum_page_text_chars,
+            settings.extraction_candidate_minimum_agreement,
         ),
         chunker=PageChunker(settings.chunk_size_chars, settings.chunk_overlap_chars),
         embedder=embedder,

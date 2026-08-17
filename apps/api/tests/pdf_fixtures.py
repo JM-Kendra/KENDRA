@@ -36,13 +36,14 @@ def make_digital_pdf(path: Path, page_texts: list[str]) -> Path:
     return path
 
 
-def make_scanned_pdf(path: Path, text: str) -> Path:
+def make_scanned_pdf(path: Path, text: str, page_count: int = 1) -> Path:
     image = Image.new("RGB", (2400, 1000), "white")
     draw = ImageDraw.Draw(image)
     font = ImageFont.truetype("DejaVuSans.ttf", 76)
     draw.text((120, 350), text, fill="black", font=font)
     document = canvas.Canvas(str(path), pagesize=(612, 792), pageCompression=0)
-    document.drawImage(ImageReader(image), 24, 260, width=564, height=235)
-    document.showPage()
+    for _ in range(page_count):
+        document.drawImage(ImageReader(image), 24, 260, width=564, height=235)
+        document.showPage()
     document.save()
     return path

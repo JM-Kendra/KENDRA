@@ -16,6 +16,8 @@ def test_settings_are_typed_and_secret_safe() -> None:
 
     assert settings.postgres_port == 5544
     assert settings.document_store_root == Path("/srv/kendra-documents")
+    assert settings.extraction_completeness_policy == "native-page-token-coverage-v1"
+    assert settings.extraction_candidate_minimum_agreement == 0.90
     assert "do-not-expose" not in repr(settings)
     assert "do-not-expose" not in str(settings.model_dump())
     assert "do-not-expose" in settings.postgres_dsn

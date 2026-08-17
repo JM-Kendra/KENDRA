@@ -13,6 +13,7 @@ class ProcessingState(StrEnum):
 
 class ExtractionMethod(StrEnum):
     DOCLING = "docling"
+    PDF_TEXT = "pdf_text"
     TESSERACT = "tesseract"
     VERIFIED_BLANK = "verified_blank"
 
@@ -64,6 +65,7 @@ class PageRecord:
     extraction_method: ExtractionMethod
     quality_result: str
     docling_text_chars: int
+    source_pointer: str = ""
 
 
 @dataclass(frozen=True, slots=True)

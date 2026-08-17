@@ -2,7 +2,7 @@
 
 **Status:** Accepted for the first MVP implementation phase; technical experiments and agency decisions remain open
 **Acceptance date:** August 15, 2026
-**Last updated:** 2026-08-15
+**Last updated:** 2026-08-17
 
 ## 1. Decision summary
 
@@ -15,6 +15,11 @@ Kendra's first MVP implementation phase will be a local, single-machine document
 - Ollama for a locally cached Qwen-family instruct model.
 
 Docling, BGE-M3 inference, and Tesseract will run inside the Python application image rather than as separate network services. A reviewed one-off ingestion command will use the same image and application modules; it is not a continuously running worker. Original PDFs will live outside Git in a host folder mounted read-only into the runtime API. Changing that host path to an approved NAS mount later must require deployment configuration, not application changes.
+
+The interim extraction-completeness control in ADR-004 fails closed on unresolved
+Docling/native-text differences. Its first complete-corpus candidate failed EXP-01, so
+it is containment rather than an accepted extraction configuration; EXP-03 and
+Milestone 10 remain blocked.
 
 This is the smallest architecture that exercises the documented workflow and evaluation method without introducing microservices, Kubernetes, cloud dependencies, or an observability platform.
 
@@ -39,7 +44,9 @@ Authentication is deliberately excluded from the first MVP implementation phase.
 
 - ingest the checksum-approved, bounded PDF evaluation corpus;
 - preserve one-based physical PDF page boundaries through extraction and chunking;
-- use Docling first and Tesseract only for pages that fail an extraction-quality gate;
+- use Docling with an independent native-PDF completeness comparison, selecting one
+  whole-page representation and using Tesseract when no usable native text layer exists,
+  as defined by [ADR-004](adr/004-extraction-completeness.md);
 - generate BGE-M3 embeddings locally and store them in Qdrant;
 - retrieve evidence from one published index generation;
 - generate a short answer or explicit unsupported response through local Ollama/Qwen;

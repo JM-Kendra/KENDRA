@@ -43,6 +43,12 @@ class Settings(BaseSettings):
     pdf_max_bytes: int = Field(default=50 * 1024 * 1024, gt=0)
     pdf_max_pages: int = Field(default=500, gt=0, le=10_000)
     minimum_page_text_chars: int = Field(default=40, ge=1)
+    extraction_completeness_policy: Literal["native-page-token-coverage-v1"] = (
+        "native-page-token-coverage-v1"
+    )
+    extraction_candidate_minimum_agreement: float = Field(
+        default=0.90, ge=0.0, le=1.0
+    )
     chunk_size_chars: int = Field(default=1_200, ge=100)
     chunk_overlap_chars: int = Field(default=200, gt=0)
     ingestion_tool_timeout_seconds: int = Field(default=300, gt=0, le=3600)

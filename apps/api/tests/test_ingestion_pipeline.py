@@ -25,6 +25,13 @@ class NoOcr:
         raise AssertionError("OCR was unexpectedly called")
 
 
+class StaticNativeExtractor:
+    version = "static-native"
+
+    def extract_page(self, path: Path, page_number: int) -> str:
+        return f"page {page_number} contains enough synthetic searchable text"
+
+
 class FakeEmbedder:
     model_identity = "bge-m3:test"
 
@@ -80,7 +87,9 @@ def _pipeline(tmp_path: Path, registry: FakeRegistry, vectors: FakeVectors) -> I
     return IngestionPipeline(
         registry=registry,
         storage=LocalDocumentAdmissionStore(tmp_path / "repository"),
-        extractor=PageExtractionPipeline(StaticExtractor(), NoOcr(), minimum_chars=10),
+        extractor=PageExtractionPipeline(
+            StaticExtractor(), StaticNativeExtractor(), NoOcr(), minimum_chars=10
+        ),
         chunker=PageChunker(size=100, overlap=20),
         embedder=FakeEmbedder(),
         vectors=vectors,

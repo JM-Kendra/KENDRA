@@ -1,3 +1,4 @@
+import hashlib
 import shutil
 import subprocess
 from pathlib import Path
@@ -12,8 +13,11 @@ from kendra_api.ingestion.chunking import PageChunker
 from kendra_api.ingestion.extraction import (
     DoclingPageTextExtractor,
     PageExtractionPipeline,
+    PopplerPageTextExtractor,
     TesseractPageOcr,
+    compare_extractions,
 )
+from kendra_api.ingestion.errors import IngestionError
 from kendra_api.ingestion.models import ExtractionMethod, PageRecord
 from pdf_fixtures import make_digital_pdf, make_scanned_pdf
 
@@ -74,6 +78,32 @@ class NeverOcr:
         raise AssertionError("OCR must not run for a sufficient digital page")
 
 
+class StaticPageExtractor:
+    def __init__(self, pages: list[str], version: str) -> None:
+        self.pages = pages
+        self.version = version
+
+    def extract_pages(self, path: Path, page_count: int) -> list[str]:
+        assert page_count == len(self.pages)
+        return list(self.pages)
+
+
+class StaticNativeExtractor:
+    def __init__(self, pages: list[str], version: str = "test-native") -> None:
+        self.pages = pages
+        self.version = version
+
+    def extract_page(self, path: Path, page_number: int) -> str:
+        return self.pages[page_number - 1]
+
+
+class StaticOcr:
+    version = "test-tesseract"
+
+    def extract_page(self, path: Path, page_number: int) -> str:
+        return f"Scanned circular physical page {page_number} recovered by OCR"
+
+
 class FakeDoclingDocument:
     def __init__(self) -> None:
         self.seen: list[int] = []
@@ -108,13 +138,23 @@ def test_digital_pdf_preserves_one_based_pages_without_ocr(tmp_path: Path) -> No
         ["Digital page one has enough searchable words.", "Digital page two remains separate."],
     )
     pipeline = PageExtractionPipeline(
-        DoclingParserTestExtractor(), NeverOcr(), minimum_chars=20
+        DoclingParserTestExtractor(),
+        PopplerPageTextExtractor(timeout_seconds=30),
+        NeverOcr(),
+        minimum_chars=20,
     )
 
     pages = pipeline.extract(pdf, "ver-1", "run-1", 2)
 
     assert [page.page_number for page in pages] == [1, 2]
-    assert all(page.extraction_method is ExtractionMethod.DOCLING for page in pages)
+    assert all(
+        page.extraction_method in {ExtractionMethod.DOCLING, ExtractionMethod.PDF_TEXT}
+        for page in pages
+    )
+    assert [page.source_pointer.split(";", 1)[0] for page in pages] == [
+        "pdf-page:1",
+        "pdf-page:2",
+    ]
     assert "page one" in pages[0].text
     assert "page two" in pages[1].text
 
@@ -128,6 +168,7 @@ def test_scanned_pdf_uses_real_tesseract_fallback(tmp_path: Path) -> None:
     pdf = make_scanned_pdf(tmp_path / "scan.pdf", expected)
     pipeline = PageExtractionPipeline(
         DoclingParserTestExtractor(),
+        PopplerPageTextExtractor(timeout_seconds=60),
         TesseractPageOcr(timeout_seconds=60),
         minimum_chars=20,
     )
@@ -137,6 +178,119 @@ def test_scanned_pdf_uses_real_tesseract_fallback(tmp_path: Path) -> None:
     assert pages[0].page_number == 1
     assert pages[0].extraction_method is ExtractionMethod.TESSERACT
     assert "TESSERACT OCR" in pages[0].text.upper()
+
+
+def test_twelve_page_scanned_circular_stays_on_ocr_path(tmp_path: Path) -> None:
+    pdf = make_scanned_pdf(
+        tmp_path / "twelve-page-scan.pdf", "SCANNED CIRCULAR", page_count=12
+    )
+    pipeline = PageExtractionPipeline(
+        StaticPageExtractor([""] * 12, "no-docling-text"),
+        StaticNativeExtractor([""] * 12, "no-native-text"),
+        StaticOcr(),
+        minimum_chars=20,
+    )
+
+    pages = pipeline.extract(pdf, "ver-scan", "run-scan", 12)
+
+    assert [page.page_number for page in pages] == list(range(1, 13))
+    assert all(page.extraction_method is ExtractionMethod.TESSERACT for page in pages)
+    assert all(page.source_pointer.endswith("method:tesseract") for page in pages)
+
+
+def test_page_15_missing_summary_row_triggers_native_whole_page_fallback() -> None:
+    base = "Project row alpha bravo charlie delta echo 2024-001 2,730,755.00"
+    docling_pages = [f"Physical page {number} {base}" for number in range(1, 16)]
+    native_pages = list(docling_pages)
+    native_pages[14] += (
+        "\nTotal Allotted Budget of On-going Procurement Activities "
+        "175,284,574.00 169,021,829.87"
+    )
+    pipeline = PageExtractionPipeline(
+        StaticPageExtractor(docling_pages, "docling-missing-summary"),
+        StaticNativeExtractor(native_pages),
+        NeverOcr(),
+        minimum_chars=20,
+    )
+
+    pages = pipeline.extract(Path("unused.pdf"), "ver", "run", 15)
+
+    assert [page.page_number for page in pages] == list(range(1, 16))
+    page_15 = pages[14]
+    assert page_15.extraction_method is ExtractionMethod.PDF_TEXT
+    assert "175,284,574.00" in page_15.text
+    assert "169,021,829.87" in page_15.text
+    assert page_15.source_pointer == "pdf-page:15;block:whole-page;method:pdf_text"
+
+
+def test_candidate_comparison_counts_missing_structured_content() -> None:
+    comparison = compare_extractions(
+        "Header Project 2024-001 Total 2,730,755.00",
+        "Header Project 2024-001 Total 2,730,755.00 Summary 175,284,574.00",
+    )
+
+    assert comparison.native_tokens_missing_from_docling == 2
+    assert comparison.docling_high_signal_missing_from_native == ()
+    assert comparison.docling_lexical_coverage_by_native == 1.0
+
+
+def test_conflicting_fallback_fails_closed_without_logging_content(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    secret_marker = "NEVER-LOG-EXTRACTED-CONTENT"
+    docling = f"{secret_marker} agreed alpha bravo charlie total 999.00"
+    native = f"{secret_marker} agreed alpha bravo charlie total 888.00 extra"
+    pipeline = PageExtractionPipeline(
+        StaticPageExtractor([docling], "conflicting-docling"),
+        StaticNativeExtractor([native]),
+        NeverOcr(),
+        minimum_chars=20,
+    )
+
+    with pytest.raises(IngestionError, match="candidates conflict") as failure:
+        pipeline.extract(Path("unused.pdf"), "ver", "run", 1)
+
+    assert failure.value.code == "extraction_conflict"
+    assert secret_marker not in caplog.text
+    assert secret_marker not in str(failure.value)
+
+
+def test_repeated_completeness_repair_is_deterministic() -> None:
+    docling = "Header Project row alpha bravo charlie 2,730,755.00"
+    native = f"{docling} Summary total 175,284,574.00 169,021,829.87"
+    pipeline = PageExtractionPipeline(
+        StaticPageExtractor([docling], "deterministic-docling"),
+        StaticNativeExtractor([native]),
+        NeverOcr(),
+        minimum_chars=20,
+    )
+
+    first = pipeline.extract(Path("unused.pdf"), "ver", "run", 1)
+    second = pipeline.extract(Path("unused.pdf"), "ver", "run", 1)
+
+    assert first == second
+
+
+@pytest.mark.skipif(
+    shutil.which("pdftotext") is None,
+    reason="Poppler pdftotext is required for the native-layer integration fixture",
+)
+def test_native_completeness_check_does_not_modify_original(tmp_path: Path) -> None:
+    pdf = make_digital_pdf(
+        tmp_path / "immutable.pdf", ["Immutable source searchable text 175,284,574.00"]
+    )
+    before = hashlib.sha256(pdf.read_bytes()).hexdigest()
+    pipeline = PageExtractionPipeline(
+        DoclingParserTestExtractor(),
+        PopplerPageTextExtractor(timeout_seconds=30),
+        NeverOcr(),
+        minimum_chars=20,
+    )
+
+    pages = pipeline.extract(pdf, "ver", "run", 1)
+
+    assert pages[0].page_number == 1
+    assert hashlib.sha256(pdf.read_bytes()).hexdigest() == before
 
 
 def test_chunks_stay_on_pages_cover_text_and_have_exact_overlap() -> None:
