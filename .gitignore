@@ -16,6 +16,7 @@ secrets/
 /data/
 /documents/
 /document-repository/
+/intake/
 /uploads/
 
 # Databases and local state

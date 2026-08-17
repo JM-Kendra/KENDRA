@@ -60,6 +60,16 @@ services:
       KENDRA_QDRANT_API_KEY: ${KENDRA_QDRANT_API_KEY:-}
       KENDRA_OLLAMA_URL: ${KENDRA_OLLAMA_URL:-http://ollama:11434}
       KENDRA_DOCUMENT_STORE_ROOT: ${KENDRA_DOCUMENT_STORE_ROOT:-/documents}
+      KENDRA_PDF_MAX_BYTES: ${KENDRA_PDF_MAX_BYTES:-52428800}
+      KENDRA_PDF_MAX_PAGES: ${KENDRA_PDF_MAX_PAGES:-500}
+      KENDRA_MINIMUM_PAGE_TEXT_CHARS: ${KENDRA_MINIMUM_PAGE_TEXT_CHARS:-40}
+      KENDRA_CHUNK_SIZE_CHARS: ${KENDRA_CHUNK_SIZE_CHARS:-1200}
+      KENDRA_CHUNK_OVERLAP_CHARS: ${KENDRA_CHUNK_OVERLAP_CHARS:-200}
+      KENDRA_INGESTION_TOOL_TIMEOUT_SECONDS: ${KENDRA_INGESTION_TOOL_TIMEOUT_SECONDS:-300}
+      KENDRA_EMBEDDING_MODEL: ${KENDRA_EMBEDDING_MODEL:-bge-m3}
+      KENDRA_EMBEDDING_BATCH_SIZE: ${KENDRA_EMBEDDING_BATCH_SIZE:-16}
+      KENDRA_QDRANT_COLLECTION_PREFIX: ${KENDRA_QDRANT_COLLECTION_PREFIX:-kendra_ingestion}
+      KENDRA_PIPELINE_REVISION: ${KENDRA_PIPELINE_REVISION:-unversioned}
     volumes:
       - type: bind
         source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}
@@ -92,6 +102,106 @@ services:
     restart: unless-stopped
     networks: [kendra_private, kendra_edge]
 
+  ingest:
+    profiles: [ingestion]
+    build:
+      context: ./apps/api
+      target: runtime
+    entrypoint: ["kendra-ingest"]
+    command: ["--help"]
+    environment:
+      KENDRA_ENVIRONMENT: ${KENDRA_ENVIRONMENT:-development}
+      KENDRA_POSTGRES_HOST: ${KENDRA_POSTGRES_HOST:-postgres}
+      KENDRA_POSTGRES_PORT: ${KENDRA_POSTGRES_PORT:-5432}
+      KENDRA_POSTGRES_DATABASE: ${KENDRA_POSTGRES_DATABASE:-kendra}
+      KENDRA_POSTGRES_USER: ${KENDRA_POSTGRES_USER:-kendra}
+      KENDRA_POSTGRES_PASSWORD: ${KENDRA_POSTGRES_PASSWORD:?Copy .env.example to .env and set KENDRA_POSTGRES_PASSWORD}
+      KENDRA_QDRANT_URL: ${KENDRA_QDRANT_URL:-http://qdrant:6333}
+      KENDRA_QDRANT_API_KEY: ${KENDRA_QDRANT_API_KEY:-}
+      KENDRA_OLLAMA_URL: ${KENDRA_OLLAMA_URL:-http://ollama:11434}
+      KENDRA_DOCUMENT_STORE_ROOT: ${KENDRA_DOCUMENT_STORE_ROOT:-/documents}
+      KENDRA_INGESTION_INTAKE_ROOT: ${KENDRA_INGESTION_INTAKE_ROOT:-/intake}
+      KENDRA_DOCLING_ARTIFACTS_PATH: ${KENDRA_DOCLING_ARTIFACTS_PATH:-/models/docling}
+      KENDRA_PDF_MAX_BYTES: ${KENDRA_PDF_MAX_BYTES:-52428800}
+      KENDRA_PDF_MAX_PAGES: ${KENDRA_PDF_MAX_PAGES:-500}
+      KENDRA_MINIMUM_PAGE_TEXT_CHARS: ${KENDRA_MINIMUM_PAGE_TEXT_CHARS:-40}
+      KENDRA_CHUNK_SIZE_CHARS: ${KENDRA_CHUNK_SIZE_CHARS:-1200}
+      KENDRA_CHUNK_OVERLAP_CHARS: ${KENDRA_CHUNK_OVERLAP_CHARS:-200}
+      KENDRA_INGESTION_TOOL_TIMEOUT_SECONDS: ${KENDRA_INGESTION_TOOL_TIMEOUT_SECONDS:-300}
+      KENDRA_EMBEDDING_MODEL: ${KENDRA_EMBEDDING_MODEL:-bge-m3}
+      KENDRA_EMBEDDING_BATCH_SIZE: ${KENDRA_EMBEDDING_BATCH_SIZE:-16}
+      KENDRA_QDRANT_COLLECTION_PREFIX: ${KENDRA_QDRANT_COLLECTION_PREFIX:-kendra_ingestion}
+      KENDRA_PIPELINE_REVISION: ${KENDRA_PIPELINE_REVISION:-unversioned}
+    volumes:
+      - type: bind
+        source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}
+        target: ${KENDRA_DOCUMENT_STORE_ROOT:-/documents}
+      - type: bind
+        source: ${KENDRA_INGESTION_INTAKE_HOST_PATH:-./intake}
+        target: ${KENDRA_INGESTION_INTAKE_ROOT:-/intake}
+        read_only: true
+      - type: volume
+        source: docling_models
+        target: ${KENDRA_DOCLING_ARTIFACTS_PATH:-/models/docling}
+        read_only: true
+    depends_on:
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      ollama:
+        condition: service_healthy
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    networks: [kendra_private]
+
+  docling-model-loader:
+    profiles: [ingestion-setup]
+    build:
+      context: ./apps/api
+      target: runtime
+    entrypoint: ["docling-tools"]
+    command:
+      - models
+      - download
+      - layout
+      - tableformerv2
+      - --output-dir
+      - /models/docling
+    user: "0:0"
+    environment:
+      HF_HOME: /models/docling/.cache/huggingface
+      HF_HUB_CACHE: /models/docling/.cache/huggingface/hub
+      HF_XET_CACHE: /models/docling/.cache/huggingface/xet
+    volumes:
+      - docling_models:/models/docling
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    networks: [kendra_edge]
+
+  ollama-model-loader:
+    profiles: [ingestion-setup]
+    image: ollama/ollama:0.32.0
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        ollama serve &
+        server_pid=$$!;
+        trap 'kill "$$server_pid"' EXIT;
+        until ollama list >/dev/null 2>&1; do sleep 1; done;
+        ollama pull "$${KENDRA_EMBEDDING_MODEL}"
+    environment:
+      OLLAMA_HOST: 127.0.0.1:11434
+      KENDRA_EMBEDDING_MODEL: ${KENDRA_EMBEDDING_MODEL:-bge-m3}
+    volumes:
+      - ollama_data:/root/.ollama
+    read_only: true
+    tmpfs: [/tmp]
+    security_opt: [no-new-privileges:true]
+    networks: [kendra_edge]
+
   web:
     build:
       context: ./apps/web
@@ -121,3 +231,4 @@ volumes:
   postgres_data:
   qdrant_data:
   ollama_data:
+  docling_models:

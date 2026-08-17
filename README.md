@@ -2,7 +2,7 @@
 
 Kendra is a local-first, citation-verifiable document intelligence project for Philippine government offices.
 
-Milestone 8 provides only the runnable application foundation: a minimal Next.js frontend, a modular FastAPI backend, PostgreSQL, Qdrant, Ollama connectivity, a replaceable read-only document-store interface, and dependency readiness reporting. Document ingestion and question answering are intentionally not implemented.
+Milestone 9 adds a trusted-operator, one-off PDF ingestion command to the Milestone 8 foundation. It validates and preserves approved originals, extracts physical pages with Docling and page-level Tesseract fallback, creates deterministic overlapping page chunks, generates local BGE-M3 embeddings through Ollama, and publishes derived metadata and vectors through PostgreSQL and Qdrant. Question answering remains intentionally unavailable.
 
 ## Safety boundary
 
@@ -17,6 +17,7 @@ Original documents belong in a separately managed document repository, never Git
 - `docs/` — architecture, accepted decisions, governance, and experiment plans.
 - `evaluation/` — version-controlled evaluation definitions; generated runs remain ignored.
 - `document-repository/` — ignored host folder for approved source bytes and manifests.
+- `intake/` — ignored host folder mounted read-only by the one-off ingestion command.
 
 ## Prerequisites
 
@@ -49,6 +50,12 @@ Run every command from the repository root.
 
    `KENDRA_DOCUMENT_STORE_HOST_PATH` may instead point to an approved NAS mount. Compose mounts either host path read-only at `KENDRA_DOCUMENT_STORE_ROOT=/documents`, so application business logic does not change when the host root changes.
 
+   Create the separate intake folder as well:
+
+   ```bash
+   mkdir -p intake
+   ```
+
 3. Build the application images:
 
    ```bash
@@ -78,6 +85,41 @@ Run every command from the repository root.
 
 7. Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The page displays the same readiness information and clearly marks ingestion and question answering as unavailable.
 
+## One-off PDF ingestion
+
+Ingestion is not exposed through the browser or running API. It accepts one PDF beneath the configured intake root and an exact JSON manifest. Use only approved public evaluation material; do not put the intake folder or document repository in Git.
+
+The manifest schema is intentionally closed:
+
+```json
+{
+  "original_filename": "approved-sample.pdf",
+  "expected_sha256": "64-lowercase-hexadecimal-characters",
+  "expected_page_count": 1,
+  "approval_scope": "approved-public-evaluation",
+  "provenance_reference": "approval-manifest-entry-or-reviewed-source",
+  "approval_status": "approved"
+}
+```
+
+Before the first offline run, stage the Docling layout/table models and BGE-M3 while approved network access is available:
+
+```bash
+docker compose --profile ingestion-setup run --rm docling-model-loader
+docker compose --profile ingestion-setup run --rm ollama-model-loader
+docker compose up -d postgres qdrant ollama
+```
+
+The ingestion profile mounts the staged Docling model volume read-only and explicitly disables Docling OCR. Missing model artifacts fail ingestion; they are never fetched silently during the controlled run. Tesseract is the only OCR fallback.
+
+Set `KENDRA_PIPELINE_REVISION` in `.env` to the exact Git commit being run. Place the PDF and manifest under `intake/`, then invoke the profile-scoped command:
+
+```bash
+docker compose --profile ingestion run --rm ingest approved-sample.pdf --manifest approved-sample.json
+```
+
+The command emits one machine-readable receipt. An exact-checksum duplicate returns `"duplicate": true` and the existing version identity rather than creating new PostgreSQL records, originals, chunks, or vectors. A processing failure preserves the admitted original, marks the PostgreSQL version/run/generation failed where possible, and never activates the partial Qdrant generation.
+
 ## Stop and restart
 
 Stop containers while retaining the local PostgreSQL, Qdrant, and Ollama volumes:
@@ -102,6 +144,8 @@ Backend tests run in an isolated test image and do not require live services:
 docker build --target test -t kendra-api-test ./apps/api
 docker run --rm kendra-api-test
 ```
+
+The backend suite generates its digital and scanned PDFs under pytest temporary directories. It commits no generated PDFs or extracted content. Both fixtures exercise Docling's actual local PDF parser; the scanned fixture then invokes the container's actual Poppler/Tesseract tools. Unit tests do not download model artifacts.
 
 Frontend unit tests and TypeScript checks run during the frontend test-image build:
 
