@@ -15,6 +15,7 @@ from kendra_api.ingestion.embedding import OllamaBgeM3Embedder
 from kendra_api.ingestion.errors import IngestionError
 from kendra_api.ingestion.extraction import (
     DoclingPageTextExtractor,
+    NativePrimaryDetectionPipeline,
     PageExtractionPipeline,
     PopplerPageTextExtractor,
     TesseractPageOcr,
@@ -24,6 +25,27 @@ from kendra_api.ingestion.registry import PostgresRegistry
 from kendra_api.ingestion.storage import LocalDocumentAdmissionStore
 from kendra_api.ingestion.validation import load_intake_manifest, resolve_intake_path
 from kendra_api.ingestion.vector_store import QdrantVectorGenerationStore
+
+
+def _extractor(settings: Settings) -> PageExtractionPipeline | NativePrimaryDetectionPipeline:
+    docling = DoclingPageTextExtractor(
+        max_bytes=settings.pdf_max_bytes,
+        artifacts_path=settings.docling_artifacts_path,
+    )
+    native = PopplerPageTextExtractor(settings.ingestion_tool_timeout_seconds)
+    ocr = TesseractPageOcr(settings.ingestion_tool_timeout_seconds)
+    if settings.extraction_completeness_policy == NativePrimaryDetectionPipeline.policy_version:
+        # ADR-007 §2.3: this policy does not use the candidate-agreement threshold.
+        return NativePrimaryDetectionPipeline(
+            docling, native, ocr, settings.minimum_page_text_chars
+        )
+    return PageExtractionPipeline(
+        docling,
+        native,
+        ocr,
+        settings.minimum_page_text_chars,
+        settings.extraction_candidate_minimum_agreement,
+    )
 
 
 def _parser() -> argparse.ArgumentParser:
@@ -50,16 +72,7 @@ async def _run(pdf: str, manifest_arg: str) -> None:
     pipeline = IngestionPipeline(
         registry=PostgresRegistry(PostgresConnection(settings)),
         storage=LocalDocumentAdmissionStore(settings.document_store_root),
-        extractor=PageExtractionPipeline(
-            DoclingPageTextExtractor(
-                max_bytes=settings.pdf_max_bytes,
-                artifacts_path=settings.docling_artifacts_path,
-            ),
-            PopplerPageTextExtractor(settings.ingestion_tool_timeout_seconds),
-            TesseractPageOcr(settings.ingestion_tool_timeout_seconds),
-            settings.minimum_page_text_chars,
-            settings.extraction_candidate_minimum_agreement,
-        ),
+        extractor=_extractor(settings),
         chunker=PageChunker(settings.chunk_size_chars, settings.chunk_overlap_chars),
         embedder=embedder,
         vectors=QdrantVectorGenerationStore(

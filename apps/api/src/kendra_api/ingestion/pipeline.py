@@ -6,7 +6,10 @@ from pathlib import Path
 from kendra_api.ingestion.chunking import PageChunker
 from kendra_api.ingestion.embedding import Embedder
 from kendra_api.ingestion.errors import IngestionError
-from kendra_api.ingestion.extraction import PageExtractionPipeline
+from kendra_api.ingestion.extraction import (
+    NativePrimaryDetectionPipeline,
+    PageExtractionPipeline,
+)
 from kendra_api.ingestion.models import (
     DocumentIdentity,
     IngestionResult,
@@ -34,7 +37,7 @@ class IngestionPipeline:
         self,
         registry: Registry,
         storage: LocalDocumentAdmissionStore,
-        extractor: PageExtractionPipeline,
+        extractor: PageExtractionPipeline | NativePrimaryDetectionPipeline,
         chunker: PageChunker,
         embedder: Embedder,
         vectors: VectorGenerationStore,

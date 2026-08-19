@@ -5,6 +5,7 @@ import re
 import subprocess
 import tempfile
 import unicodedata
+from collections.abc import Iterable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -211,6 +212,15 @@ def _high_signal_tokens(tokens: collections.Counter[str]) -> set[str]:
     return {token for token in tokens if any(character.isdigit() for character in token)}
 
 
+def document_material_tokens(pages: Iterable[str]) -> set[str]:
+    """Distinct digit-bearing tokens across every page, using the ADR-004 tokenizer."""
+
+    tokens: set[str] = set()
+    for page in pages:
+        tokens |= _high_signal_tokens(_comparison_tokens(page))
+    return tokens
+
+
 @dataclass(frozen=True, slots=True)
 class CompletenessComparison:
     native_tokens_missing_from_docling: int
@@ -394,4 +404,89 @@ class PageExtractionPipeline:
             )
         if [page.page_number for page in records] != list(range(1, page_count + 1)):
             raise IngestionError("page_mapping_failure", "physical page sequence is not contiguous")
+        return records
+
+
+class NativePrimaryDetectionPipeline:
+    """Apply the ``native-primary-detection-v1`` completeness policy (ADR-007).
+
+    Retention is single-method per page: the native text layer above the character
+    floor, whole-page Tesseract below it. The detector candidate never contributes
+    retained text and its page attribution is never used; it participates only in
+    document-scope material-token containment, which fails the whole document closed.
+    """
+
+    policy_version = "native-primary-detection-v1"
+
+    def __init__(
+        self,
+        detector: PageTextExtractor,
+        native: NativePageTextExtractor,
+        ocr: PageOcr,
+        minimum_chars: int,
+    ) -> None:
+        self._detector = detector
+        self._native = native
+        self._ocr = ocr
+        self._minimum_chars = minimum_chars
+
+    @property
+    def tool_identity(self) -> str:
+        return (
+            f"policy={self.policy_version};detector={self._detector.version};"
+            f"native={self._native.version};fallback={self._ocr.version};"
+            f"minimum_chars={self._minimum_chars}"
+        )
+
+    @staticmethod
+    def _pointer(page_number: int, method: ExtractionMethod) -> str:
+        return f"pdf-page:{page_number};block:whole-page;method:{method.value}"
+
+    def extract(
+        self,
+        path: Path,
+        version_id: str,
+        processing_run_id: str,
+        page_count: int,
+    ) -> list[PageRecord]:
+        detector_pages = self._detector.extract_pages(path, page_count)
+        if len(detector_pages) != page_count:
+            raise IngestionError("page_mapping_failure", "page count changed during extraction")
+        records: list[PageRecord] = []
+        for page_number in range(1, page_count + 1):
+            text = self._native.extract_page(path, page_number)
+            if _meaningful_char_count(text) >= self._minimum_chars:
+                method = ExtractionMethod.PDF_TEXT
+                quality_result = "native_primary_retained"
+            else:
+                text = self._ocr.extract_page(path, page_number)
+                if _meaningful_char_count(text) < self._minimum_chars:
+                    raise IngestionError(
+                        "unextractable_page", f"page {page_number} has insufficient OCR text"
+                    )
+                method = ExtractionMethod.TESSERACT
+                quality_result = "ocr_sufficient_text"
+            records.append(
+                PageRecord(
+                    version_id=version_id,
+                    processing_run_id=processing_run_id,
+                    page_number=page_number,
+                    text=text,
+                    extraction_method=method,
+                    quality_result=quality_result,
+                    # ADR-007 §2.2(11): the detector's page attribution is never recorded.
+                    docling_text_chars=0,
+                    source_pointer=self._pointer(page_number, method),
+                )
+            )
+        if [page.page_number for page in records] != list(range(1, page_count + 1)):
+            raise IngestionError("page_mapping_failure", "physical page sequence is not contiguous")
+        unretained = document_material_tokens(detector_pages) - document_material_tokens(
+            record.text for record in records
+        )
+        if unretained:
+            raise IngestionError(
+                "extraction_completeness_conflict",
+                "a detector material token is absent from the retained representation",
+            )
         return records
