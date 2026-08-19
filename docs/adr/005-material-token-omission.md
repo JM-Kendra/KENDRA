@@ -1,8 +1,11 @@
 # ADR-005: Directional material-token omission gate
 
-**Status:** Proposed. **Not accepted and not activated.** Activation is blocked pending the
-bounded conflict-taxonomy diagnostic defined below.
+**Status:** Rejected. **Closed 2026-08-19 under Section 9** after the bounded
+conflict-taxonomy diagnostic failed activation condition 3.1. The closure record and full
+diagnostic dataset are in Section 12. `native-page-token-coverage-v1` (ADR-004) remains in
+force as fail-closed containment.
 **Date drafted:** 2026-08-19
+**Date closed:** 2026-08-19
 **Supersedes if accepted:** [ADR-004](004-extraction-completeness.md) `native-page-token-coverage-v1`
 **Drafting basis:** Analysis of the failed EXP-01 rerun `20260817T111818+0800-b6036ba-repair1`
 
@@ -274,3 +277,107 @@ This record does not change `evaluation/gold_cases.json` from
 interpretation. It implements no retrieval or question-answering behaviour. A passing
 EXP-01 permits layout-aware EXP-03 work to resume but does not itself pass EXP-03 or
 unblock Milestone 10.
+
+## 12. Closure record — rejected (2026-08-19)
+
+The Section 2 diagnostic ran on 2026-08-19 inside the pinned ingestion image
+(`docling-slim==2.117.0`, `pypdf==6.6.2`, staged model artifacts at `/models/docling`)
+against the three documents that failed the EXP-01 rerun. Derived evidence, including
+every raw token string, is under the ignored tree:
+
+- `evaluation/runs/EXP-01/diagnostic-conflict-taxonomy/` (procurement report)
+- `evaluation/runs/EXP-01/diagnostic-conflict-taxonomy-rmc03-rr11/` (RMC 03-2024, RR 11-2024)
+
+### 12.1 Diagnostic dataset
+
+`coverage` is the frozen ADR-004 occurrence coverage; `absent` counts high-signal tokens
+native never saw (`absent_from_native`); `surplus` counts high-signal tokens native saw in
+fewer copies than Docling (`surplus_copies`).
+
+`RR17_2024_Procurement_Monitoring_Report.pdf` (16 pages):
+
+| Page | Coverage | absent | surplus |
+|---:|---:|---:|---:|
+| 1 | 0.289414 | 0 | 149 |
+| 2 | 1.0 | 0 | 0 |
+| 3 | 0.269490 | 0 | 116 |
+| 4 | 1.0 | 0 | 0 |
+| 5 | 0.289697 | 0 | 115 |
+| 6 | 1.0 | 0 | 0 |
+| 7 | 0.320780 | 0 | 107 |
+| 8 | 1.0 | 0 | 0 |
+| 9 | 0.160311 | 0 | 120 |
+| 10 | 1.0 | 0 | 0 |
+| 11 | 0.318067 | 0 | 106 |
+| 12 | 1.0 | 0 | 0 |
+| 13 | 0.398362 | 0 | 78 |
+| 14 | 1.0 | 0 | 0 |
+| 15 | 0.810207 | 0 | 22 |
+| 16 | 0.765517 | 0 | 0 |
+
+`RMC_03_2024_EOPT_Act.pdf` (2 pages), with token occurrence counts:
+
+| Page | Coverage | absent | surplus | Docling occurrences | Native occurrences | Docling distinct | Native distinct |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0.027222 | 0 | 29 | 13,592 | 394 | 188 | 208 |
+| 2 | 1.0 | 0 | 0 | 237 | 237 | 131 | 131 |
+
+`RR_11_2024_Invoicing_Amendments.pdf` (3 pages):
+
+| Page | Coverage | absent | surplus |
+|---:|---:|---:|---:|
+| 1 | 0.963830 | 1 | 1 |
+| 2 | 0.929787 | 0 | 0 |
+| 3 | 1.0 | 0 | 0 |
+
+Recorded per-page coverages match the rerun's conflict diagnostics exactly (28.94%,
+2.72%, 96.38%, and 81.02% for procurement page 15), confirming the diagnostic reproduced
+the frozen comparison.
+
+### 12.2 Condition evaluation
+
+1. **Section 3.1 — FAILED.** Physical page 1 of `RR_11_2024_Invoicing_Amendments.pdf`
+   carries one `absent_from_native` material token: the bare digit `3` (normalized form),
+   Docling count 2, native count 0. The condition requires zero across all pages whose
+   rejection cause was `docling_high_signal_missing_from_native`; this page's coverage of
+   0.963830 exceeded the 0.90 floor, so the two high-signal missing tokens were its only
+   rejection cause, and it is in scope. The result is not `absent_from_native`-dominant —
+   it is a single token against 843 surplus classifications corpus-wide — but the
+   precommitted condition is zero, and it may not be weakened after seeing the output.
+2. **Section 3.2 — passed.** Procurement physical page 15 has zero `absent_from_native`
+   material tokens (all 22 rejected tokens are `surplus_copies`), and both required
+   totals are present in the native candidate's token set, once each
+   (`175,284,574.00` → `17528457400`; `169,021,829.87` → `16902182987`), with no
+   fragment tokens indicating separator splitting.
+3. **Section 3.3 — passed.** Raw-token inspection found no tokenizer-induced false
+   `absent_from_native` labels. The single absent token is not a normalization artefact:
+   native page 1 of RR 11-2024 contains no standalone `3` token at all (its only
+   digit-3-bearing tokens are `13` and `237`), so no thousands-separator, spacing, or
+   currency-glyph variant explains the label. Whether Docling's bare `3` is a parser
+   emission artefact (for example a marker or numbering emission) or content Poppler
+   drops is unresolved; either way the parsers genuinely differ on this page's token
+   sets, and the precommitted rule treats that as failure.
+4. **Section 3.4 — passed on the leakage question; magnitude unexplained.** RMC 03-2024
+   is a two-page document, so page 2 is the only possible leak source. Docling's page-1
+   distinct-token set (188 tokens) is a strict subset of native page 1's (208), and it
+   contains zero of the 104 distinct tokens that appear only on native page 2. The 2.72%
+   anomaly is therefore duplication within the correct physical page, not
+   `export_to_text(page_no=...)` leakage. **Open item:** the duplication magnitude —
+   Docling emitted 13,592 token occurrences against native's 394, a factor of ~34.5 from
+   a smaller distinct vocabulary — is documented but not root-caused. Any future
+   extraction design must explain it before trusting Docling occurrence counts on this
+   document.
+
+### 12.3 Consequence (Section 9 applied)
+
+- This ADR is **rejected**. `material-token-omission-v1` is not implemented.
+- `native-page-token-coverage-v1` (ADR-004) remains in force as fail-closed containment.
+- **EXP-01 remains failed. EXP-03 remains failed and blocked. Milestone 10 remains
+  blocked.**
+- The pre-written Section 7 regression file
+  `apps/api/tests/test_ingestion_material_token_omission.py` is deleted together with
+  this record, per its own instruction, rather than relaxed. The backend suite returns
+  to its 36-test passing baseline.
+- The next design direction under Section 9 — region-aware structured/native
+  reconciliation with explicit per-region provenance — requires its own architecture
+  decision with a precommitted activation condition. This record does not authorize it.

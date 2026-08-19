@@ -22,6 +22,10 @@ not be implemented.**
 - **EXP-01: failed.** Two runs invalidated. See `docs/experiment-decisions/EXP-01.md`.
 - **EXP-03: failed and blocked.** May not resume until EXP-01 passes.
 - **Milestone 10: blocked.**
+- **ADR-005: closed as rejected (2026-08-19).** The bounded conflict-taxonomy diagnostic
+  failed activation condition 3.1 (one `absent_from_native` material token on RR 11-2024
+  page 1). See ADR-005 Section 12. Its pre-written regression file was deleted with the
+  rejection record.
 - The active extraction policy `native-page-token-coverage-v1` (ADR-004) is **fail-closed
   containment, not an accepted passing configuration**. It retains 20 of 41 pages.
 - No authentication exists. Localhost only, one trusted evaluator, approved public BIR
@@ -50,7 +54,7 @@ not be implemented.**
 
 - `apps/api/src/kendra_api/ingestion/extraction.py` — the completeness policy lives here.
 - `apps/api/src/kendra_api/ingestion/` — chunking, embedding, registry, pipeline, storage.
-- `docs/adr/` — architecture decisions. ADR-004 is active; ADR-005 is proposed, not active.
+- `docs/adr/` — architecture decisions. ADR-004 is active; ADR-005 is closed as rejected.
 - `docs/experiment-decisions/` — EXP records. EXP-01 is the canonical failure record.
 - `evaluation/gold_cases.json` — tracked. `evaluation/runs/` — ignored.
 - `scripts/` — reviewed developer and operational scripts. No secrets, no committed runtime
@@ -73,22 +77,20 @@ Full test suite baseline: 36 tests passing.
 
 ## Active task queue
 
-1. Run `scripts/exp01_conflict_taxonomy.py` against `RR17_2024_Procurement_Monitoring_Report.pdf`.
-   It classifies each rejected Docling digit-bearing token as `absent_from_native` (real
-   conflict) or `surplus_copies` (parser artifact). It changes no policy.
-2. Inspect raw token strings in the output JSONL for normalization artifacts — differing
-   thousands separators or spacing would produce false `absent_from_native` labels.
-3. Evaluate ADR-005 Section 3. All four conditions must hold, including confirming that the
-   RMC 03-2024 2.72%-coverage anomaly is duplication within the correct page and **not**
-   `export_to_text(page_no=...)` leaking beyond the requested page. Leakage rejects ADR-005
-   outright — it is a page-identity defect.
-4. If and only if Section 3 holds: write the Section 7 regression tests, implement
-   `material-token-omission-v1`, preregister a new EXP-01 run, then rerun.
-5. If Section 3 fails: close ADR-005 as rejected, record the failure honestly, leave EXP-03
-   and Milestone 10 blocked.
+The 2026-08-19 diagnostic queue is resolved: the conflict-taxonomy diagnostic ran over all
+three failing documents, Section 3.1 failed (see ADR-005 Section 12 and the EXP-01
+record), and ADR-005 is closed as rejected. No active implementation task exists.
 
-Write regression tests **before** the diagnostic returns where possible, so their content
-cannot be shaped by its result.
+Open items for the next design cycle, which requires a new ADR with a precommitted
+activation condition before any evidence is examined:
+
+- The RMC 03-2024 page-1 duplication magnitude (~34.5× Docling occurrence volume within
+  the correct page) is documented but not root-caused.
+- The RR 11-2024 page-1 bare-`3` token divergence between Docling and Poppler is
+  unresolved (parser artefact vs dropped content).
+
+Write regression tests **before** any future diagnostic returns where possible, so their
+content cannot be shaped by its result.
 
 ## Commit messages
 

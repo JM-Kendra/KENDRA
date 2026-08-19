@@ -188,6 +188,50 @@ These tests validate implementation behavior, not corpus acceptance.
 - EXP-03 may **not** resume from this result. It remains failed and blocked pending a
   future passing EXP-01 extraction configuration.
 
+## Bounded conflict-taxonomy diagnostic and ADR-005 rejection (2026-08-19)
+
+[ADR-005](../adr/005-material-token-omission.md) proposed a directional distinct-token
+gate (`material-token-omission-v1`) with a four-part activation condition fixed at
+drafting time, before its Section 2 diagnostic was run. The diagnostic
+(`scripts/exp01_conflict_taxonomy.py`, pinned ingestion image, `docling-slim==2.117.0`)
+classified every Docling digit-bearing token counted missing from native on the three
+failing documents as either `absent_from_native` (native never saw it) or
+`surplus_copies` (native saw it in fewer copies).
+
+Results, with per-page detail recorded in ADR-005 Section 12:
+
+- Of 844 rejected high-signal token classifications across the three documents, 843 are
+  `surplus_copies` and one is `absent_from_native`: a bare digit `3` on physical page 1
+  of `RR_11_2024_Invoicing_Amendments.pdf` (Docling count 2, native count 0). Inspection
+  confirmed it is not a normalization artefact — native page 1 has no standalone `3`
+  token under the shipped tokenizer.
+- Procurement physical page 15 classified entirely as `surplus_copies`, and both known
+  totals are present in the native candidate's token set, once each.
+- The RMC 03-2024 2.72%-coverage anomaly is duplication within the correct physical
+  page, not `export_to_text(page_no=...)` page-scope leakage: Docling's page-1 distinct
+  tokens are a strict subset of native page 1's and include none of the 104 tokens
+  unique to native page 2. The duplication magnitude — 13,592 Docling token occurrences
+  against 394 native, ~34.5×, from a smaller distinct vocabulary — remains unexplained
+  and is carried as an open item.
+
+ADR-005's activation condition 3.1 required **zero** `absent_from_native` material
+tokens. The single RR 11-2024 token fails it. Conditions 3.2 and 3.3 passed; 3.4 passed
+on the leakage question. Per ADR-005 Section 9, the ADR is **closed as rejected**, and
+the precommitted zero threshold was not revisited after seeing the output.
+
+Consequences:
+
+- `native-page-token-coverage-v1` (ADR-004) remains in force as fail-closed containment.
+- **EXP-01 remains failed. EXP-03 remains failed and blocked. Milestone 10 remains
+  blocked.**
+- The pre-written ADR-005 Section 7 regression file
+  `apps/api/tests/test_ingestion_material_token_omission.py`, committed before the
+  diagnostic so its content could not be shaped by the result, is deleted together with
+  the rejection record per its own instruction. The backend suite returns to its 36-test
+  passing baseline.
+- The next design direction — region-aware structured/native reconciliation with
+  per-region provenance — requires its own ADR with a precommitted activation condition.
+
 ## Evidence
 
 The original invalidated evidence remains ignored under:
@@ -198,7 +242,14 @@ The new ignored evidence is under:
 
 `evaluation/runs/EXP-01/20260817T111818+0800-b6036ba-repair1/`
 
-Principal artifacts are `registration.json`, `registration.sha256`,
+The 2026-08-19 conflict-taxonomy diagnostic evidence is under:
+
+`evaluation/runs/EXP-01/diagnostic-conflict-taxonomy/` and
+`evaluation/runs/EXP-01/diagnostic-conflict-taxonomy-rmc03-rr11/`
+
+(`conflict_taxonomy.jsonl` with raw token strings, `conflict_taxonomy_summary.json`).
+
+Principal artifacts of the rerun are `registration.json`, `registration.sha256`,
 `source_preflight_before.json`, `source_preflight_after.json`,
 `pages_primary.jsonl`, `pages_repeat.jsonl`, `timings_primary.jsonl`,
 `timings_repeat.jsonl`, `extraction_summary.json`, `conflict_diagnostics.json`,
