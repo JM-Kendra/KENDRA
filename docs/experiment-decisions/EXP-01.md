@@ -349,3 +349,67 @@ Ignored, under `evaluation/runs/EXP-01/20260819T205613+0800-b1fcd79/`: `registra
 `pages_repeat.jsonl`, `timings_primary.jsonl`, `timings_repeat.jsonl`,
 `extraction_summary.json`, `fact_scoring.json`, `reviewer_worksheet.json`,
 `evidence_manifest.json`.
+
+## 2026-08-20 flagged-fact adjudication
+
+Performed under `adjudication_protocol.md`, whose verdict vocabulary and fact-level rule
+were frozen before any fact was adjudicated. Every verdict carries the source evidence it
+rests on, recorded per token in `fact_adjudication.json`. Where retained text alone could
+not settle a question, the rendered original page was read, as the rubric requires.
+
+**Result: 44 of the 48 flagged facts are adjudicated retained. 121 of 125 expected facts
+are now established. EXP-01 still does not return to `passed`.**
+
+### Correction to the preceding section
+
+That section reported all three digit-bearing misses as the ADR-007 Section 8 page-scoping
+defect. That was wrong for `KND-M5-CD-001`. Its missing `500` is numeric formatting only —
+the source reads "valued at Five Hundred Pesos (Php 500.00) or more" on the cited page, and
+the gold fact writes `PhP 500`. CD-001 adjudicates as retained. The page-scoping defect
+affects `KND-M5-CD-003` and `KND-M5-CD-010` only.
+
+### What remains unresolved
+
+Four facts are `unresolvable_dataset_defect`: three in `KND-M5-CD-003` and one in
+`KND-M5-CD-010`. Each names a document identifier that the corpus retains on page 1 while
+the case cites an interior page. This is the recorded gold-case defect, it is not an
+extraction loss, and it cannot be repaired here — `evaluation/gold_cases.json` remains
+`initial_expert_review_required` and unedited.
+
+### New material finding, MF-01
+
+Physical page 1 of `RMC_77_2024_Invoicing_QA_OCR.pdf` is OCR-retained. The rendered
+original reads `REVENUE MEMORANDUM CIRCULAR NO. 077-2024`. The retained text reads
+`REVENUE MEMORANDUM CiRCULAR NO. (177-2024`. A digit-bearing material token in the retained
+representation differs from the original.
+
+Decision-rule item 5 requires that no extracted value materially differs from the original.
+Whether a corrupted stamped header number is a material extracted value under that item is
+a criterion-boundary call reserved to the authorized reviewer; it is reported here, not
+decided. It does not affect citation identity, because documents resolve by filename and
+checksum in the registry rather than by parsing a number out of OCR text.
+
+Two further suspicious readings were checked against the rendered original and are **not**
+defects: page 11's `RA 11796` and page 9's `Annex E`/`Annex F` both appear that way in the
+source itself and were faithfully retained.
+
+### Systemic finding, SF-01
+
+ADR-007's document-scope containment check is vacuous for the entire scanned document.
+Measured directly with internal OCR disabled, the detector yields 686 characters and **zero**
+material tokens across all 12 pages of `RMC_77_2024_Invoicing_QA_OCR.pdf`, against 9,463
+characters and 20 material tokens for the digital `RR_11_2024_Invoicing_Amendments.pdf`.
+
+No omission or substitution on any OCR-retained page can be detected by the active policy.
+That is 12 of 41 physical pages with no completeness detection at all, and MF-01 sits
+inside that blind region. ADR-007 Section 8 already carries prose-omission detection as an
+open item; this measurement shows substitution detection is equally absent and that the gap
+covers every OCR page rather than a residual case. Closing it requires a new ADR with a
+precommitted activation condition.
+
+### Standing
+
+- **EXP-01 remains not `passed`.** The blockers are now exactly two: four facts held by the
+  gold-case defect, and the MF-01 boundary call.
+- **EXP-03 remains failed and blocked. Milestone 10 remains blocked.**
+- Adjudication narrowed the open question from 48 facts to 4, but narrowing is not passing.

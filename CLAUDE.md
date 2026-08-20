@@ -26,6 +26,10 @@ not be implemented.**
   invalidated the original run are now present with page-15 provenance — but established
   only 77 of 125 expected facts mechanically. The other 48 are missing observations awaiting
   expert adjudication, and the decision rule makes a missing observation inconclusive.
+  The 48 were adjudicated on 2026-08-20 under a protocol frozen beforehand: 44 are
+  retained, bringing the established total to 121 of 125. Four remain held by the gold-case
+  page-scoping defect. One new material finding (MF-01, an OCR digit substitution in
+  RMC 77-2024's own header number) awaits a reviewer ruling.
   See `docs/experiment-decisions/EXP-01.md`.
 - **EXP-03: failed and blocked.** May not resume until EXP-01 passes. Inconclusive is not a
   pass. Note that EXP-03's failure was measured against *Docling* page strings; ADR-007
@@ -91,26 +95,30 @@ Full test suite baseline: 53 tests passing (verified 2026-08-20).
 The ADR-007 rerun is executed and recorded. No active implementation task exists, and no
 implementation task may be opened against Milestone 10.
 
-The single blocking question is adjudication, not code. EXP-01 cannot return to `passed`
-until the 48 flagged expected facts are adjudicated under the frozen reviewer rubric. That
-is expert review of a dataset held at `initial_expert_review_required`, and no automated or
-inspection-based shortcut may substitute for it — the original run was invalidated for
-exactly that shortcut.
+Flagged-fact adjudication is done. Two blockers remain, and neither is closed by writing
+code:
+
+1. **Four facts held by the gold-case defect.** `KND-M5-CD-003` (three facts) and
+   `KND-M5-CD-010` (one) name document identifiers the corpus retains on page 1 while the
+   case cites an interior page. Deciding whether page-scoped fact resolution is the right
+   standard is expert review. Do **not** edit `gold_cases.json` to resolve it.
+2. **MF-01 needs a reviewer ruling.** Page 1 of RMC 77-2024 is OCR-retained as
+   `NO. (177-2024` where the rendered original reads `NO. 077-2024`. Decision-rule item 5
+   forbids an extracted value that materially differs from the original; whether a stamped
+   header number qualifies is a criterion-boundary call, deliberately left undecided.
 
 Open items, each requiring a new record with a precommitted activation condition written
 before any evidence is examined:
 
-- Adjudicate the 48 flagged facts. 44 miss only paraphrase or compound vocabulary, one
-  (`KND-M5-CD-008`, token `struck`) is meaning-critical, and three are the gold-case
-  page-scoping defect below.
-- Decide whether page-scoped fact resolution is the correct standard. Cases
-  `KND-M5-CD-001`, `-003` and `-010` name facts that are retained in the corpus but on a
-  different physical page than the case cites, and ADR-007 Section 8 records that no
-  page-faithful retention rule can satisfy them. Do not edit `gold_cases.json` to resolve
-  this.
+- **SF-01, the largest gap.** ADR-007's containment check is vacuous on every OCR page: the
+  detector yields zero material tokens across all 12 pages of the scanned circular, so no
+  omission or substitution is detectable on 12 of 41 physical pages. MF-01 sits inside that
+  blind region. ADR-007 Section 8 logged prose-omission detection as open; substitution
+  detection is equally absent.
 - The fact scorer's join-match rule is weaker than its stated protocol (it builds its blob
-  in first-occurrence order, not document order), making it stricter than intended. It was
-  deliberately not repaired after results were visible. Fix it in a new preregistration.
+  in first-occurrence order, not document order), and it can match a digit-bearing token as
+  a substring of a corrupted one — that is how MF-01 escaped the scorer. It was deliberately
+  not repaired after results were visible. Fix it in a new preregistration.
 - The RMC 03-2024 page-1 duplication magnitude (~34.5× Docling occurrence volume within
   the correct page) is documented but not root-caused. It no longer affects retention,
   since Docling no longer retains.
