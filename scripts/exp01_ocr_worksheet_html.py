@@ -31,12 +31,17 @@ PAGE = """<!doctype html>
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--fg);
 font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;}
-header{background:var(--card);border-bottom:1px solid var(--line);padding:22px 28px;}
+header{background:var(--card);border-bottom:1px solid var(--line);padding:14px 28px;}
 h1{margin:0 0 6px;font-size:20px;}
 .sub{color:var(--mut);font-size:14px;max-width:70ch;}
-.wrap{max-width:1000px;margin:0 auto;padding:24px 28px 80px;}
-.note{background:#fff8e6;border:1px solid #eadfb8;border-radius:8px;padding:14px 16px;
-margin:18px 0;font-size:14px;line-height:1.6;}
+.wrap{max-width:1000px;margin:0 auto;padding:14px 28px 80px;}
+.note{background:#fff8e6;border:1px solid #eadfb8;border-radius:8px;padding:0 16px;
+margin:10px 0;font-size:14px;line-height:1.6;}
+.note[open]{padding:0 16px 14px;}
+.note summary{cursor:pointer;padding:11px 0;font-weight:600;color:#7a5c00;list-style:none;}
+.note summary::-webkit-details-marker{display:none}
+.note summary::before{content:"▸  ";}
+.note[open] summary::before{content:"▾  ";}
 .note b{color:#7a5c00;}
 .pages{display:flex;flex-wrap:wrap;gap:8px;margin:20px 0 8px;}
 .pg{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:8px 12px;
@@ -77,12 +82,12 @@ button.gh{background:transparent;color:var(--acc);border:1px solid var(--acc);}
 </style>
 <header>
 <h1>OCR token review — RMC 77-2024 (scanned)</h1>
-<div class="sub">For each number below, open the <b>rendered original</b> at the stated
-physical page and check whether the computer read it correctly. Keyboard: <b>1</b> faithful,
+<div class="sub">Open the <b>scanned PDF</b> at the page selected below, find each number on the page, and compare it with the grey box in the middle column. Then click a verdict button on the right. Keyboard: <b>1</b> faithful,
 <b>2</b> substitution, <b>3</b> unreadable. Your progress saves automatically in this browser.</div>
 </header>
 <div class="wrap">
-<div class="note">
+<details class="note">
+<summary>Before you start — three things to know</summary>
 <b>This is an inventory, not a list of findings.</b> Nothing below is claimed to be wrong.
 You are establishing how often OCR misread a number — the answer may well be zero beyond the
 one already known.<br><br>
@@ -90,12 +95,11 @@ one already known.<br><br>
 misread number can never match, so real errors systematically show blank there.<br><br>
 <b>This measures misreadings only.</b> A number the computer dropped entirely leaves no row
 here and cannot be found this way.
-</div>
+</details>
 <div class="bar"><i id="pb"></i></div>
 <div class="tot" id="tot"></div>
 <div class="pages" id="pgs"></div>
-<table><thead><tr><th>Line</th><th>What the computer read</th><th>In a gold fact</th>
-<th>Your verdict</th></tr></thead><tbody id="rows"></tbody></table>
+<table><thead><tr><th>Line</th><th>What the computer read &mdash; compare this to the PDF</th><th>In a gold fact</th><th>Record your verdict here</th></tr></thead><tbody id="rows"></tbody></table>
 </div>
 <div class="foot">
 <div class="sp" id="status"></div>
