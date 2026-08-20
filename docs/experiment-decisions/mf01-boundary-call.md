@@ -94,6 +94,73 @@ be recorded as evidence that OCR substitution is absent or rare, because nothing
 current harness could have shown otherwise. ADR-008 is the proposed vehicle for closing SF-01
 and remains **proposed, not accepted**.
 
+## Evidence located 2026-08-20 that narrows the call
+
+Two lookups were run against artifacts that **predate the finding**, so neither is shaped by
+it. Both are reported as observations; neither decides the question.
+
+### 1. The parent criterion is scoped to material expected facts
+
+Registration item 5 is a compression of the EXP-01 criteria frozen in
+[EXPERIMENT_PLAN.md](../EXPERIMENT_PLAN.md) at Milestone 7a, which state:
+
+> **Pass criteria:** ... extraction/OCR changes zero **material expected facts** ...
+> **Fail criteria:** ... **one material fact changed** ...
+> **Metrics collected:** ... **material fact-alteration count** ...
+
+The plan's scope is therefore not "any digit-bearing token in retained text" but the
+**expected facts asserted by the gold cases**. This wording predates the ADR-007 rerun by
+roughly two weeks and names no document, page, or token.
+
+That converts the boundary call from an aesthetic judgment — *is a header number important
+enough?* — into a lookup: **is `77-2024` a token of a material expected fact?**
+
+### 2. It is. In four facts across two cases.
+
+`77-2024` appears in `expected_answer_facts` of `KND-M5-CD-001` (facts 1 and 2) and
+`KND-M5-CD-003` (facts 1 and 2) in the frozen dataset.
+
+In `fact_scoring.json` for run `20260819T205613+0800-b1fcd79`, the normalized token `772024`
+is scored `"match": "join"` in **all four**:
+
+| Case | Fact | Token | Match type |
+|---|---|---|---|
+| `KND-M5-CD-001` | 1 | `772024` | `join` |
+| `KND-M5-CD-001` | 2 | `772024` | `join` |
+| `KND-M5-CD-003` | 1 | `772024` | `join` |
+| `KND-M5-CD-003` | 2 | `772024` | `join` |
+
+The join match succeeds because the retained page-1 token normalizes to `1772024`, which
+contains `772024` as a substring. **There is no uncorrupted occurrence of this token anywhere
+in the retained corpus** — these documents print their own number once, on page 1.
+
+### 3. Consequence: the ruling and the fact count are coupled
+
+The adjudicated total of 121 of 125 retained facts **depends on those four join matches
+standing.** If item 5 is held to be engaged — or if the scorer's substring defect is simply
+corrected, which `CLAUDE.md` already carries as known harness debt — the four facts lose
+their `772024` support and the established total falls from 121 toward 117.
+
+`KND-M5-CD-001` is affected even though it was adjudicated *not* defective. Its separate
+`500` miss was correctly ruled numeric formatting; its dependence on `772024` is a distinct
+issue and was not part of that ruling.
+
+This coupling was not visible at adjudication time and is reported here so the reviewer is not
+ruling on MF-01 in isolation while treating 121 as settled.
+
+### 4. What genuinely remains a judgment
+
+The lookup does not close the question, because a defensible reading survives it: the
+*substance* of all four facts is retained on their cited pages. What is corrupted is the
+document's naming handle, printed once on a page none of the four facts cite. A reviewer may
+hold that a gold fact asserts a claim *about* a document and that the identifier is how the
+case addresses it, not a value the case asserts.
+
+Note this is the same structural condition as the
+[gold-case defect](gold-case-defect-CD003-CD010.md): document identifiers appear once, on
+page 1, while facts are scoped to interior pages. MF-01 is that condition plus a corruption.
+The two open items are not independent and should be ruled on together.
+
 ## What an approval needs to specify
 
 1. The ruling: item 5 engaged (Reading A) or not engaged (Reading B).
