@@ -91,3 +91,37 @@ arriving there engages it.
 
 **Unmeasured.** Omission. Whether the OCR path also drops digit-bearing tokens is not
 addressed by this instrument and remains open under ADR-007 Section 8.
+
+
+## Correction, 2026-08-20 — the rate above is a lower bound
+
+Added after the EXP-07 truth-set pass. The measured figures are not withdrawn; they are
+qualified. This section contradicts the headline reading of Section "Result" rather than
+replacing it, so both remain visible.
+
+**A faithful verdict is confirmed wrong.** Page 6 line 30 retains `2.500` and was verdicted
+*faithful*. The reviewer subsequently stated the page prints `2,500`. The comma was read as a
+period, which is a substitution, and the sweep recorded it as correct.
+
+**The miss is systematic in kind, not a slip.** Separator damage is the one defect class that
+survives fragment-level comparison, because the fragment still looks like a plausible number.
+`2.500` reads as a number; only the printed original shows it should be `2,500`. The reviewer
+caught the identical defect in `3.214` on line 34, which is why the inconsistency surfaced at
+all.
+
+**Exposure: 27 of the 262 faithful rows carry a `.` or `,`** and are therefore rows where this
+class could hide. Distribution: page 1 (3), 2 (6), 3 (1), 4 (2), 6 (4), 8 (1), 10 (9), 11 (1).
+Most are probably sound — page 10's nine are cleanly formed currency amounts — but none has
+been checked against the original for separator fidelity specifically.
+
+**Consequence.** The substitution count of 27 and the rate of 8.8% are a **floor**. The true
+rate is at least that and is not established until the 27 separator-bearing faithful rows are
+re-checked. Every conclusion drawn from the measurement holds a fortiori: SF-01 remains
+demonstrated, and MF-01 remains non-isolated. Nothing that depended on the rate being *at
+least* 8.8% is weakened.
+
+**A second defect class was also confirmed.** Page 1 line 1's `75` and page 12 line 6's `9924`
+are both **fabrications** — tokens the reviewer confirms are absent from the original page.
+Two invented numbers in 306 tokens. Fabrication is not a reading error and no fidelity
+configuration is guaranteed to remove it; a fabricated figure is indistinguishable from a real
+one downstream and nothing in the pipeline contradicts it. See EXP-07 Section 4a class F.

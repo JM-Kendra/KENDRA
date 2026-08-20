@@ -124,6 +124,30 @@ truth set is complete, described in Section 4b.
    verdicted a substitution. The reviewer should reconcile the two. This is raised as a
    question, not corrected by engineering.
 
+## 4c. Second-pass answers received 2026-08-20
+
+| Item | Resolution |
+|---|---|
+| p1 line 1 `75` | **Fabrication (class F).** Absent from the original. Reclassified from the unresolved set. |
+| p12 line 6 `9924` | **Fabrication (class F)** confirmed. |
+| p9 line 62 `2` | **Class L** confirmed, true reading `s`. |
+| p9 line 66 `7` | **Class L** confirmed, true reading `T`. |
+| p6 line 34 `3.214` | Substitution, truth `3,214`. Confirmed. |
+| p6 line 30 `2.500` | Truth `2,500`. **This row was verdicted `faithful` in the sweep and is now a confirmed substitution.** |
+
+Class F therefore holds **two** rows, not one.
+
+**Still open before freezing:**
+
+1. **The class-T amounts on page 6 lines 30 and 31.** The complete printed figures are still
+   required. The retained fragments are `2.500`+`00`, `P2,500`+`00` on line 30 and
+   `869`, `2`, `400`+`00`, `GOO`+`00` on line 31. Arithmetic consistency suggests readings,
+   and engineering has deliberately **not** filled them in on that basis — inferring an answer
+   key from arithmetic is manufacturing truth, not recording it.
+2. **Re-check of the 27 separator-bearing `faithful` rows** listed in
+   `ocr-substitution-measurement.md`. Until this is done the truth set's faithful side is not
+   established and the substitution rate is a floor.
+
 ## 5. Scoring rule
 
 **Revised 2026-08-20 following Section 4a, before any candidate has run.** The original
