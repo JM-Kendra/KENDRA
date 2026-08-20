@@ -1,6 +1,9 @@
 # EXP-01 - Page extraction and OCR decision
 
-**Status:** `failed`
+**Status:** `failed` — not returned to `passed`. The 2026-08-20 rerun under ADR-007 is
+**inconclusive**; see the final section. Every gate conditioned on "EXP-01 passes" remains
+closed.
+**Latest run ID:** `20260819T205613+0800-b1fcd79` (executed 2026-08-20, inconclusive)
 **Current run ID:** `20260817T111818+0800-b6036ba-repair1`
 **Prior invalidated run ID:** `20260817T085707+0800-3ce70b6`
 **Application Git revision:** `b6036ba1c1cbf8e06bfb690bf6a1482e466899c4`
@@ -254,4 +257,95 @@ Principal artifacts of the rerun are `registration.json`, `registration.sha256`,
 `pages_primary.jsonl`, `pages_repeat.jsonl`, `timings_primary.jsonl`,
 `timings_repeat.jsonl`, `extraction_summary.json`, `conflict_diagnostics.json`,
 `known_totals_diagnostic.json`, `reviewer_worksheet.json`, and
+`evidence_manifest.json`.
+
+## 2026-08-20 rerun under ADR-007 — inconclusive
+
+**Run ID:** `20260819T205613+0800-b1fcd79`
+**Frozen registration SHA-256:** `d1a7ced32f0cf68e7420e5c0e26e192a83cd312eda1297b969cfeb11d48b677b`
+**Application Git revision:** `b1fcd799a0f89b0dd7c38c5927b9787e337102f6`
+**Policy under test:** `native-primary-detection-v1` (ADR-007), Docling demoted to a
+non-retaining detector, document-scope material-token containment.
+
+The registration was frozen 2026-08-19 before any corpus processing. The execution harness
+and the mechanical fact scorer were written and checksummed before the run produced any
+output, and both verified unchanged afterwards. Criteria are EXP-01's existing
+preregistered criteria; none was added, removed, or reworded.
+
+### Representation gate — passed
+
+| Criterion | Result |
+|---|---|
+| Source integrity, 9 documents, before and after | Pass — zero checksum, byte, page-count or encryption changes |
+| Physical page coverage | Pass — 41 of 41 unique contiguous one-based pages |
+| Retention methods | 29 `pdf_text`, 12 `tesseract`; zero blank, zero unretained |
+| Unresolved candidate conflicts | Pass — zero; no document failed closed |
+| Determinism across two complete passes | Pass — zero identity or text-SHA-256 mismatches |
+| Provenance | Pass — every page carries an explicit whole-page pointer and method |
+
+This is the first configuration to represent the whole corpus. The predecessor retained 20
+of 41 pages with three documents failing closed.
+
+### Named contradiction — resolved
+
+The page-15 omission that invalidated run `20260817T085707+0800-3ce70b6` is gone. Both
+`175,284,574.00` and `169,021,829.87` are present in the accepted page-15 representation
+with `pdf-page:15;block:whole-page;method:pdf_text` provenance.
+
+### Material-fact criterion — not established
+
+Of 125 expected facts across the 40 supported cases, 77 are mechanically retained with zero
+residual content-token misses. **48 are flagged for reviewer adjudication and are therefore
+missing observations, not passes.** Of those 48:
+
+- Three carry a digit-bearing miss, and all three are the gold-case page-scoping defect
+  already recorded in ADR-007 Section 8. The values exist in the retained corpus at a
+  different physical page than the case names: `500` on RMC 77-2024 page 6 against a cited
+  page 1, `11-2024` and `3-2024` on page 1 against cited page 2. This is a dataset defect,
+  not an extraction loss, and per the registration it is reported as observed and **not**
+  repaired in flight. `evaluation/gold_cases.json` is unchanged and remains
+  `initial_expert_review_required`.
+- Forty-four miss only paraphrase, reporting, or compound-form vocabulary.
+- One, `KND-M5-CD-008`, misses `struck`, which is meaning-critical vocabulary and needs a
+  source-page reading.
+
+The scorer does not classify any residual miss as benign. ADR-007 Section 8 ruled that the
+inspection-based benign classification of 68 facts carries no evidentiary weight, and
+treating a nonempty extraction plus a visually inspectable original as proof of retention is
+precisely the defect that invalidated the original run. Repeating that inference here to
+reach 125 of 125 would repeat the original error.
+
+### Decision
+
+The frozen decision rule states that any missing observation is inconclusive and any
+explicit criterion failure is failed. Every hard representation criterion passed; the
+material-fact criterion is unestablished for 48 facts. **The run is inconclusive. EXP-01
+does not return to `passed`.**
+
+Consequences, unchanged by this run:
+
+- **EXP-03 remains failed and blocked.** It may not resume.
+- **Milestone 10 remains blocked.** Retrieval and question answering must not be implemented.
+- `native-primary-detection-v1` is not thereby an accepted passing configuration.
+
+What would resolve it, each requiring its own preregistration written before evidence is
+examined: expert adjudication of the 48 flagged facts under the frozen rubric; expert review
+of the three defective gold cases; and a decision on whether page-scoped fact resolution is
+the correct standard, since no page-faithful retention rule can satisfy those three cases.
+
+### Disclosed harness limitation
+
+`score_facts.py` builds its join-match blob from `Counter.elements()`, which is
+first-occurrence order rather than document order, so the join match class is weaker than the
+protocol describes. The scorer is therefore strictly stricter than intended. This was found
+after outputs were visible and was deliberately **not** repaired in flight, because any
+repair could only move facts from flagged to retained. It is carried as an open item.
+
+### Evidence
+
+Ignored, under `evaluation/runs/EXP-01/20260819T205613+0800-b1fcd79/`: `registration.json`,
+`registration.sha256`, `harness.sha256`, `run_extraction.py`, `score_facts.py`,
+`source_preflight_before.json`, `source_preflight_after.json`, `pages_primary.jsonl`,
+`pages_repeat.jsonl`, `timings_primary.jsonl`, `timings_repeat.jsonl`,
+`extraction_summary.json`, `fact_scoring.json`, `reviewer_worksheet.json`,
 `evidence_manifest.json`.
