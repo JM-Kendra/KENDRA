@@ -34,9 +34,13 @@ kendra-ingest = "kendra_api.ingestion.cli:main"
 where = ["src"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-config --strict-markers"
+addopts = "--strict-config --strict-markers -m 'not milestone10 and not milestone10_live'"
 asyncio_mode = "auto"
 testpaths = ["tests"]
+markers = [
+  "milestone10: Milestone 10 verification contract; unimplemented by design, deselected by default",
+  "milestone10_live: Milestone 10 contract requiring an ingested corpus and live services",
+]
 
 [[tool.mypy.overrides]]
 module = ["asyncpg", "asyncpg.*"]
