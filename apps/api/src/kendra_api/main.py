@@ -13,6 +13,7 @@ from kendra_api.connections.ollama import OllamaConnection
 from kendra_api.connections.postgres import PostgresConnection
 from kendra_api.connections.qdrant import QdrantConnection
 from kendra_api.answering.router import router as answering_router
+from kendra_api.documents import router as documents_router
 from kendra_api.health import router as health_router
 from kendra_api.readiness import ReadinessProbe
 from kendra_api.storage.local import LocalDocumentStore
@@ -30,6 +31,7 @@ def _attach_answering(application: FastAPI, settings: Settings) -> None:
     from kendra_api.answering.retrieval import QdrantRetriever
     from kendra_api.answering.sources import PostgresSourceRegistry
     from kendra_api.ingestion.embedding import OllamaBgeM3Embedder
+    from kendra_api.storage.local import LocalDocumentStore
 
     postgres = PostgresConnection(settings)
     registry = PostgresSourceRegistry(postgres)
@@ -61,6 +63,7 @@ def _attach_answering(application: FastAPI, settings: Settings) -> None:
         model=settings.answer_model,
         timeout_seconds=settings.answer_timeout_seconds,
     )
+    application.state.document_store = LocalDocumentStore(settings.document_store_root)
 
 
 def _default_probes(settings: Settings) -> list[ReadinessProbe]:
@@ -103,6 +106,8 @@ def create_app(
     )
     application.state.readiness_probes = readiness_probes
     application.state.pipeline_git_revision = resolved_settings.pipeline_git_revision
+    application.state.document_store_root = resolved_settings.document_store_root
+    application.state.document_store = None
     # Answering collaborators are attached by the deployment (or overridden by tests).
     # Absent them the dependency defaults are fail-closed and the API abstains.
     application.state.retriever = None
@@ -117,6 +122,7 @@ def create_app(
     )
     application.include_router(health_router)
     application.include_router(answering_router)
+    application.include_router(documents_router)
     if resolved_settings.answering_enabled:
         _attach_answering(application, resolved_settings)
     return application
