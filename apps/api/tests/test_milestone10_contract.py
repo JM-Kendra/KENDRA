@@ -148,16 +148,47 @@ MF01_ORIGINAL_TOKEN = "077-2024"
 # --------------------------------------------------------------------------------------
 
 
+def _settings() -> Settings:
+    """Hermetic settings by default; real environment settings for the live tier.
+
+    The hermetic tier never contacts a service, so a placeholder secret is correct
+    there. The live tier must read the deployment's own configuration or it would
+    build an app pointed at nothing.
+    """
+    if os.environ.get("KENDRA_M10_LIVE") == "1":
+        return Settings()  # type: ignore[call-arg]
+    return Settings(_env_file=None, postgres_password="contract-test")  # type: ignore[call-arg]
+
+
+def _route_paths(app) -> set[str]:
+    """Collect route paths, walking nested routers.
+
+    FastAPI 0.139 keeps included routers as container objects in `app.routes`
+    rather than flattening their APIRoutes, so a shallow scan misses them.
+    """
+    found: set[str] = set()
+    pending = list(app.routes)
+    while pending:
+        route = pending.pop()
+        path = getattr(route, "path", None)
+        if isinstance(path, str):
+            found.add(path)
+        nested = getattr(route, "routes", None)
+        if nested:
+            pending.extend(nested)
+        # FastAPI 0.139 wraps an included router; its APIRoutes hang off this.
+        original = getattr(route, "original_router", None)
+        if original is not None and getattr(original, "routes", None):
+            pending.extend(original.routes)
+    return found
+
+
 def _answering_app():
     """Build the app the way the rest of the suite does, failing loudly if the
     answering surface is absent. Probes are empty: this contract never touches
     readiness."""
-    app = create_app(
-        Settings(_env_file=None, postgres_password="contract-test"),  # type: ignore[call-arg]
-        probes=[],
-    )
-    routes = {getattr(r, "path", None) for r in app.routes}
-    if QUESTIONS_ROUTE not in routes:
+    app = create_app(_settings(), probes=[])
+    if QUESTIONS_ROUTE not in _route_paths(app):
         pytest.fail(
             f"{QUESTIONS_ROUTE} is not registered. Milestone 10 is not implemented; "
             "this contract is unsatisfied by construction."
@@ -180,7 +211,7 @@ def _seam():
             "kendra_api.answering.dependencies is required so the contract can inject "
             f"a retriever and a model without live services: {exc!r}"
         )
-    for name in ("get_retriever", "get_answer_model"):
+    for name in ("get_retriever", "get_answer_model", "get_source_registry"):
         if not hasattr(deps, name):
             pytest.fail(f"kendra_api.answering.dependencies.{name} is required")
     return deps
@@ -241,6 +272,35 @@ SYNTHETIC_EVIDENCE = [
 ]
 
 
+def _synthetic_registry():
+    """The server-owned record set the synthetic evidence must resolve against.
+
+    ADR-003 requires every candidate to resolve through the registry to an admitted
+    version and checksum, so the contract must be able to inject one. Binding
+    `ver-synthetic-1` to `"a" * 64` here is what makes the checksum-mismatch and
+    missing-original cases below mean anything: evidence asserting a different
+    checksum, or an unregistered version, is not admissible.
+    """
+    from kendra_api.answering.models import SourceRecord
+    from kendra_api.answering.sources import InMemorySourceRegistry
+
+    return InMemorySourceRegistry(
+        [
+            SourceRecord(
+                document_id="doc-synthetic-1",
+                version_id="ver-synthetic-1",
+                filename="SYNTHETIC_FIXTURE.pdf",
+                sha256="a" * 64,
+                page_count=10,
+            )
+        ],
+        active_generation_id="gen-active",
+    )
+
+
+SYNTHETIC_REGISTRY = _synthetic_registry()
+
+
 @pytest.fixture
 async def wired():
     """Yield a client whose retriever and model are overridable per test."""
@@ -249,9 +309,11 @@ async def wired():
     state: dict = {
         "retriever": FakeRetriever(SYNTHETIC_EVIDENCE),
         "model": FakeModel(payload={"status": INSUFFICIENT, "claims": [], "limitations": []}),
+        "registry": SYNTHETIC_REGISTRY,
     }
     app.dependency_overrides[deps.get_retriever] = lambda: state["retriever"]
     app.dependency_overrides[deps.get_answer_model] = lambda: state["model"]
+    app.dependency_overrides[deps.get_source_registry] = lambda: state["registry"]
     try:
         async with _open(app) as client:
             yield client, state
