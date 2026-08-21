@@ -110,9 +110,9 @@ This ADR may be accepted **only if all five hold** on a single preregistered run
 full before any part of the result is used to revise this record:
 
 1. **Span fidelity is total.** Every material claim in every supported answer across all 50
-   cases is a contiguous verbatim span of one of its own citations, verified by exact string
-   containment. **Zero** claims are exempted, waived, or hand-classified as acceptable
-   paraphrase.
+   cases is a contiguous verbatim span of one of its own citations, verified by string
+   containment under the whitespace-only normalization defined in Section 4a. **Zero** claims
+   are exempted, waived, or hand-classified as acceptable paraphrase.
 2. **The unsupported stratum is clean.** All 10 deliberately unsupported cases return
    `insufficient_evidence` with the exact 51-character sentence, zero claims, and zero
    citations. No case may be reclassified, re-scoped, or moved to another stratum after the
@@ -128,6 +128,51 @@ full before any part of the result is used to revise this record:
    best-of-selected.
 
 If any condition fails, Section 8 applies.
+
+## 4a. Correction to the containment rule, made before freezing
+
+**Recorded 2026-08-21.** Section 4 condition 1 originally required *exact* string containment
+with no normalization of any kind. A diagnostic run of all fifty cases against the current
+prose mode showed that rule is brittle for a reason that has nothing to do with fabrication.
+
+Of 35 claims across 30 supported answers: **2** were byte-exact substrings of a cited excerpt,
+**5** more were verbatim once whitespace was normalized, and **28** were absent from every
+citation in their own answer even after normalization. Zero were verbatim text attached to the
+wrong citation.
+
+The five in the middle group are the problem. Stored page text preserves the source PDF's hard
+line breaks, so any quotation longer than one rendered line contains a newline that the claim
+text does not. Under byte-exact containment every multi-line quotation fails **regardless of
+its fidelity**. That is a defect in the instrument, not a property of the answer.
+
+**Corrected rule.** Containment is evaluated after collapsing every run of Unicode whitespace
+to a single space and trimming the ends, on both the claim and the excerpt. Nothing else is
+normalized: no case folding, no Unicode confusable mapping, no punctuation or quotation-mark
+equivalence, no digit or separator equivalence.
+
+**Why this specific normalization is safe.** Collapsing whitespace cannot add a word, remove a
+word, or change a character. It cannot turn "amends the transitory provisions" into
+"superseded", which is the failure this record exists to prevent. Case folding and punctuation
+equivalence would be different in kind — they could mask OCR damage of exactly the sort SF-01
+and MF-01 describe, so they stay excluded.
+
+**Why this correction is legitimate now and would not be later.** ADR-010 is Proposed and
+EXP-05 is not frozen, so no result has been scored against either rule. The correction is
+argued from a mechanical property of the source format — PDFs carry hard line breaks — and not
+from which claims happened to fail. Once EXP-05 is frozen this rule is immutable, and a
+brittleness discovered then would have to be recorded as a failure rather than repaired.
+
+**What the diagnostic also establishes, and what follows from it.** Under the corrected rule,
+28 of 35 current claims would still be rejected. The present system paraphrases by default —
+the Section 3 instruction asks the model to state what the evidence shows. Verified-span
+answering therefore requires a **rewritten model instruction** that asks for span selection
+rather than sentence composition, and candidate `A1_VERIFIED_SPAN` cannot be evaluated until
+that exists. This is a larger change than tightening validation, and Section 4 condition 1 is
+expected to be genuinely difficult to satisfy. That is the intended reading, not a reason to
+soften it.
+
+The diagnostic is not evidence for or against this record. It is not a preregistered run, it
+cannot fill EXP-05's baseline column, and it must not be cited as a result.
 
 ## 5. What this record does not claim
 

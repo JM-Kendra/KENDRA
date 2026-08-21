@@ -82,11 +82,21 @@ physical page is EXP-06's question and is not scored here.
 
 ## 5. Scoring rule — frozen
 
-**Span containment is byte-exact.** A claim's text must appear as a contiguous substring of the
-stored UTF-8 evidence text of a citation attached to that claim. No whitespace collapsing, no
-case folding, no Unicode normalization, no punctuation equivalence, no substring matching
+**Span containment is exact after whitespace-only normalization**, per ADR-010 Section 4a
+(corrected 2026-08-21, before this draft was frozen). Both the claim text and the excerpt have
+every run of Unicode whitespace collapsed to a single space and their ends trimmed; the claim
+must then appear as a contiguous substring of a citation attached to that claim.
+
+Nothing else is normalized: no case folding, no Unicode confusable mapping, no punctuation or
+quotation-mark equivalence, no digit or thousands-separator equivalence, and no matching
 against a *different* citation's excerpt. A span assembled from two non-adjacent fragments of
 one excerpt is noncontiguous and fails.
+
+Whitespace is the sole exception because stored page text preserves the source PDF's hard line
+breaks, so a byte-exact rule rejects every quotation longer than one rendered line irrespective
+of its fidelity. Collapsing whitespace cannot add, remove, or alter a word. Case and
+punctuation equivalence could mask OCR damage of the kind SF-01 and MF-01 describe, which is
+why they remain excluded.
 
 This strictness is deliberate. The EXP-07 truth-set work established that a permissive matcher
 manufactures agreement, and the EXP-01 scorer defect — a join blob built in first-occurrence
@@ -177,3 +187,9 @@ is not evidence for it either.
    the containment rule in Section 5.
 7. **Reviewer acknowledgement that `top_k` and the threshold are frozen unselected**, with
    EXP-02 still outstanding.
+8. **A rewritten model instruction for candidate A1.** The 2026-08-21 diagnostic established
+   that the current instruction produces paraphrase: only 7 of 35 claims were verbatim under
+   the Section 5 rule. Span selection requires an instruction that asks the model to return a
+   span rather than compose a sentence. Until that exists there is no A1 to run, and the
+   instruction text is Git-owned and versioned per ADR-003, so it must be committed before the
+   registration is checksummed.
