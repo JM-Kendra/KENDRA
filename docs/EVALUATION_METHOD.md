@@ -1,14 +1,14 @@
 # Evaluation Method
 
-**Status:** Milestone 5 evaluation foundation; expert adjudication is required before pilot use
+**Status:** Milestone 5 evaluation foundation; candidate v2 is mechanically corrected but expert adjudication is required before scored use
 
-**Last updated:** 2026-08-15
+**Last updated:** 2026-08-21
 
 ## Purpose and boundary
 
 This method defines how to evaluate Kendra's future document-grounded answers against [`evaluation/gold_cases.json`](../evaluation/gold_cases.json). It specifies evidence, scoring, timing, and review rules only. It does not implement retrieval, OCR, prompting, generation, orchestration, or any other AI pipeline.
 
-The initial dataset contains 50 questions derived directly from nine approved, public Bureau of Internal Revenue PDFs. The source files and their approval records remain in the ignored local document repository. They must not be copied into Git. Expected facts in the tracked dataset are concise, non-sensitive assertions needed for evaluation; the preserved PDF bytes remain the evidence.
+The candidate dataset contains 50 questions derived directly from nine approved, public Bureau of Internal Revenue PDFs. Candidate v2 corrects the known physical-page scopes in `KND-M5-CD-003` and `KND-M5-CD-010` without changing their expected facts. It remains `initial_expert_review_required`; the correction is not a substitute for the independent review and adjudication required by [`evaluation/cases/M5_GOLD_V2_REVIEW.md`](../evaluation/cases/M5_GOLD_V2_REVIEW.md). The source files and their approval records remain in the ignored local document repository. They must not be copied into Git. Expected facts in the tracked dataset are concise, non-sensitive assertions needed for evaluation; the preserved PDF bytes remain the evidence.
 
 This sample is not evidence that an issuance is current, controlling, complete, or applicable to a taxpayer. It must not be used as tax advice. A supported evaluation answer means only that the named, checksum-verified sample page supports the answer in context.
 

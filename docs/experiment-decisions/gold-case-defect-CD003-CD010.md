@@ -1,14 +1,24 @@
 # Gold-case defect: KND-M5-CD-003 and KND-M5-CD-010
 
-**Status:** Open. Awaiting expert review. **No change has been made to
-`evaluation/gold_cases.json`**, which remains `initial_expert_review_required` with SHA-256
-`a19ca426e1981a6e2ea90c7a205a52d21635947fb041b11e5f4965c4aed2f9f4`.
+**Status:** Mechanical correction implemented as candidate v2; expert review and adjudication remain open. `evaluation/gold_cases.json` remains `initial_expert_review_required`.
 **Raised:** 2026-08-20, from the run `20260819T205613+0800-b1fcd79` adjudication.
 **Recorded in:** [EXP-01.md](EXP-01.md), 2026-08-20 adjudication section.
 
-This memo states observed facts and sets out options. It does not select one, does not edit
-the dataset, and does not decide legal or tax meaning. Engineering review is confined to
-representation fidelity.
+This memo preserves the options considered and records the bounded engineering correction selected on 2026-08-21. It does not decide legal or tax meaning. Engineering review is confined to representation fidelity.
+
+## 2026-08-21 mechanical resolution
+
+The project owner explicitly directed correction and adjudication before Milestone 11. Option A was implemented as an adjudication-ready candidate, not as an approved dataset:
+
+- v1 is preserved by Git history and its exact SHA-256, `a19ca426e1981a6e2ea90c7a205a52d21635947fb041b11e5f4965c4aed2f9f4`;
+- the tracked candidate is now `kendra-bir-public-gold-v2`, SHA-256 `6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86`;
+- `KND-M5-CD-003` now permits RR 11 pages `[1, 2]` and RMC 77 pages `[1, 9]`;
+- `KND-M5-CD-010` now permits RMC 3 pages `[1, 2]`; RR 4 remains `[1]`; and
+- no expected fact or scoring criterion changed.
+
+Rendered-original inspection verified that page 1 carries each affected issuance identifier while the interior page carries the substantive claim. That establishes the location error; it does not supply tax-domain authority. The independent-review packet is [`evaluation/cases/M5_GOLD_V2_REVIEW.md`](../../evaluation/cases/M5_GOLD_V2_REVIEW.md).
+
+The candidate remains `initial_expert_review_required`. MF-01, full-dataset review, adjudicator approval, a corrected scorer, independent OCR observation, and a new frozen preregistration all remain prerequisites. EXP-01 therefore remains failed/inconclusive and must be appended with a genuinely new run; the old result is not relabelled.
 
 ## What was observed
 
