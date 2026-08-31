@@ -12,6 +12,7 @@ from fastapi import Request
 from kendra_api.answering.model_client import AnswerModel, UnavailableAnswerModel
 from kendra_api.answering.retrieval import EmptyRetriever, Retriever
 from kendra_api.answering.sources import EmptySourceRegistry, SourceRegistry
+from kendra_api.audit.sink import AuditSink, InMemoryAuditSink
 
 
 def get_retriever(request: Request) -> Retriever:
@@ -24,3 +25,9 @@ def get_answer_model(request: Request) -> AnswerModel:
 
 def get_source_registry(request: Request) -> SourceRegistry:
     return getattr(request.app.state, "source_registry", None) or EmptySourceRegistry()
+
+
+def get_audit_sink(request: Request) -> AuditSink:
+    # `create_app` always wires a real sink; the in-memory fallback only guards an
+    # app built by hand without going through it.
+    return getattr(request.app.state, "audit_sink", None) or InMemoryAuditSink()

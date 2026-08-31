@@ -13,8 +13,12 @@ from __future__ import annotations
 
 import inspect
 import json
+import time
 import uuid
 from dataclasses import dataclass
+from datetime import UTC, datetime
+
+import httpx
 
 from kendra_api.answering.citations import CitationResolver
 from kendra_api.answering.models import (
@@ -29,6 +33,8 @@ from kendra_api.answering.models import (
 from kendra_api.answering.model_client import AnswerModel
 from kendra_api.answering.retrieval import Retriever
 from kendra_api.answering.sources import SourceRegistry
+from kendra_api.audit.models import AuditRecord, CitedSource, ErrorCategory
+from kendra_api.audit.sink import AuditSink
 
 MAX_CLAIMS = 20
 MAX_CLAIM_CHARS = 2_000
@@ -38,6 +44,9 @@ MAX_CLAIM_CHARS = 2_000
 class AnswerOutcome:
     http_status: int
     response: AnswerResponse
+    # Internal only — never serialized to the client. Set only on a fail-closed
+    # error path so the audit record can classify it against the fixed enum.
+    error_category: ErrorCategory | None = None
 
 
 async def _maybe_await(value):
@@ -45,6 +54,10 @@ async def _maybe_await(value):
     if inspect.isawaitable(value):
         return await value
     return value
+
+
+def _is_timeout(exc: Exception) -> bool:
+    return isinstance(exc, (TimeoutError, httpx.TimeoutException))
 
 
 def _unsupported(request_id: str) -> AnswerOutcome:
@@ -61,7 +74,12 @@ def _unsupported(request_id: str) -> AnswerOutcome:
     )
 
 
-def _typed_failure(request_id: str, status: str, http_status: int) -> AnswerOutcome:
+def _typed_failure(
+    request_id: str,
+    status: str,
+    http_status: int,
+    error_category: ErrorCategory,
+) -> AnswerOutcome:
     # No generated prose, no source or query content — a correlation id only.
     return AnswerOutcome(
         http_status,
@@ -73,6 +91,7 @@ def _typed_failure(request_id: str, status: str, http_status: int) -> AnswerOutc
             citations=[],
             limitations=[],
         ),
+        error_category=error_category,
     )
 
 
@@ -133,7 +152,8 @@ def _clean_limitations(payload: dict) -> list[str]:
     ][:MAX_CLAIMS]
 
 
-async def answer_question(
+async def _run_pipeline(
+    request_id: str,
     *,
     question: str,
     collection_id: str,
@@ -142,12 +162,11 @@ async def answer_question(
     registry: SourceRegistry,
     pipeline_git_revision: str,
 ) -> AnswerOutcome:
-    request_id = f"req-{uuid.uuid4()}"
-
     try:
         evidence = await _maybe_await(retriever.retrieve(question, collection_id))
-    except Exception:
-        return _typed_failure(request_id, "system_error", 500)
+    except Exception as exc:
+        category = "timeout" if _is_timeout(exc) else "retrieval_unavailable"
+        return _typed_failure(request_id, "system_error", 500, category)
 
     if not evidence:
         # Step 9: no candidate satisfies the rule. The model is never consulted,
@@ -156,25 +175,27 @@ async def answer_question(
 
     try:
         admitted, unresolved_source = await _admit(list(evidence), registry)
-    except Exception:
-        return _typed_failure(request_id, "system_error", 500)
+    except Exception as exc:
+        category = "timeout" if _is_timeout(exc) else "registry_unresolved"
+        return _typed_failure(request_id, "system_error", 500, category)
 
     if not admitted:
         if unresolved_source:
             # Section 7.4: never present derived text when the original is missing.
-            return _typed_failure(request_id, "source_unavailable", 503)
+            return _typed_failure(request_id, "source_unavailable", 503, "registry_unresolved")
         return _unsupported(request_id)
 
     admitted_by_id = {item.evidence_id: (item, record) for item, record in admitted}
 
     try:
         raw = await _maybe_await(model.generate(question, [item for item, _ in admitted]))
-    except Exception:
-        return _typed_failure(request_id, "system_error", 500)
+    except Exception as exc:
+        category = "timeout" if _is_timeout(exc) else "model_unavailable"
+        return _typed_failure(request_id, "system_error", 500, category)
 
     payload = _parse_model_output(raw)
     if payload is None:
-        return _typed_failure(request_id, "system_error", 500)
+        return _typed_failure(request_id, "system_error", 500, "validation_failed")
 
     status = payload["status"]
 
@@ -248,3 +269,76 @@ async def answer_question(
             limitations=_clean_limitations(payload),
         ),
     )
+
+
+async def answer_question(
+    *,
+    question: str,
+    collection_id: str,
+    retriever: Retriever,
+    model: AnswerModel,
+    registry: SourceRegistry,
+    pipeline_git_revision: str,
+    audit: AuditSink,
+    source_revision: str,
+    source_revision_dirty: bool,
+    answer_model_name: str,
+    embedding_model_name: str,
+    selected_document_ids: list[str] | None = None,
+    evaluation_run_id: str | None = None,
+) -> AnswerOutcome:
+    """Public entry point (MVP_SPEC Step 9 onward).
+
+    Every path out of this function — including one where `_run_pipeline` raises
+    something none of its own handlers anticipated — writes exactly one audit
+    record before returning. If the audit write itself fails, the request is not
+    considered served: the exception propagates rather than being swallowed, so a
+    supported answer is never returned without the record M14 depends on.
+    """
+    request_id = f"req-{uuid.uuid4()}"
+    started = time.monotonic()
+
+    try:
+        outcome = await _run_pipeline(
+            request_id,
+            question=question,
+            collection_id=collection_id,
+            retriever=retriever,
+            model=model,
+            registry=registry,
+            pipeline_git_revision=pipeline_git_revision,
+        )
+    except Exception:
+        outcome = _typed_failure(request_id, "system_error", 500, "internal")
+
+    duration_ms = int((time.monotonic() - started) * 1000)
+    record = AuditRecord(
+        record_id=str(uuid.uuid4()),
+        request_id=request_id,
+        timestamp_utc=datetime.now(UTC),
+        question=question,
+        mode="evaluation" if evaluation_run_id else "answer",
+        collection_id=collection_id,
+        selected_document_ids=selected_document_ids,
+        status=outcome.response.status,
+        supported=outcome.response.status == "supported",
+        duration_ms=duration_ms,
+        cited=[
+            CitedSource(
+                document_id=citation.document_id,
+                version_id=citation.version_id,
+                filename=citation.filename,
+                page=citation.page,
+            )
+            for citation in outcome.response.citations
+        ],
+        source_revision=source_revision,
+        source_revision_dirty=source_revision_dirty,
+        answer_model=answer_model_name,
+        embedding_model=embedding_model_name,
+        error_category=outcome.error_category,
+        evaluation_run_id=evaluation_run_id,
+    )
+    await audit.write(record)
+
+    return outcome

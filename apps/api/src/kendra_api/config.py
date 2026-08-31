@@ -55,7 +55,6 @@ class Settings(BaseSettings):
     embedding_model: str = "bge-m3"
     embedding_batch_size: int = Field(default=16, gt=0, le=256)
     qdrant_collection_prefix: str = "kendra_ingestion"
-    pipeline_revision: str = "unversioned"
 
     # Milestone 10 answering. `retrieval_top_k` and `retrieval_score_threshold` are
     # engineering defaults, NOT experiment-derived: EXP-02, which ADR-003 and
@@ -66,19 +65,6 @@ class Settings(BaseSettings):
     answer_timeout_seconds: int = Field(default=120, gt=0, le=3600)
     retrieval_top_k: int = Field(default=8, ge=1, le=100)
     retrieval_score_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
-    # Provenance for citations (invariant 2). The all-zero null OID means "unknown"
-    # and must be set to the real revision before any run whose citations are relied on.
-    pipeline_git_revision: str = "0" * 40
-
-    @field_validator("pipeline_git_revision")
-    @classmethod
-    def pipeline_git_revision_must_be_a_full_commit_id(cls, value: str) -> str:
-        normalized = value.strip().lower()
-        if len(normalized) != 40 or any(c not in "0123456789abcdef" for c in normalized):
-            raise ValueError(
-                "KENDRA_PIPELINE_GIT_REVISION must be a full 40-character commit id"
-            )
-        return normalized
 
     @field_validator("document_store_root")
     @classmethod

@@ -304,16 +304,20 @@ SYNTHETIC_REGISTRY = _synthetic_registry()
 @pytest.fixture
 async def wired():
     """Yield a client whose retriever and model are overridable per test."""
+    from kendra_api.audit.sink import InMemoryAuditSink
+
     app = _answering_app()
     deps = _seam()
     state: dict = {
         "retriever": FakeRetriever(SYNTHETIC_EVIDENCE),
         "model": FakeModel(payload={"status": INSUFFICIENT, "claims": [], "limitations": []}),
         "registry": SYNTHETIC_REGISTRY,
+        "audit": InMemoryAuditSink(),
     }
     app.dependency_overrides[deps.get_retriever] = lambda: state["retriever"]
     app.dependency_overrides[deps.get_answer_model] = lambda: state["model"]
     app.dependency_overrides[deps.get_source_registry] = lambda: state["registry"]
+    app.dependency_overrides[deps.get_audit_sink] = lambda: state["audit"]
     try:
         async with _open(app) as client:
             yield client, state

@@ -8,6 +8,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from kendra_api import __version__
+from kendra_api.audit.sink import PostgresAuditSink
 from kendra_api.config import Settings
 from kendra_api.connections.ollama import OllamaConnection
 from kendra_api.connections.postgres import PostgresConnection
@@ -16,6 +17,7 @@ from kendra_api.answering.router import router as answering_router
 from kendra_api.documents import router as documents_router
 from kendra_api.health import router as health_router
 from kendra_api.readiness import ReadinessProbe
+from kendra_api.source_revision import resolve_source_revision
 from kendra_api.storage.local import LocalDocumentStore
 
 
@@ -84,9 +86,13 @@ def create_app(
     readiness_probes = (
         list(probes) if probes is not None else _default_probes(resolved_settings)
     )
+    audit_sink = PostgresAuditSink(PostgresConnection(resolved_settings))
 
     @asynccontextmanager
     async def lifespan(_: FastAPI):
+        # The audit trail must exist before the first question is answered; unlike
+        # the ingestion registry it cannot wait for a rare operator-invoked command.
+        await audit_sink.initialize()
         yield
         for probe in readiness_probes:
             close = getattr(probe, "close", None)
@@ -104,8 +110,19 @@ def create_app(
         redoc_url=None,
         openapi_url=None,
     )
+    source_revision = resolve_source_revision()
     application.state.readiness_probes = readiness_probes
-    application.state.pipeline_git_revision = resolved_settings.pipeline_git_revision
+    application.state.source_revision = source_revision.revision
+    application.state.source_revision_dirty = source_revision.dirty
+    # Citations depend on this string; deriving it from the same resolver as
+    # `source_revision` means the two can never disagree (Section 4).
+    application.state.pipeline_git_revision = source_revision.revision
+    application.state.answering_enabled = resolved_settings.answering_enabled
+    application.state.answer_model_name = resolved_settings.answer_model
+    application.state.embedding_model_name = resolved_settings.embedding_model
+    application.state.retrieval_top_k = resolved_settings.retrieval_top_k
+    application.state.retrieval_score_threshold = resolved_settings.retrieval_score_threshold
+    application.state.audit_sink = audit_sink
     application.state.document_store_root = resolved_settings.document_store_root
     application.state.document_store = None
     # Answering collaborators are attached by the deployment (or overridden by tests).
