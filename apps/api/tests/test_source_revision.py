@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 
 import pytest
@@ -10,9 +11,23 @@ from kendra_api.source_revision import resolve_source_revision
 
 pytestmark = pytest.mark.milestone12
 
-REAL_COMMIT = subprocess.run(
-    ["git", "rev-parse", "HEAD"], capture_output=True, text=True, check=True
-).stdout.strip()
+
+def _real_commit_or_skip() -> str:
+    """Several tests below validate `resolve_source_revision()`'s git fallback
+    against the actual enclosing checkout, so they need a real `git` binary and a
+    real `.git` at the current working directory. Neither is available inside the
+    containerized `docker build --target test` image, whose build context is
+    `apps/api` alone and carries no `.git`. Skip cleanly there instead of crashing
+    collection for the whole file."""
+    if shutil.which("git") is None:
+        pytest.skip("git is not installed in this environment", allow_module_level=True)
+    completed = subprocess.run(["git", "rev-parse", "HEAD"], capture_output=True, text=True)
+    if completed.returncode != 0:
+        pytest.skip("not running inside a git checkout", allow_module_level=True)
+    return completed.stdout.strip()
+
+
+REAL_COMMIT = _real_commit_or_skip()
 
 
 def test_env_override_takes_precedence(monkeypatch):

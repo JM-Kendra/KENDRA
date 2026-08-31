@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -22,7 +23,31 @@ from kendra_api.evaluation.scoring import score_run
 
 pytestmark = pytest.mark.milestone12
 
-REPO_ROOT = Path(__file__).resolve().parents[3]
+
+def _repo_root_or_skip() -> Path:
+    """This file checks facts about the real repository (the tracked dataset's
+    checksum, .gitignore behavior for evaluation/runs/), so it needs the actual Git
+    checkout with `evaluation/gold_cases.json` present. Neither is available inside
+    the containerized `docker build --target test` image, whose build context is
+    `apps/api` alone and carries no `.git` and no top-level `evaluation/` directory.
+    Skip cleanly there instead of crashing collection for the whole file."""
+    if shutil.which("git") is None:
+        pytest.skip("git is not installed in this environment", allow_module_level=True)
+    completed = subprocess.run(
+        ["git", "rev-parse", "--show-toplevel"],
+        cwd=Path(__file__).resolve().parent,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        pytest.skip("not running inside a git checkout", allow_module_level=True)
+    root = Path(completed.stdout.strip())
+    if not (root / "evaluation" / "gold_cases.json").exists():
+        pytest.skip("evaluation/gold_cases.json not present in this checkout", allow_module_level=True)
+    return root
+
+
+REPO_ROOT = _repo_root_or_skip()
 DATASET_PATH = REPO_ROOT / "evaluation" / "gold_cases.json"
 
 
