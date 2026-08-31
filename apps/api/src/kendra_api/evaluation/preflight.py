@@ -9,7 +9,7 @@ import httpx
 from kendra_api.evaluation.models import PreflightError
 
 
-async def check_api_health(client: httpx.AsyncClient) -> dict:
+async def check_api_health(client: httpx.AsyncClient, *, allow_unknown_revision: bool = False) -> dict:
     try:
         response = await client.get("/api/v1/health")
     except httpx.HTTPError as exc:
@@ -27,6 +27,26 @@ async def check_api_health(client: httpx.AsyncClient) -> dict:
             "answering is disabled (answering_enabled=false in /api/v1/health); "
             "set KENDRA_ANSWERING_ENABLED=true and rerun"
         )
+    if not allow_unknown_revision:
+        # Invariant 2: a citation must carry a stable producing pipeline/Git
+        # revision. A run whose citations are meant to be relied on must not start
+        # from a source_revision the deployment itself couldn't resolve, or from a
+        # working tree with uncommitted changes the citation's revision can't
+        # actually reproduce.
+        if body.get("source_revision") in (None, "unknown"):
+            raise PreflightError(
+                "source_revision is 'unknown' — citations from this run would not "
+                "resolve to a real pipeline revision (invariant 2); export "
+                "KENDRA_SOURCE_REVISION on the deployment host, or pass "
+                "--allow-unknown-revision to run anyway"
+            )
+        if body.get("source_revision_dirty"):
+            raise PreflightError(
+                "source_revision_dirty is true — the deployment has uncommitted "
+                "changes, so this run's revision would not reproduce what was "
+                "actually served; commit or stash them, or pass "
+                "--allow-unknown-revision to run anyway"
+            )
     return body
 
 

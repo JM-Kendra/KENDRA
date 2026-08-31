@@ -77,7 +77,11 @@ services:
       KENDRA_EMBEDDING_BATCH_SIZE: ${KENDRA_EMBEDDING_BATCH_SIZE:-16}
       KENDRA_QDRANT_COLLECTION_PREFIX: ${KENDRA_QDRANT_COLLECTION_PREFIX:-kendra_ingestion}
       # No .git is mounted into this read-only container, so the revision must be
-      # injected from the host. See docs: `export KENDRA_SOURCE_REVISION=$(git rev-parse HEAD)`.
+      # injected from the host: `export KENDRA_SOURCE_REVISION=$(git rev-parse HEAD)`.
+      # If that export is forgotten, this default of the literal "unknown" is what
+      # the container receives; source_revision.py treats that (and empty) as "not
+      # set" rather than an invalid override, so a forgotten export degrades to an
+      # honestly-labeled unknown revision instead of crashing the API at startup.
       KENDRA_SOURCE_REVISION: ${KENDRA_SOURCE_REVISION:-unknown}
       KENDRA_SOURCE_REVISION_DIRTY: ${KENDRA_SOURCE_REVISION_DIRTY:-false}
       KENDRA_ANSWERING_ENABLED: ${KENDRA_ANSWERING_ENABLED:-false}

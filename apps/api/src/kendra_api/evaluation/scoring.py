@@ -23,6 +23,18 @@ from kendra_api.evaluation.models import CaseRunResult, GoldCase, GoldDataset
 _TOKEN_RE = re.compile(r"[a-z0-9]+")
 _FACT_MATCH_METHOD = "normalized_substring_or_token_overlap>=0.8"
 
+# EVALUATION_METHOD.md, "Ambiguous cases": the four categories a report must
+# segment ambiguous-case results into. Every gold case carries non-empty
+# `ambiguity_notes` (there is no boolean "is this case ambiguous" flag in the
+# dataset), and which of these four applies to a given answer requires reading it —
+# there is no mechanical proxy, so this is never auto-assigned.
+AMBIGUITY_CATEGORIES: tuple[str, ...] = (
+    "correctly_clarified_or_bounded",
+    "answer_correct_under_allowed_interpretation",
+    "silently_resolved_with_material_risk",
+    "non_scorable_case_needs_revision",
+)
+
 
 def _normalize_tokens(text: str) -> list[str]:
     return _TOKEN_RE.findall(text.lower())
@@ -84,10 +96,11 @@ class ConfusionMatrix:
 
 def _latency_stats(durations_ms: list[int]) -> dict:
     if not durations_ms:
-        return {"median_ms": None, "p90_ms": None, "max_ms": None, "count": 0}
+        return {"mean_ms": None, "median_ms": None, "p90_ms": None, "max_ms": None, "count": 0}
     ordered = sorted(durations_ms)
     p90_index = min(len(ordered) - 1, max(0, round(0.9 * (len(ordered) - 1))))
     return {
+        "mean_ms": statistics.mean(ordered),
         "median_ms": statistics.median(ordered),
         "p90_ms": ordered[p90_index],
         "max_ms": ordered[-1],
@@ -118,9 +131,21 @@ def score_run(dataset: GoldDataset, results: list[CaseRunResult]) -> dict:
     latency_by_ocr: dict[bool, list[int]] = {}
 
     fact_entries: list[dict] = []
+    ambiguity_entries: list[dict] = []
 
     for result in results:
         case = cases_by_id[result.case_id]
+        ambiguity_entries.append(
+            {
+                "case_id": case.case_id,
+                "category": case.category,
+                "expected_result": case.expected_result,
+                "ambiguity_notes": case.ambiguity_notes,
+                "response_status": result.response_status,
+                "model_answer": result.answer,
+                "reviewed_category": None,
+            }
+        )
         latency_all.append(result.duration_ms)
         latency_by_category.setdefault(case.category, []).append(result.duration_ms)
         latency_by_ocr.setdefault(case.ocr_required, []).append(result.duration_ms)
@@ -243,6 +268,18 @@ def score_run(dataset: GoldDataset, results: list[CaseRunResult]) -> dict:
             "timeout_count": timeouts,
             "failed_count": failed,
         },
+        "ambiguity_review": {
+            "status": "pending_review",
+            "note": (
+                "which of the four categories applies requires reading each answer "
+                "against its case's ambiguity_notes; not auto-assigned. See "
+                "scoring_worksheet.json's ambiguity_entries and --scored-worksheet."
+            ),
+            "total_cases": len(results),
+            "reviewed_count": 0,
+            "categories": dict.fromkeys(AMBIGUITY_CATEGORIES, 0),
+        },
         "attempted_case_count": len(results),
         "fact_worksheet_entries": fact_entries,
+        "ambiguity_worksheet_entries": ambiguity_entries,
     }

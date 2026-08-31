@@ -131,6 +131,53 @@ async def test_hash_changes_if_any_field_differs():
     assert other_sink.record_hashes[0] != baseline
 
 
+async def test_verify_chain_passes_on_an_untampered_sink():
+    sink = InMemoryAuditSink()
+    await sink.write(_record(record_id="rec-1"))
+    await sink.write(_record(record_id="rec-2"))
+    await sink.write(_record(record_id="rec-3"))
+
+    result = sink.verify_chain()
+    assert result.ok is True
+    assert result.record_count == 3
+    assert result.first_bad_sequence is None
+
+
+async def test_verify_chain_detects_a_mutated_record():
+    """Simulates what a DB owner bypassing the append-only triggers would produce:
+    a row's content no longer matches the hash that was computed for it."""
+    sink = InMemoryAuditSink()
+    await sink.write(_record(record_id="rec-1"))
+    await sink.write(_record(record_id="rec-2"))
+
+    tampered = dataclasses.replace(sink.records[0], duration_ms=99999)
+    sink.records[0] = tampered
+
+    result = sink.verify_chain()
+    assert result.ok is False
+    assert result.first_bad_sequence == 1
+
+
+async def test_verify_chain_detects_a_broken_link():
+    """Simulates a deleted-and-reinserted row: the content and its own hash are
+    internally consistent, but no longer chains from the genuine previous hash."""
+    sink = InMemoryAuditSink()
+    await sink.write(_record(record_id="rec-1"))
+    await sink.write(_record(record_id="rec-2"))
+
+    sink.previous_record_hashes[1] = "f" * 64
+
+    result = sink.verify_chain()
+    assert result.ok is False
+    assert result.first_bad_sequence == 2
+
+
+async def test_verify_chain_on_an_empty_sink():
+    result = InMemoryAuditSink().verify_chain()
+    assert result.ok is True
+    assert result.record_count == 0
+
+
 # --------------------------------------------------------------------------------------
 # Every path out of `answer_question` writes exactly one record.
 # --------------------------------------------------------------------------------------

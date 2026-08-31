@@ -10,6 +10,7 @@ from kendra_api.audit.models import (
 from kendra_api.audit.sink import (
     GENESIS_HASH,
     AuditSink,
+    ChainVerificationResult,
     InMemoryAuditSink,
     PostgresAuditSink,
     compute_record_hash,
@@ -21,6 +22,7 @@ __all__ = [
     "AuditMode",
     "AuditRecord",
     "AuditSink",
+    "ChainVerificationResult",
     "CitedSource",
     "ErrorCategory",
     "InMemoryAuditSink",

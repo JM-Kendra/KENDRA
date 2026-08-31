@@ -36,6 +36,34 @@ def test_env_override_rejects_a_value_that_is_not_40_hex_chars(monkeypatch):
         resolve_source_revision()
 
 
+def test_the_literal_unknown_does_not_crash_but_falls_through(monkeypatch):
+    """Regression: docker-compose.yml defaults the container's env var to the
+    literal "unknown" when the operator forgets to export a real revision. That
+    must degrade to the honest unknown/git fallback, not raise and crash the API
+    at startup — found by external review before the live Ubuntu run."""
+    monkeypatch.setenv("KENDRA_SOURCE_REVISION", "unknown")
+    monkeypatch.delenv("KENDRA_SOURCE_REVISION_DIRTY", raising=False)
+    result = resolve_source_revision()
+    assert result.revision == REAL_COMMIT
+    assert isinstance(result.dirty, bool)
+
+
+def test_the_literal_unknown_is_case_insensitive_and_whitespace_tolerant(monkeypatch):
+    monkeypatch.setenv("KENDRA_SOURCE_REVISION", "  Unknown  ")
+    monkeypatch.delenv("KENDRA_SOURCE_REVISION_DIRTY", raising=False)
+    result = resolve_source_revision()
+    assert result.revision == REAL_COMMIT
+
+
+def test_empty_string_env_var_also_falls_through(monkeypatch):
+    """docker-compose's `${VAR:-default}` substitutes on unset OR empty, so an
+    explicitly-empty env var must behave the same as an unset one."""
+    monkeypatch.setenv("KENDRA_SOURCE_REVISION", "")
+    monkeypatch.delenv("KENDRA_SOURCE_REVISION_DIRTY", raising=False)
+    result = resolve_source_revision()
+    assert result.revision == REAL_COMMIT
+
+
 def test_dirty_env_override_applies_even_with_a_revision_override(monkeypatch):
     monkeypatch.setenv("KENDRA_SOURCE_REVISION", "c" * 40)
     monkeypatch.setenv("KENDRA_SOURCE_REVISION_DIRTY", "true")

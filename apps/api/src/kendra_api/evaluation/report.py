@@ -37,9 +37,12 @@ def build_report(
     dataset: GoldDataset,
     results: list[CaseRunResult],
     config: RunConfig,
-) -> tuple[dict, list[dict]]:
+) -> tuple[dict, dict]:
     score = score_run(dataset, results)
-    worksheet_entries = score.pop("fact_worksheet_entries")
+    worksheet = {
+        "fact_entries": score.pop("fact_worksheet_entries"),
+        "ambiguity_entries": score.pop("ambiguity_worksheet_entries"),
+    }
 
     category_counts: dict[str, int] = {}
     attempted_counts: dict[str, int] = {"supported": 0, "unsupported": 0}
@@ -74,16 +77,14 @@ def build_report(
         "acceptance_claim": False,
         "acceptance_claim_reason": _acceptance_claim_reason(scoring_reviewed=False),
     }
-    return report, worksheet_entries
+    return report, worksheet
 
 
-def apply_scored_worksheet(report: dict, worksheet_entries: list[dict]) -> dict:
-    """Recompute headline fact metrics from a human-reviewed worksheet.
-
-    Only entries carrying a `reviewed_label` (TP/FN/FP) participate; anything still
-    `null` is treated as not yet reviewed and is excluded rather than guessed.
-    """
-    reviewed = [entry for entry in worksheet_entries if entry.get("reviewed_label")]
+def _score_fact_entries(fact_entries: list[dict]) -> tuple[dict, bool]:
+    """Only entries carrying a `reviewed_label` (TP/FN/FP) participate; anything
+    still `null` is treated as not yet reviewed and is excluded rather than
+    guessed."""
+    reviewed = [entry for entry in fact_entries if entry.get("reviewed_label")]
     tp = sum(1 for entry in reviewed if entry["reviewed_label"] == "TP")
     fn = sum(1 for entry in reviewed if entry["reviewed_label"] == "FN")
     fp = sum(1 for entry in reviewed if entry["reviewed_label"] == "FP")
@@ -94,11 +95,8 @@ def apply_scored_worksheet(report: dict, worksheet_entries: list[dict]) -> dict:
         if precision is not None and recall is not None and (precision + recall) > 0
         else None
     )
-    fully_reviewed = len(reviewed) == len(worksheet_entries) and bool(worksheet_entries)
-
-    report = dict(report)
-    report["metrics"] = dict(report["metrics"])
-    report["metrics"]["atomic_fact_scoring"] = {
+    fully_reviewed = len(reviewed) == len(fact_entries) and bool(fact_entries)
+    return {
         "status": "reviewed" if fully_reviewed else "partially_reviewed",
         "matching_method": "human_review",
         "fact_true_positive": tp,
@@ -108,9 +106,45 @@ def apply_scored_worksheet(report: dict, worksheet_entries: list[dict]) -> dict:
         "fact_recall": recall,
         "fact_precision": precision,
         "fact_f1": f1,
-    }
+    }, fully_reviewed
+
+
+def _score_ambiguity_entries(ambiguity_entries: list[dict]) -> tuple[dict, bool]:
+    from kendra_api.evaluation.scoring import AMBIGUITY_CATEGORIES
+
+    reviewed = [entry for entry in ambiguity_entries if entry.get("reviewed_category")]
+    counts = dict.fromkeys(AMBIGUITY_CATEGORIES, 0)
+    for entry in reviewed:
+        category = entry["reviewed_category"]
+        if category in counts:
+            counts[category] += 1
+    fully_reviewed = len(reviewed) == len(ambiguity_entries) and bool(ambiguity_entries)
+    return {
+        "status": "reviewed" if fully_reviewed else "partially_reviewed",
+        "note": None,
+        "total_cases": len(ambiguity_entries),
+        "reviewed_count": len(reviewed),
+        "categories": counts,
+    }, fully_reviewed
+
+
+def apply_scored_worksheet(report: dict, worksheet: dict) -> dict:
+    """Recompute headline fact and ambiguity-review metrics from a human-reviewed
+    worksheet (the object `scoring_worksheet.json` writes: `fact_entries` and
+    `ambiguity_entries`)."""
+    fact_metrics, facts_fully_reviewed = _score_fact_entries(worksheet.get("fact_entries", []))
+    ambiguity_metrics, ambiguity_fully_reviewed = _score_ambiguity_entries(
+        worksheet.get("ambiguity_entries", [])
+    )
+
+    report = dict(report)
+    report["metrics"] = dict(report["metrics"])
+    report["metrics"]["atomic_fact_scoring"] = fact_metrics
+    report["metrics"]["ambiguity_review"] = ambiguity_metrics
     report["acceptance_claim"] = False
-    report["acceptance_claim_reason"] = _acceptance_claim_reason(scoring_reviewed=fully_reviewed)
+    report["acceptance_claim_reason"] = _acceptance_claim_reason(
+        scoring_reviewed=facts_fully_reviewed and ambiguity_fully_reviewed
+    )
     return report
 
 
@@ -186,8 +220,8 @@ def render_report_markdown(report: dict) -> str:
         f" ({rejection['false_answers']}/{rejection['attempted']})",
         "",
         "## Response time (overall)",
-        f"- median: {latency['median_ms']} ms · p90: {latency['p90_ms']} ms"
-        f" · max: {latency['max_ms']} ms",
+        f"- mean: {latency['mean_ms']} ms · median: {latency['median_ms']} ms"
+        f" · p90: {latency['p90_ms']} ms · max: {latency['max_ms']} ms",
         f"- timeouts: {metrics['response_time']['timeout_count']}"
         f" · failed: {metrics['response_time']['failed_count']}",
         "- 'timeouts' is a subset of 'failed', not an addition to it: 'failed' counts "
@@ -196,6 +230,19 @@ def render_report_markdown(report: dict) -> str:
         "problem count on top.",
         "",
     ]
+
+    ambiguity = metrics.get("ambiguity_review")
+    if ambiguity:
+        lines += [
+            f"## Ambiguous-case review ({ambiguity['status']})",
+            f"- {ambiguity['reviewed_count']}/{ambiguity['total_cases']} cases reviewed",
+        ]
+        for category, count in ambiguity["categories"].items():
+            lines.append(f"  - {category}: {count}")
+        if ambiguity.get("note"):
+            lines.append(f"- note: {ambiguity['note']}")
+        lines.append("")
+
     return "\n".join(lines)
 
 
@@ -225,7 +272,7 @@ def write_run_directory(
     dataset: GoldDataset,
     results: list[CaseRunResult],
     report: dict,
-    worksheet_entries: list[dict],
+    worksheet: dict,
 ) -> None:
     run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -241,6 +288,6 @@ def write_run_directory(
     )
     (run_dir / "report.md").write_text(render_report_markdown(report), encoding="utf-8")
     (run_dir / "scoring_worksheet.json").write_text(
-        json.dumps(worksheet_entries, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
+        json.dumps(worksheet, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
     )
     (run_dir / "failed_cases.md").write_text(render_failed_cases_markdown(results), encoding="utf-8")

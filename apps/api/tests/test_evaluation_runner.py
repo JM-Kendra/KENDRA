@@ -83,6 +83,7 @@ async def test_every_aggregate_in_report_json_recomputes_from_cases_jsonl(tmp_pa
 
     recomputed = score_run(dataset, results)
     recomputed.pop("fact_worksheet_entries")
+    recomputed.pop("ambiguity_worksheet_entries")
 
     report = json.loads((run_dir / "report.json").read_text())
     assert report["metrics"] == recomputed
@@ -124,13 +125,31 @@ async def test_fake_model_report_markdown_is_unmistakably_labeled_fake(tmp_path)
     assert "not a real answering result" in markdown
 
 
-async def test_scored_worksheet_overrides_provisional_fact_scores(tmp_path):
+async def test_scoring_worksheet_has_both_fact_and_ambiguity_entries(tmp_path):
+    run_dir = await _run_fake_model(tmp_path)
+    worksheet = json.loads((run_dir / "scoring_worksheet.json").read_text())
+
+    assert set(worksheet) == {"fact_entries", "ambiguity_entries"}
+    assert worksheet["fact_entries"], "expected at least one supported case's facts"
+    # One ambiguity entry per case, regardless of expected_result — every gold case
+    # carries ambiguity_notes, per validate_gold_cases.py.
+    assert len(worksheet["ambiguity_entries"]) == 50
+    for entry in worksheet["ambiguity_entries"]:
+        assert entry["reviewed_category"] is None
+        assert entry["ambiguity_notes"]
+
+
+async def test_scored_worksheet_overrides_provisional_fact_and_ambiguity_scores(tmp_path):
+    from kendra_api.evaluation.scoring import AMBIGUITY_CATEGORIES
+
     first_run_dir = await _run_fake_model(tmp_path / "first", seed=7)
     worksheet = json.loads((first_run_dir / "scoring_worksheet.json").read_text())
-    assert worksheet, "expected at least one supported case to produce worksheet entries"
+    assert worksheet["fact_entries"], "expected at least one supported case to produce fact entries"
 
-    for entry in worksheet:
+    for entry in worksheet["fact_entries"]:
         entry["reviewed_label"] = entry["provisional_label"]
+    for entry in worksheet["ambiguity_entries"]:
+        entry["reviewed_category"] = AMBIGUITY_CATEGORIES[0]
     reviewed_path = tmp_path / "reviewed_worksheet.json"
     reviewed_path.write_text(json.dumps(worksheet))
 
@@ -141,6 +160,12 @@ async def test_scored_worksheet_overrides_provisional_fact_scores(tmp_path):
     assert facts["status"] == "reviewed"
     assert facts["fact_false_positive"] == 0
     assert facts["fact_precision"] == 1.0
+
+    ambiguity = report["metrics"]["ambiguity_review"]
+    assert ambiguity["status"] == "reviewed"
+    assert ambiguity["reviewed_count"] == 50
+    assert ambiguity["categories"][AMBIGUITY_CATEGORIES[0]] == 50
+
     assert report["acceptance_claim"] is False
 
 

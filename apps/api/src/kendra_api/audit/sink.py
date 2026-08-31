@@ -15,10 +15,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from typing import Protocol
 
-from kendra_api.audit.models import AuditRecord
+from kendra_api.audit.models import AuditRecord, CitedSource
 from kendra_api.connections.postgres import PostgresConnection
 
 GENESIS_HASH = "0" * 64
@@ -68,6 +68,12 @@ DROP TRIGGER IF EXISTS question_audit_no_delete ON question_audit;
 CREATE TRIGGER question_audit_no_delete
     BEFORE DELETE ON question_audit
     FOR EACH ROW EXECUTE FUNCTION question_audit_append_only();
+-- TRUNCATE bypasses row-level triggers entirely in Postgres; it needs its own
+-- statement-level trigger (TRUNCATE triggers cannot be FOR EACH ROW).
+DROP TRIGGER IF EXISTS question_audit_no_truncate ON question_audit;
+CREATE TRIGGER question_audit_no_truncate
+    BEFORE TRUNCATE ON question_audit
+    FOR EACH STATEMENT EXECUTE FUNCTION question_audit_append_only();
 """
 
 
@@ -83,6 +89,35 @@ def compute_record_hash(record: AuditRecord, previous_record_hash: str) -> str:
     return hashlib.sha256(_canonical_json(payload)).hexdigest()
 
 
+@dataclass(frozen=True, slots=True)
+class ChainVerificationResult:
+    ok: bool
+    record_count: int
+    first_bad_sequence: int | None
+    detail: str | None
+
+
+def _verify_sequence(
+    entries: list[tuple[AuditRecord, str, str]],
+) -> ChainVerificationResult:
+    """Shared verification core. `entries` is (record, record_hash,
+    previous_record_hash) in ascending write order — one place recomputes the chain
+    so `InMemoryAuditSink` and `PostgresAuditSink` cannot silently diverge on what
+    "verified" means."""
+    expected_previous = GENESIS_HASH
+    for position, (record, record_hash, previous_record_hash) in enumerate(entries, start=1):
+        if previous_record_hash != expected_previous:
+            return ChainVerificationResult(
+                False, len(entries), position, f"chain link broken before record {position}"
+            )
+        if compute_record_hash(record, previous_record_hash) != record_hash:
+            return ChainVerificationResult(
+                False, len(entries), position, f"record_hash does not match its contents at record {position}"
+            )
+        expected_previous = record_hash
+    return ChainVerificationResult(True, len(entries), None, None)
+
+
 class AuditSink(Protocol):
     async def initialize(self) -> None: ...
 
@@ -95,16 +130,23 @@ class InMemoryAuditSink:
     def __init__(self) -> None:
         self.records: list[AuditRecord] = []
         self.record_hashes: list[str] = []
+        self.previous_record_hashes: list[str] = []
         self._last_hash = GENESIS_HASH
 
     async def initialize(self) -> None:
         return None
 
     async def write(self, record: AuditRecord) -> None:
-        record_hash = compute_record_hash(record, self._last_hash)
+        previous = self._last_hash
+        record_hash = compute_record_hash(record, previous)
         self.records.append(record)
         self.record_hashes.append(record_hash)
+        self.previous_record_hashes.append(previous)
         self._last_hash = record_hash
+
+    def verify_chain(self) -> ChainVerificationResult:
+        entries = list(zip(self.records, self.record_hashes, self.previous_record_hashes))
+        return _verify_sequence(entries)
 
 
 class PostgresAuditSink:
@@ -162,3 +204,41 @@ class PostgresAuditSink:
                     record_hash,
                     previous_record_hash,
                 )
+
+    async def verify_chain(self) -> ChainVerificationResult:
+        async with self._postgres.connection() as connection:
+            rows = await connection.fetch(
+                """SELECT record_id, request_id, timestamp_utc, question, mode,
+                    collection_id, selected_document_ids, status, supported,
+                    duration_ms, cited, source_revision, source_revision_dirty,
+                    answer_model, embedding_model, error_category, evaluation_run_id,
+                    record_hash, previous_record_hash
+                FROM question_audit ORDER BY sequence ASC"""
+            )
+        entries: list[tuple[AuditRecord, str, str]] = []
+        for row in rows:
+            record = AuditRecord(
+                record_id=str(row["record_id"]),
+                request_id=row["request_id"],
+                timestamp_utc=row["timestamp_utc"],
+                question=row["question"],
+                mode=row["mode"],
+                collection_id=row["collection_id"],
+                selected_document_ids=(
+                    json.loads(row["selected_document_ids"])
+                    if row["selected_document_ids"] is not None
+                    else None
+                ),
+                status=row["status"],
+                supported=row["supported"],
+                duration_ms=row["duration_ms"],
+                cited=[CitedSource(**item) for item in json.loads(row["cited"])],
+                source_revision=row["source_revision"],
+                source_revision_dirty=row["source_revision_dirty"],
+                answer_model=row["answer_model"],
+                embedding_model=row["embedding_model"],
+                error_category=row["error_category"],
+                evaluation_run_id=row["evaluation_run_id"],
+            )
+            entries.append((record, row["record_hash"], row["previous_record_hash"]))
+        return _verify_sequence(entries)

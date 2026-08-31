@@ -67,13 +67,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     )
     parser.add_argument("--fake-model-hang-seconds", type=float, default=2.5)
     parser.add_argument(
+        "--allow-unknown-revision",
+        action="store_true",
+        help=(
+            "skip the preflight gate that otherwise refuses to run when "
+            "/api/v1/health reports source_revision='unknown' or "
+            "source_revision_dirty=true (invariant 2)"
+        ),
+    )
+    parser.add_argument(
         "--output-root", type=Path, default=None, help="defaults to <repo-root>/evaluation/runs/M12-gold"
     )
     parser.add_argument(
         "--scored-worksheet",
         type=Path,
         default=None,
-        help="a reviewed scoring_worksheet.json; supersedes the provisional atomic-fact scores",
+        help=(
+            "a reviewed scoring_worksheet.json ({fact_entries, ambiguity_entries}); "
+            "supersedes the provisional atomic-fact and ambiguity-review scores"
+        ),
     )
     return parser.parse_args(argv)
 
@@ -143,7 +155,9 @@ async def _amain(args: argparse.Namespace) -> int:
         else:
             client = http_evaluation_client(args.api_base, timeout_seconds=request_timeout_seconds)
             try:
-                health_body = await check_api_health(client.raw)
+                health_body = await check_api_health(
+                    client.raw, allow_unknown_revision=args.allow_unknown_revision
+                )
                 ollama_client = httpx.AsyncClient(base_url=args.ollama_base.rstrip("/"), timeout=10.0)
                 await check_ollama_has_models(
                     ollama_client,
@@ -180,11 +194,11 @@ async def _amain(args: argparse.Namespace) -> int:
         timestamp_utc=timestamp.isoformat(),
     )
 
-    report, worksheet_entries = build_report(dataset=dataset, results=results, config=config)
+    report, worksheet = build_report(dataset=dataset, results=results, config=config)
     if args.scored_worksheet:
-        reviewed_entries = json.loads(args.scored_worksheet.read_text(encoding="utf-8"))
-        report = apply_scored_worksheet(report, reviewed_entries)
-        worksheet_entries = reviewed_entries
+        reviewed_worksheet = json.loads(args.scored_worksheet.read_text(encoding="utf-8"))
+        report = apply_scored_worksheet(report, reviewed_worksheet)
+        worksheet = reviewed_worksheet
 
     short_sha = config.source_revision[:8] if config.source_revision != "unknown" else "unknownrev"
     run_dir = output_root / f"{timestamp.strftime('%Y%m%dT%H%M%SZ')}-{short_sha}"
@@ -194,7 +208,7 @@ async def _amain(args: argparse.Namespace) -> int:
         dataset=dataset,
         results=results,
         report=report,
-        worksheet_entries=worksheet_entries,
+        worksheet=worksheet,
     )
 
     print(f"wrote {run_dir}")

@@ -31,8 +31,15 @@ async def ask_question(
     audit: AuditSink = Depends(get_audit_sink),
     # Evaluation-run tagging only — never part of the MVP_SPEC 7.1 request body,
     # which accepts exactly `question` and `collection_id` and no others. An
-    # absent or blank header means an ordinary answering request.
-    evaluation_run_id: str | None = Header(default=None, alias="X-Kendra-Evaluation-Run-Id"),
+    # absent or blank header means an ordinary answering request. Constrained to a
+    # short opaque token: this value is written verbatim into the append-only,
+    # hash-chained audit table, so an unbounded or unvalidated header would let any
+    # caller inject arbitrary content into an immutable record.
+    evaluation_run_id: str | None = Header(
+        default=None,
+        alias="X-Kendra-Evaluation-Run-Id",
+        pattern=r"^[A-Za-z0-9._-]{1,128}$",
+    ),
 ) -> JSONResponse:
     outcome = await answer_question(
         question=payload.question,

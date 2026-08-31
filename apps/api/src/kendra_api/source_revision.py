@@ -6,8 +6,14 @@ own `/api/v1/health` response rather than re-resolving it locally).
 
 Resolution order:
 
-1. `KENDRA_SOURCE_REVISION` env var, if set (must be a full 40-character lowercase
-   commit id; an invalid value is a configuration error, not a silent fallback).
+1. `KENDRA_SOURCE_REVISION` env var, if set to anything other than empty or the
+   literal `unknown` (case-insensitive) — both of those are treated as not set,
+   since `docker-compose.yml` defaults the container's env var to exactly one of
+   them when the host never exported a real value, and a resolver that rejected its
+   own reserved sentinel would crash the API on every ordinary "operator forgot to
+   export" mistake. Any other non-40-hex value is still a hard configuration error
+   — this carve-out is for the two literal fallback values, not a general "ignore
+   invalid input" rule.
 2. `git rev-parse HEAD`, if a `.git` directory is reachable from the working directory.
 3. `"unknown"` — reported as such rather than as a fabricated all-zero OID.
 
@@ -78,11 +84,12 @@ def resolve_source_revision(*, cwd: Path | str | None = None) -> SourceRevision:
     dirty_override = _parse_bool(raw_dirty_override) if raw_dirty_override is not None else None
 
     env_revision = os.environ.get("KENDRA_SOURCE_REVISION")
-    if env_revision:
+    if env_revision and env_revision.strip().lower() != "unknown":
         normalized = env_revision.strip().lower()
         if not _HEX40_RE.match(normalized):
             raise ValueError(
-                "KENDRA_SOURCE_REVISION must be a full 40-character lowercase commit id"
+                "KENDRA_SOURCE_REVISION must be a full 40-character lowercase commit id "
+                "(or empty / \"unknown\" to fall through to git resolution)"
             )
         return SourceRevision(normalized, dirty_override if dirty_override is not None else False)
 
