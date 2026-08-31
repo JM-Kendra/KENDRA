@@ -86,7 +86,8 @@ async def test_fake_model_run_produces_a_complete_run_directory(tmp_path):
         "report.json",
         "report.md",
         "scoring_worksheet.json",
-        "failed_cases.md",
+        "runner_failures.md",
+        "misclassified_cases.md",
     }
     assert {path.name for path in run_dir.iterdir()} == expected_files
 
@@ -124,6 +125,66 @@ async def test_fake_model_run_exercises_every_scripted_bucket(tmp_path):
     # "system_error"; timeout -> timed_out=True. All four must appear across 50 cases.
     assert "system_error" in statuses
     assert timed_out, "the scripted timeout bucket never produced a client-side timeout"
+
+
+async def test_runner_failures_markdown_excludes_clean_misclassifications(tmp_path):
+    run_dir = await _run_fake_model(tmp_path)
+    cases = [json.loads(line) for line in (run_dir / "cases.jsonl").read_text().splitlines()]
+    content = (run_dir / "runner_failures.md").read_text()
+
+    runner_failure_ids = {
+        case["case_id"]
+        for case in cases
+        if case["timed_out"] or case["error"] or case["response_status"] in {"system_error", "source_unavailable"}
+    }
+    assert runner_failure_ids, "expected at least one scripted timeout/malformed case"
+    for case_id in runner_failure_ids:
+        assert case_id in content
+
+    # A clean-HTTP-200 misclassification (the scripted "bad" bucket) must not appear
+    # here -- that belongs in misclassified_cases.md, not runner_failures.md.
+    clean_mismatch_ids = {
+        case["case_id"]
+        for case in cases
+        if case["case_id"] not in runner_failure_ids and case["predicted_label"] != case["expected_result"]
+    }
+    assert clean_mismatch_ids, "expected at least one clean-HTTP-200 misclassification from the 'bad' bucket"
+    for case_id in clean_mismatch_ids:
+        assert case_id not in content
+
+
+async def test_misclassified_cases_markdown_lists_unsupported_false_positives_first(tmp_path):
+    from kendra_api.evaluation.fake_model import SCRIPT_BUCKETS
+
+    dataset = load_and_validate_dataset(
+        dataset_path=DATASET_PATH, repo_root=REPO_ROOT, expect_dataset_sha256=DEFAULT_DATASET_SHA256
+    )
+    # The fixture assigns script buckets by dataset index, not run order, so which
+    # cases become unsupported-false-positives is reproducible from the dataset
+    # alone, independent of the run's random seed.
+    expected_false_positive_ids = {
+        case.case_id
+        for index, case in enumerate(dataset.cases)
+        if case.expected_result == "unsupported" and SCRIPT_BUCKETS[index % len(SCRIPT_BUCKETS)] == "bad"
+    }
+    assert expected_false_positive_ids, "expected the 'bad' bucket to land on at least one unsupported case"
+
+    run_dir = await _run_fake_model(tmp_path)
+    content = (run_dir / "misclassified_cases.md").read_text()
+
+    fp_heading = "## False positives on unsupported cases"
+    other_heading = "## Other misclassifications"
+    assert fp_heading in content
+    assert other_heading in content
+    assert content.index(fp_heading) < content.index(other_heading), (
+        "the unsupported-false-positive section must come first"
+    )
+
+    fp_section = content[content.index(fp_heading) : content.index(other_heading)]
+    other_section = content[content.index(other_heading) :]
+    for case_id in expected_false_positive_ids:
+        assert case_id in fp_section
+        assert case_id not in other_section
 
 
 async def test_report_is_provisional_and_never_claims_acceptance(tmp_path):

@@ -1,5 +1,5 @@
 """Run-directory output: `run_config.json`, `cases.jsonl`, `report.json`, `report.md`,
-`scoring_worksheet.json`, `failed_cases.md`.
+`scoring_worksheet.json`, `runner_failures.md`, `misclassified_cases.md`.
 
 Every number in `report.json["metrics"]` must be recomputable from the per-case
 records preserved in the same directory's `cases.jsonl` (Section 2.5, "No aggregate
@@ -246,13 +246,18 @@ def render_report_markdown(report: dict) -> str:
     return "\n".join(lines)
 
 
-def render_failed_cases_markdown(results: list[CaseRunResult]) -> str:
+def render_runner_failures_markdown(results: list[CaseRunResult]) -> str:
+    """Pipeline breakage only — a timeout, a client error, or a `system_error`/
+    `source_unavailable` response status. This is deliberately narrower than "the
+    answer was wrong": a case with `predicted_label != expected_result` but a clean
+    HTTP 200 (a misclassification, not a runner failure) belongs in
+    `misclassified_cases.md` instead, not here."""
     failed = [
         result
         for result in results
         if result.timed_out or result.error or result.response_status in {"system_error", "source_unavailable"}
     ]
-    lines = ["# Failed and timed-out cases", ""]
+    lines = ["# Runner failures (timeouts, errors, unavailable sources)", ""]
     if not failed:
         lines.append("None.")
         return "\n".join(lines)
@@ -262,6 +267,60 @@ def render_failed_cases_markdown(results: list[CaseRunResult]) -> str:
             f"http={result.http_status} timed_out={result.timed_out} "
             f"error={result.error!r} duration_ms={result.duration_ms}"
         )
+    return "\n".join(lines)
+
+
+def render_misclassified_cases_markdown(results: list[CaseRunResult], dataset: GoldDataset) -> str:
+    """Every case where `predicted_label != expected_result` — a classification
+    error on a case the runner completed cleanly (HTTP 200, no timeout). Distinct
+    from `runner_failures.md` (pipeline breakage) and from atomic-fact or citation
+    quality on a *correctly* classified case (see `scoring_worksheet.json`).
+
+    False positives on deliberately-unsupported cases — a definitive `supported`
+    answer where the gold set says the corpus cannot answer — are listed first and
+    separately: that is the failure mode invariant 4 (fail closed; abstain when
+    evidence is absent) exists to prevent, and it must not be buried among ordinary
+    recall misses."""
+    questions = {case.case_id: case.question for case in dataset.cases}
+    mismatched = [result for result in results if result.predicted_label != result.expected_result]
+    false_positives = sorted(
+        (result for result in mismatched if result.expected_result == "unsupported"),
+        key=lambda result: result.case_id,
+    )
+    other_mismatches = sorted(
+        (result for result in mismatched if result.expected_result == "supported"),
+        key=lambda result: result.case_id,
+    )
+
+    def _entry(result: CaseRunResult) -> str:
+        return (
+            f"- `{result.case_id}` [{result.category}] expected=`{result.expected_result}` "
+            f"predicted=`{result.predicted_label}` response_status=`{result.response_status}` "
+            f"citations={len(result.citations)} duration_ms={result.duration_ms}\n"
+            f"  question: {questions.get(result.case_id, '')}"
+        )
+
+    lines = [
+        "# Misclassified cases",
+        "",
+        "Cases where `predicted_label != expected_result`. Excludes runner failures "
+        "(see `runner_failures.md`) and provisional atomic-fact/citation scoring on "
+        "correctly classified cases (see `scoring_worksheet.json`).",
+        "",
+        f"## False positives on unsupported cases ({len(false_positives)})",
+        "",
+        "A definitive `supported` answer on a case the gold set says the corpus "
+        "cannot answer. The safety-critical category; listed first regardless of count.",
+        "",
+    ]
+    lines.append("None." if not false_positives else "\n".join(_entry(result) for result in false_positives))
+    lines += [
+        "",
+        f"## Other misclassifications ({len(other_mismatches)})",
+        "",
+    ]
+    lines.append("None." if not other_mismatches else "\n".join(_entry(result) for result in other_mismatches))
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -290,4 +349,7 @@ def write_run_directory(
     (run_dir / "scoring_worksheet.json").write_text(
         json.dumps(worksheet, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
     )
-    (run_dir / "failed_cases.md").write_text(render_failed_cases_markdown(results), encoding="utf-8")
+    (run_dir / "runner_failures.md").write_text(render_runner_failures_markdown(results), encoding="utf-8")
+    (run_dir / "misclassified_cases.md").write_text(
+        render_misclassified_cases_markdown(results, dataset), encoding="utf-8"
+    )
