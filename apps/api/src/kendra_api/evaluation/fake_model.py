@@ -31,7 +31,22 @@ from kendra_api.evaluation.client import EvaluationClient
 from kendra_api.evaluation.models import GoldDataset
 from kendra_api.main import create_app
 
-SCRIPT_BUCKETS = ("good", "bad", "timeout", "malformed")
+# Weighted cycle rather than an even 4-way split: a run where a quarter of all cases
+# hang until the timeout fires would make even the hermetic tier needlessly slow.
+# 60% good, 20% bad, 10% timeout, 10% malformed — still guarantees every bucket
+# appears at least once across the 50-case gold set.
+SCRIPT_BUCKETS = (
+    "good",
+    "good",
+    "good",
+    "bad",
+    "good",
+    "good",
+    "bad",
+    "timeout",
+    "good",
+    "malformed",
+)
 
 
 @dataclass(frozen=True, slots=True)

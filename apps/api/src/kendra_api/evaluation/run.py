@@ -54,13 +54,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--seed", type=int, default=None, help="defaults to a random seed, recorded in run_config.json"
     )
-    parser.add_argument("--request-timeout-seconds", type=float, default=150.0)
+    parser.add_argument(
+        "--request-timeout-seconds",
+        type=float,
+        default=None,
+        help="default: 150s live, 1s with --fake-model (the scripted timeout bucket hangs 2.5s)",
+    )
     parser.add_argument(
         "--fake-model",
         action="store_true",
         help="fully hermetic in-process run against a scripted model; skips live preflight",
     )
-    parser.add_argument("--fake-model-hang-seconds", type=float, default=1.0)
+    parser.add_argument("--fake-model-hang-seconds", type=float, default=2.5)
     parser.add_argument(
         "--output-root", type=Path, default=None, help="defaults to <repo-root>/evaluation/runs/M12-gold"
     )
@@ -115,13 +120,16 @@ async def _amain(args: argparse.Namespace) -> int:
     seed = args.seed if args.seed is not None else random.SystemRandom().randint(0, 2**31 - 1)
     ordered_cases = list(dataset.cases)
     random.Random(seed).shuffle(ordered_cases)
+    request_timeout_seconds = args.request_timeout_seconds
+    if request_timeout_seconds is None:
+        request_timeout_seconds = 1.0 if args.fake_model else 150.0
 
     ollama_client: httpx.AsyncClient | None = None
     try:
         if args.fake_model:
             client, _audit_sink = build_fake_evaluation_client(
                 dataset,
-                request_timeout_seconds=args.request_timeout_seconds,
+                request_timeout_seconds=request_timeout_seconds,
                 hang_seconds=args.fake_model_hang_seconds,
             )
             health_body = {
@@ -133,7 +141,7 @@ async def _amain(args: argparse.Namespace) -> int:
                 "retrieval_score_threshold": None,
             }
         else:
-            client = http_evaluation_client(args.api_base, timeout_seconds=args.request_timeout_seconds)
+            client = http_evaluation_client(args.api_base, timeout_seconds=request_timeout_seconds)
             try:
                 health_body = await check_api_health(client.raw)
                 ollama_client = httpx.AsyncClient(base_url=args.ollama_base.rstrip("/"), timeout=10.0)
