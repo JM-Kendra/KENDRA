@@ -110,6 +110,20 @@ async def test_report_is_provisional_and_never_claims_acceptance(tmp_path):
     assert report["metrics"]["atomic_fact_scoring"]["fact_false_positive"] is None
 
 
+async def test_fake_model_report_markdown_is_unmistakably_labeled_fake(tmp_path):
+    """A --fake-model report.json/report.md must never be readable as a real
+    answering-quality result — the human-readable file is the one that gets pasted
+    around, so the label has to live there, not just in run_config.json."""
+    run_dir = await _run_fake_model(tmp_path)
+
+    report = json.loads((run_dir / "report.json").read_text())
+    assert report["fake_model"] is True
+
+    markdown = (run_dir / "report.md").read_text()
+    assert "FAKE-MODEL RUN" in markdown
+    assert "not a real answering result" in markdown
+
+
 async def test_scored_worksheet_overrides_provisional_fact_scores(tmp_path):
     first_run_dir = await _run_fake_model(tmp_path / "first", seed=7)
     worksheet = json.loads((first_run_dir / "scoring_worksheet.json").read_text())

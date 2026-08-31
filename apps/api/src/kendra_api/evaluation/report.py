@@ -62,6 +62,11 @@ def build_report(
         "phase": config.phase,
         "timestamp_utc": config.timestamp_utc,
         "evaluation_run_id": config.evaluation_run_id,
+        # Whether this run hit a real API at all. A --fake-model run answers every
+        # case from a scripted model and says nothing about answering quality — only
+        # that the reporting pipeline itself works. Surfaced prominently in
+        # report.md rather than left to be inferred from answer_model=="fake-model".
+        "fake_model": config.fake_model,
         "category_counts": category_counts,
         "attempted_counts": attempted_counts,
         "timeout_count": score["response_time"]["timeout_count"],
@@ -120,6 +125,17 @@ def render_report_markdown(report: dict) -> str:
     lines = [
         f"# Milestone 12 gold evaluation — {report['phase']} run",
         "",
+    ]
+    if report.get("fake_model"):
+        lines += [
+            "> **FAKE-MODEL RUN — not a real answering result.** Every case below was "
+            "answered by an in-process scripted model on a fixed right/wrong/timeout/"
+            "malformed schedule, exercised through the real API and audit code path. "
+            "These numbers validate that the reporting pipeline works. They say "
+            "nothing about answering quality and must not be read as one.",
+            "",
+        ]
+    lines += [
         f"- dataset: `{report['dataset_id']}` sha256 `{report['dataset_sha256']}`"
         f" (status: `{report['dataset_status']}`)",
         f"- source revision: `{report['source_revision']}`"
@@ -140,6 +156,12 @@ def render_report_markdown(report: dict) -> str:
         f" {classification['supported_recall']} · F1: {classification['supported_f1']}",
         f"- TP {classification['true_positive']} / FN {classification['false_negative']}"
         f" / FP {classification['false_positive']} / TN {classification['true_negative']}",
+        "- predicted label: `supported` iff the response status was exactly "
+        "`supported`; every other status — `insufficient_evidence`, "
+        "`conflicting_evidence`, `source_unavailable`, `system_error`, or a client "
+        "timeout — counts as predicted `unsupported` here. That is coarser than "
+        "'unsupported rejection' below: a timeout counts as a correct classification "
+        "on an unsupported case, but not as a safe rejection.",
         "",
         f"## Atomic-fact scoring ({facts['status']})",
         f"- matching method: {facts['matching_method']}",
@@ -168,6 +190,10 @@ def render_report_markdown(report: dict) -> str:
         f" · max: {latency['max_ms']} ms",
         f"- timeouts: {metrics['response_time']['timeout_count']}"
         f" · failed: {metrics['response_time']['failed_count']}",
+        "- 'timeouts' is a subset of 'failed', not an addition to it: 'failed' counts "
+        "every case with a `system_error`/`source_unavailable` status, a client "
+        "error, or a timeout — timeouts are one way a case can fail, not a separate "
+        "problem count on top.",
         "",
     ]
     return "\n".join(lines)
