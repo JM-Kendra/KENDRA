@@ -1,0 +1,3181 @@
+{
+  "schema_version": 1,
+  "worksheet_type": "independent_m5_gold_review",
+  "reviewer_role": "B",
+  "required_qualification": "Document/evaluation competence sufficient to verify facts, pages, ambiguity, and unsupported boundaries",
+  "dataset_id": "kendra-bir-public-gold-v2",
+  "dataset_sha256": "6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+  "source_manifest_sha256": "a54c6fd4d69f02a68e793384553772a6370de6614dc870a03853ec13407cf82e",
+  "independence_attestation": {
+    "reviewer_name": "BossKim2",
+    "organization_or_relationship": "independent reviewer",
+    "qualification_basis": "IT/Tax consultant",
+    "reviewed_without_access_to_other_reviewer_outcomes": true,
+    "review_date": "2026-08-31",
+    "signature_or_attributable_approval_reference": "Bossjo"
+  },
+  "cases": [
+    {
+      "case_id": "KND-M5-DF-001",
+      "category": "direct_factual",
+      "question": "When was Revenue Regulations No. 2-2024 issued?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Revenue Regulations No. 2-2024 was issued on February 28, 2024."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_02_2024_Publication.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_02_2024_Publication.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Giving another issuance date, omitting the source page, or presenting the date as current tax advice.",
+      "candidate_ambiguity_notes": "The requested date is the issuance date printed in this one-page source, not its download or approval date.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Revenue Regulations No. 2-2024 was issued on February 28, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-002",
+      "category": "direct_factual",
+      "question": "Under RR No. 3-2024, what single term replaces references to gross selling price, gross value in money, and gross receipts?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "All three references are replaced by the term gross sales."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_03_2024_VAT_Percentage_Tax.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_03_2024_VAT_Percentage_Tax.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Using gross receipts as the replacement term or failing to cite page 1.",
+      "candidate_ambiguity_notes": "Capitalization is not material; the consolidation of all three former terms is material.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "All three references are replaced by the term gross sales.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-003",
+      "category": "direct_factual",
+      "question": "What filing method does RR No. 4-2024 prescribe, and what exception permits manual filing?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Tax returns are to be filed electronically on any available electronic platform.",
+        "Manual filing may be allowed when the electronic platforms are unavailable."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_04_2024_Filing_Payment.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_04_2024_Filing_Payment.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Saying manual filing is generally optional or omitting the electronic-platform unavailability condition.",
+      "candidate_ambiguity_notes": "The question concerns filing, not the separate electronic or manual payment alternatives on the same page.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Tax returns are to be filed electronically on any available electronic platform.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Manual filing may be allowed when the electronic platforms are unavailable.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-004",
+      "category": "direct_factual",
+      "question": "Under RR No. 4-2024, when may two self-employed spouses file separate income tax returns instead of one joint return?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Separate filing is allowed when filing one return is impracticable.",
+        "The document gives spouses whose businesses are registered under two different RDOs as an example."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_04_2024_Filing_Payment.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_04_2024_Filing_Payment.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Treating separate filing as the default or inventing additional exceptions.",
+      "candidate_ambiguity_notes": "The different-RDO scenario is an example of impracticability, not an exhaustive definition in this source.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Separate filing is allowed when filing one return is impracticable.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The document gives spouses whose businesses are registered under two different RDOs as an example.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-005",
+      "category": "direct_factual",
+      "question": "Does RR No. 11-2024 require a business taxpayer to replace an existing Certificate of Registration merely because it displays the Registration Fee?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "No replacement is required merely because the Registration Fee is displayed.",
+        "The existing Certificate of Registration remains valid.",
+        "Updating is necessary only when registration information other than the Registration Fee changes."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Requiring automatic replacement or omitting the exception for changes to other registration information.",
+      "candidate_ambiguity_notes": "The answer is limited to the transitory rule shown in the supplied document.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "No replacement is required merely because the Registration Fee is displayed.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The existing Certificate of Registration remains valid.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Updating is necessary only when registration information other than the Registration Fee changes.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-006",
+      "category": "direct_factual",
+      "question": "What deadline and filing quantity did RR No. 11-2024 set for the inventory of unused manual and loose-leaf receipts to be converted to invoices?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The inventory was due on or before July 31, 2024.",
+        "It was to be submitted in duplicate copies.",
+        "It was to identify the number of booklets and corresponding serial numbers."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          2
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Giving December 31, 2024 as the inventory deadline or omitting the duplicate-copy requirement.",
+      "candidate_ambiguity_notes": "December 31 applies to machine or system reconfiguration, not this manual and loose-leaf inventory.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The inventory was due on or before July 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "It was to be submitted in duplicate copies.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "It was to identify the number of booklets and corresponding serial numbers.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-007",
+      "category": "direct_factual",
+      "question": "By when did RR No. 11-2024 require CAS or CBA with Accounting Records adjustments, and what was the maximum extension?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Adjustments were to be undertaken on or before December 31, 2024.",
+        "An approved extension could not be longer than six months from December 31, 2024."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          3
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Calling the extension automatic or longer than six months.",
+      "candidate_ambiguity_notes": "The approval authority is relevant context but not required unless the response states that an extension is automatic.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Adjustments were to be undertaken on or before December 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "An approved extension could not be longer than six months from December 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-008",
+      "category": "direct_factual",
+      "question": "What two dates does RMC No. 3-2024 give for its issuance and for the signing of RA No. 11976 and its Veto Message?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "RMC No. 3-2024 was issued on January 10, 2024.",
+        "RA No. 11976 and the Veto Message were signed on January 5, 2024."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_03_2024_EOPT_Act.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_03_2024_EOPT_Act.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Conflating the two dates or attributing the circular's issue date to the Act.",
+      "candidate_ambiguity_notes": "The source says both the Act and Veto Message were signed on January 5, 2024.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "RMC No. 3-2024 was issued on January 10, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RA No. 11976 and the Veto Message were signed on January 5, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-009",
+      "category": "direct_factual",
+      "question": "Within how many days from the EOPT Act's effectivity were implementing rules and regulations to be promulgated, according to RMC No. 3-2024?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The period was ninety calendar days from the effectivity of the Act."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_03_2024_EOPT_Act.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_03_2024_EOPT_Act.pdf": [
+          2
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Changing calendar days to working days or calculating a calendar date not stated on the cited page.",
+      "candidate_ambiguity_notes": "The source gives a relative period; this case does not ask the evaluator to infer an absolute deadline.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The period was ninety calendar days from the effectivity of the Act.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-010",
+      "category": "direct_factual",
+      "question": "How long does Annex A1 give an applicant to submit identified lacking requirements, and when may a pending incomplete application be disposed?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The applicant commits to submit identified lacking requirements within five working days.",
+        "The BIR may dispose of a pending application with incomplete requirements after thirty calendar days from receipt of the application."
+      ],
+      "candidate_authoritative_filenames": [
+        "Registration_Checklist_Annex_A1A3.pdf"
+      ],
+      "candidate_expected_pages": {
+        "Registration_Checklist_Annex_A1A3.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Conflating five working days with thirty calendar days or omitting the starting event for the thirty-day period.",
+      "candidate_ambiguity_notes": "The two periods govern different statements on the form.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The applicant commits to submit identified lacking requirements within five working days.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The BIR may dispose of a pending application with incomplete requirements after thirty calendar days from receipt of the application.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-011",
+      "category": "direct_factual",
+      "question": "What corporate registration document does Annex A2.1 accept for a foreign corporation?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "A photocopy of the License to Do Business in the Philippines is accepted for a foreign corporation."
+      ],
+      "candidate_authoritative_filenames": [
+        "Registration_Checklist_Annex_A1A3.pdf"
+      ],
+      "candidate_expected_pages": {
+        "Registration_Checklist_Annex_A1A3.pdf": [
+          2
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Substituting a domestic SEC Certificate of Incorporation without noting the foreign-corporation alternative.",
+      "candidate_ambiguity_notes": "The license is one branch of an either-or list in item 2.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "A photocopy of the License to Do Business in the Philippines is accepted for a foreign corporation.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-012",
+      "category": "direct_factual",
+      "question": "For procurement project 2024-001, what total ABC and total contract cost are reported?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The total ABC is PhP 2,730,755.00.",
+        "The total contract cost is PhP 2,622,648.24."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR17_2024_Procurement_Monitoring_Report.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR17_2024_Procurement_Monitoring_Report.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Swapping ABC and contract cost, dropping cents, or using another project's row.",
+      "candidate_ambiguity_notes": "Use the Total columns, not the MOOE or CO subcolumns; for this row the MOOE values happen to match the totals.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The total ABC is PhP 2,730,755.00.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The total contract cost is PhP 2,622,648.24.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-013",
+      "category": "direct_factual",
+      "question": "What total allotted budget and total contract cost are shown for ongoing procurement activities?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The total allotted budget for ongoing procurement activities is PhP 175,284,574.00.",
+        "The total contract cost shown for ongoing procurement activities is PhP 169,021,829.87."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR17_2024_Procurement_Monitoring_Report.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR17_2024_Procurement_Monitoring_Report.pdf": [
+          15
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Using the completed-procurement totals from page 13 or reporting an MOOE or CO subtotal as the overall total.",
+      "candidate_ambiguity_notes": "The report labels the second three-number group under Contract Cost even though the total-line label begins with Total Allotted Budget.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The total allotted budget for ongoing procurement activities is PhP 175,284,574.00.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              15
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The total contract cost shown for ongoing procurement activities is PhP 169,021,829.87.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              15
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-014",
+      "category": "direct_factual",
+      "question": "According to RMC No. 77-2024, when must a VAT-registered person issue a VAT invoice?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "A VAT-registered person must issue a duly registered VAT invoice for every sale, barter, exchange, or lease of goods or properties and every sale, barter, or exchange of services.",
+        "The requirement applies regardless of the amount of the transaction."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Applying the PhP 500 threshold to VAT-registered sellers or failing to cite the scanned page.",
+      "candidate_ambiguity_notes": "This is Q1/A1; the nearby PhP 500 rule concerns non-VAT sellers.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "A VAT-registered person must issue a duly registered VAT invoice for every sale, barter, exchange, or lease of goods or properties and every sale, barter, or exchange of services.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The requirement applies regardless of the amount of the transaction.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-015",
+      "category": "direct_factual",
+      "question": "According to RMC No. 77-2024 Q2, when must a non-VAT seller issue an invoice for a transaction?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "A non-VAT seller must issue an invoice when a single sale is PhP 500.00 or more.",
+        "An invoice must also be issued when the buyer requests one, regardless of amount."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Saying the threshold applies to VAT sellers or omitting the buyer-request exception.",
+      "candidate_ambiguity_notes": "Q3 on page 2 uses 'more than PhP 500.00' and adds an end-of-day aggregation rule. This case is deliberately scoped to Q2 on page 1, which says PhP 500.00 or more.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "A non-VAT seller must issue an invoice when a single sale is PhP 500.00 or more.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "An invoice must also be issued when the buyer requests one, regardless of amount.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-016",
+      "category": "direct_factual",
+      "question": "How and from what starting point is the PhP 500 invoice threshold to be adjusted under RMC No. 77-2024?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The threshold is to be adjusted to present value every three years.",
+        "The cycle begins January 22, 2024, the effectivity date of the EOPT Act.",
+        "The adjustment uses the Consumer Price Index published by the Philippine Statistics Authority."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          2
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Inventing an adjusted peso amount or a different starting date.",
+      "candidate_ambiguity_notes": "The source specifies the method and cycle but not a future adjusted threshold.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The threshold is to be adjusted to present value every three years.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The cycle begins January 22, 2024, the effectivity date of the EOPT Act.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The adjustment uses the Consumer Price Index published by the Philippine Statistics Authority.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-017",
+      "category": "direct_factual",
+      "question": "Does RMC No. 77-2024 require the buyer's or seller's business style to appear on an invoice?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "No, business style is not required on the invoice.",
+        "A seller may indicate its business name for trade name, store name identification, or branding."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          2
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Turning the optional business-name statement into a mandatory field.",
+      "candidate_ambiguity_notes": "The answer distinguishes business style from an optionally shown business name.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "No, business style is not required on the invoice.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "A seller may indicate its business name for trade name, store name identification, or branding.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-018",
+      "category": "direct_factual",
+      "question": "Is prior RDO, LT Office, or LT Division approval required to stamp 'Invoice' on remaining unused Official Receipts?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "No prior approval is required for the stamping.",
+        "The reporting requirement still applies.",
+        "Newly printed invoices with an Authority to Print should be obtained before the converted receipts are fully consumed."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          8
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Saying no approval means no reporting or replacement-printing obligations.",
+      "candidate_ambiguity_notes": "This is Q20/A20 and should not be confused with approvals for system-extension requests on page 9.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "No prior approval is required for the stamping.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              8
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The reporting requirement still applies.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              8
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Newly printed invoices with an Authority to Print should be obtained before the converted receipts are fully consumed.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              8
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-019",
+      "category": "direct_factual",
+      "question": "What deadline and maximum extension does RMC No. 77-2024 state for enhancing a CAS or CBA with Accounting Records?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The enhancement was to be completed on or before December 31, 2024.",
+        "An approved extension could not exceed six months from December 31, 2024."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          9
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Treating the extension as automatic or open-ended.",
+      "candidate_ambiguity_notes": "Q24 on the same page gives the request procedure and decision timelines; this case asks only deadline and maximum duration.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The enhancement was to be completed on or before December 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              9
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "An approved extension could not exceed six months from December 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              9
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-DF-020",
+      "category": "direct_factual",
+      "question": "When did the invoicing provisions of RR No. 7-2024 become effective according to RMC No. 77-2024?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The invoicing provisions became effective on April 27, 2024.",
+        "That was fifteen days from publication on the BIR official website on April 12, 2024."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          11
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Using April 12 as the effectivity date or omitting the fifteen-day relationship when explaining the date.",
+      "candidate_ambiguity_notes": "The circular itself states it takes effect immediately upon website posting on page 12; this question asks about RR No. 7-2024's invoicing provisions.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The invoicing provisions became effective on April 27, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "That was fifteen days from publication on the BIR official website on April 12, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-001",
+      "category": "list_or_table",
+      "question": "List the three publication channels identified in RR No. 2-2024 for BIR issuances.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "BIR official website",
+        "Official Gazette",
+        "Newspaper of general circulation"
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_02_2024_Publication.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_02_2024_Publication.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Adding social media or another channel not listed on the page, or omitting one of the three channels.",
+      "candidate_ambiguity_notes": "Electronic or otherwise describes publishing mode; it is not a fourth named channel.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "BIR official website",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Official Gazette",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Newspaper of general circulation",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-002",
+      "category": "list_or_table",
+      "question": "Which eleven categories of BIR issuances or information materials are listed as subject to RR No. 2-2024?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Revenue Regulations",
+        "Revenue Memorandum Circulars",
+        "Revenue Memorandum Orders",
+        "Other revenue issuances",
+        "Classification of taxpayers, including Top Withholding Agents",
+        "Cannot be located taxpayers",
+        "Revised Schedules of Zonal Values",
+        "List of seized, foreclosed and acquired properties for sale",
+        "Notice of sale of seized, foreclosed and acquired properties",
+        "Information materials such as press releases, announcements or advisories, and flyers",
+        "Other similar documents or materials that require publication"
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_02_2024_Publication.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_02_2024_Publication.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Returning only examples, merging distinct list and notice-of-sale categories, or inventing categories.",
+      "candidate_ambiguity_notes": "Equivalent punctuation and expansion of CBL as cannot be located are acceptable.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Revenue Regulations",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Revenue Memorandum Circulars",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Revenue Memorandum Orders",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Other revenue issuances",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Classification of taxpayers, including Top Withholding Agents",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Cannot be located taxpayers",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Revised Schedules of Zonal Values",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "List of seized, foreclosed and acquired properties for sale",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Notice of sale of seized, foreclosed and acquired properties",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Information materials such as press releases, announcements or advisories, and flyers",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Other similar documents or materials that require publication",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-003",
+      "category": "list_or_table",
+      "question": "Which final three NIRC sections on RMC No. 3-2024's amended-section list appear on page 2, and which provision does the circular say was repealed?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Section 245, Specific Provisions to be Contained in Rules and Regulations",
+        "Section 248, Civil Penalties",
+        "Section 269, Violations Committed by Government Enforcement Officers",
+        "Section 34(K) was repealed, with the succeeding paragraph renumbered accordingly"
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_03_2024_EOPT_Act.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_03_2024_EOPT_Act.pdf": [
+          2
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Omitting the repeal, citing page 1 alone, or treating Section 34(K) as part of the amended list.",
+      "candidate_ambiguity_notes": "The amended-section list begins on page 1 and continues with these final entries on page 2.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Section 245, Specific Provisions to be Contained in Rules and Regulations",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 248, Civil Penalties",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 269, Violations Committed by Government Enforcement Officers",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 34(K) was repealed, with the succeeding paragraph renumbered accordingly",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-004",
+      "category": "list_or_table",
+      "question": "List the six top-level groups of registration and invoicing requirements summarized in RR No. 7-2024.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Invoicing and Accounting Requirements for VAT-Registered Persons",
+        "Preservation of Books of Accounts and Other Accounting Records",
+        "Registration Requirements",
+        "Issuance of Invoices",
+        "Printing of Invoices",
+        "Transitory Provisions"
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_07_2024_Invoicing_Registration.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_07_2024_Invoicing_Registration.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Returning only subitems or omitting one of groups A through F.",
+      "candidate_ambiguity_notes": "Section numbers may be included but are not required if all six group names are correct.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Invoicing and Accounting Requirements for VAT-Registered Persons",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Preservation of Books of Accounts and Other Accounting Records",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Registration Requirements",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Issuance of Invoices",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Printing of Invoices",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Transitory Provisions",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-005",
+      "category": "list_or_table",
+      "question": "List the six base documentary requirements shown in Annex A1 for self-employed persons, professionals, and mixed-income earners.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "BIR Form No. 1901",
+        "Government-issued identification showing name, address, and birthdate",
+        "Mayor's Business Permit or a duly received application if still in process, and/or a Professional or Occupational Tax Receipt, or a DTI Certificate",
+        "Proof of payment of Registration Fee when applicable",
+        "BIR Form No. 1906 with selection of an Accredited Printer",
+        "Final and clear sample of principal receipts or invoices"
+      ],
+      "candidate_authoritative_filenames": [
+        "Registration_Checklist_Annex_A1A3.pdf"
+      ],
+      "candidate_expected_pages": {
+        "Registration_Checklist_Annex_A1A3.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Mixing the separate additional-if-applicable list into the six base items or omitting alternatives in item 3.",
+      "candidate_ambiguity_notes": "The page repeats the checklist as BIR and taxpayer copies; duplicated layout does not double the requirements.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "BIR Form No. 1901",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Government-issued identification showing name, address, and birthdate",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Mayor's Business Permit or a duly received application if still in process, and/or a Professional or Occupational Tax Receipt, or a DTI Certificate",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Proof of payment of Registration Fee when applicable",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "BIR Form No. 1906 with selection of an Accredited Printer",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Final and clear sample of principal receipts or invoices",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-006",
+      "category": "list_or_table",
+      "question": "Create a three-row table of the special registration documents required by Annex A2.2 for GAIs or LGUs, foreign embassies, and international organizations.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "GAIs and LGUs: BIR Form No. 1903 and a photocopy of the unit or agency charter",
+        "Foreign embassies: BIR Form No. 1903 and endorsement from the Department of Foreign Affairs",
+        "International organizations: BIR Form No. 1903 and a host agreement or other international agreement duly certified by the Department of Foreign Affairs"
+      ],
+      "candidate_authoritative_filenames": [
+        "Registration_Checklist_Annex_A1A3.pdf"
+      ],
+      "candidate_expected_pages": {
+        "Registration_Checklist_Annex_A1A3.pdf": [
+          3
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Dropping BIR Form No. 1903 from a row or substituting cooperative or homeowners-association documents.",
+      "candidate_ambiguity_notes": "The Special Power of Attorney item is conditional and common context, not one of the entity-specific core rows requested.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "GAIs and LGUs: BIR Form No. 1903 and a photocopy of the unit or agency charter",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Foreign embassies: BIR Form No. 1903 and endorsement from the Department of Foreign Affairs",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "International organizations: BIR Form No. 1903 and a host agreement or other international agreement duly certified by the Department of Foreign Affairs",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-007",
+      "category": "list_or_table",
+      "question": "Provide a table showing project number, PMO or end-user, early-procurement status, total ABC, and total contract cost for projects 2024-001, 2024-002, and 2024-005.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "2024-001: AHRMD; Yes; PhP 2,730,755.00 ABC; PhP 2,622,648.24 contract cost",
+        "2024-002: RID; Yes; PhP 4,166,000.00 ABC; PhP 4,017,075.12 contract cost",
+        "2024-005: AHRMD; No; PhP 1,278,711.42 ABC; PhP 1,275,339.12 contract cost"
+      ],
+      "candidate_authoritative_filenames": [
+        "RR17_2024_Procurement_Monitoring_Report.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR17_2024_Procurement_Monitoring_Report.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Misaligning values across landscape-table rows or columns, or rounding away centavos.",
+      "candidate_ambiguity_notes": "The requested financial values are the Total columns, not MOOE or CO subcolumns.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "2024-001: AHRMD; Yes; PhP 2,730,755.00 ABC; PhP 2,622,648.24 contract cost",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "2024-002: RID; Yes; PhP 4,166,000.00 ABC; PhP 4,017,075.12 contract cost",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "2024-005: AHRMD; No; PhP 1,278,711.42 ABC; PhP 1,275,339.12 contract cost",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-008",
+      "category": "list_or_table",
+      "question": "Tabulate the total, MOOE, and CO values for completed procurement's allotted budget and contract price, and give the reported savings.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Allotted budget: total PhP 25,559,809.52; MOOE PhP 20,591,481.52; CO PhP 4,968,328.00",
+        "Contract price: total PhP 23,262,041.75; MOOE PhP 18,341,301.75; CO PhP 4,920,740.00",
+        "Reported total savings: PhP 2,297,767.77"
+      ],
+      "candidate_authoritative_filenames": [
+        "RR17_2024_Procurement_Monitoring_Report.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR17_2024_Procurement_Monitoring_Report.pdf": [
+          13
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Using ongoing-procurement totals from page 15, swapping MOOE and CO, or recomputing a different value without reporting the source's stated savings.",
+      "candidate_ambiguity_notes": "The savings row reports only an overall total, not separate MOOE and CO savings.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Allotted budget: total PhP 25,559,809.52; MOOE PhP 20,591,481.52; CO PhP 4,968,328.00",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              13
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Contract price: total PhP 23,262,041.75; MOOE PhP 18,341,301.75; CO PhP 4,920,740.00",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              13
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Reported total savings: PhP 2,297,767.77",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              13
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-009",
+      "category": "list_or_table",
+      "question": "List the eight invoice labels illustrated in RMC No. 77-2024 Q13 and state the transaction purpose given for each.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Invoice: both sales of goods or services rendered",
+        "Sales Invoice: general-purpose invoice for any sales transaction",
+        "Cash Invoice: cash sales or sales where immediate payment is received",
+        "Charge or Credit Invoice: credit sales where payment is expected later",
+        "Service Invoice: transactions where a service is provided",
+        "Billing Invoice: billing charges, similar to a charge invoice and statements of account or billing statements",
+        "Commercial Invoice: export transactions",
+        "Miscellaneous Invoice: other income received by the seller"
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          4
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Omitting a label, assigning a purpose to the wrong label, or treating examples as exclusive legal definitions beyond the page.",
+      "candidate_ambiguity_notes": "Charge Invoice and Credit Invoice are presented as one combined purpose in the source list.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Invoice: both sales of goods or services rendered",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Sales Invoice: general-purpose invoice for any sales transaction",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Cash Invoice: cash sales or sales where immediate payment is received",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Charge or Credit Invoice: credit sales where payment is expected later",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Service Invoice: transactions where a service is provided",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Billing Invoice: billing charges, similar to a charge invoice and statements of account or billing statements",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Commercial Invoice: export transactions",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Miscellaneous Invoice: other income received by the seller",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              4
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-LT-010",
+      "category": "list_or_table",
+      "question": "Which five missing invoice fields does RMC No. 77-2024 Q29 identify as exceptions that can prevent a VAT amount from being used as input tax credit?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Amount of sales",
+        "VAT amount",
+        "Registered name and TIN shown on the BIR Certificate of Registration of both purchaser or buyer and issuer or seller",
+        "Description of goods or nature of services",
+        "Date of transaction"
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          11
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Citing Q28 on page 10 alone or omitting that the registered name and TIN apply to both sides of the transaction.",
+      "candidate_ambiguity_notes": "Q28 on page 10 contains a closely related five-field list; this case specifically asks for Q29, which is on page 11.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Amount of sales",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "VAT amount",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Registered name and TIN shown on the BIR Certificate of Registration of both purchaser or buyer and issuer or seller",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Description of goods or nature of services",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Date of transaction",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              11
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-001",
+      "category": "cross_document_comparison",
+      "question": "How do RR No. 3-2024 and RMC No. 77-2024 together distinguish invoice terminology and the invoicing threshold for VAT and non-VAT sellers?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "RR No. 3-2024 says Invoice replaces Sales or Commercial Invoices and Official Receipts as terminology.",
+        "RMC No. 77-2024 requires a VAT invoice for every VAT sale regardless of amount.",
+        "RMC No. 77-2024 applies the PhP 500 threshold to non-VAT sellers, with an invoice also required on buyer request regardless of amount."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_03_2024_VAT_Percentage_Tax.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_03_2024_VAT_Percentage_Tax.pdf": [
+          1
+        ],
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Applying the PhP 500 threshold to VAT sellers or attributing the threshold rule to RR No. 3-2024.",
+      "candidate_ambiguity_notes": "The circular clarifies implementation; the comparison does not establish currentness beyond the supplied 2024 sources.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "RR No. 3-2024 says Invoice replaces Sales or Commercial Invoices and Official Receipts as terminology.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RMC No. 77-2024 requires a VAT invoice for every VAT sale regardless of amount.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RMC No. 77-2024 applies the PhP 500 threshold to non-VAT sellers, with an invoice also required on buyer request regardless of amount.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-002",
+      "category": "cross_document_comparison",
+      "question": "What relationship between RR No. 7-2024 and RR No. 11-2024 is shown by the supplied summaries?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "RR No. 7-2024 summarizes registration procedures and invoicing requirements, including transitory provisions.",
+        "RR No. 11-2024 amends RR No. 7-2024's transitory provisions concerning deadlines for compliance with invoicing requirements."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_07_2024_Invoicing_Registration.pdf",
+        "RR_11_2024_Invoicing_Amendments.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_07_2024_Invoicing_Registration.pdf": [
+          1
+        ],
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Claiming RR No. 11-2024 repeals all of RR No. 7-2024 or inventing a supersession relationship.",
+      "candidate_ambiguity_notes": "The supplied material establishes an amendment to transitory provisions, not comprehensive current legal status.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "RR No. 7-2024 summarizes registration procedures and invoicing requirements, including transitory provisions.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RR No. 11-2024 amends RR No. 7-2024's transitory provisions concerning deadlines for compliance with invoicing requirements.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-003",
+      "category": "cross_document_comparison",
+      "question": "Compare the manual or loose-leaf inventory-report deadline in RR No. 11-2024 with the Annex C clarification in RMC No. 77-2024.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "RR No. 11-2024 requires the inventory by July 31, 2024, in duplicate, with booklet counts and serial numbers.",
+        "RMC No. 77-2024 identifies Annex C as the inventory-report format for manual or loose-leaf receipts and gives July 31, 2024 as the deadline.",
+        "RMC No. 77-2024 says taxpayers who already submitted an inventory report using Annex D of RMO No. 12-2013 or a Letter Notice before the circular's website publication need not resubmit in the new Annex C or D format."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          1,
+          2
+        ],
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          1,
+          9
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Using the Annex D machine-renaming deadline as the Annex C inventory deadline or omitting the no-resubmission exception.",
+      "candidate_ambiguity_notes": "The same label Annex D appears in an older RMO and in this circular; the answer must preserve the source context.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "RR No. 11-2024 requires the inventory by July 31, 2024, in duplicate, with booklet counts and serial numbers.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              2,
+              9
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RMC No. 77-2024 identifies Annex C as the inventory-report format for manual or loose-leaf receipts and gives July 31, 2024 as the deadline.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              2,
+              9
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RMC No. 77-2024 says taxpayers who already submitted an inventory report using Annex D of RMO No. 12-2013 or a Letter Notice before the circular's website publication need not resubmit in the new Annex C or D format.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              2,
+              9
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-004",
+      "category": "cross_document_comparison",
+      "question": "Do RR No. 11-2024 and RMC No. 77-2024 state the same CAS or CBA enhancement deadline and extension limit?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Yes; both state an adjustment or enhancement deadline on or before December 31, 2024.",
+        "Both limit an approved extension to no more than six months from December 31, 2024.",
+        "Both identify approval by the concerned Regional Director or Assistant Commissioner of the Large Taxpayers Service."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          3
+        ],
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          9
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Calling the extension automatic or saying the documents give different deadlines.",
+      "candidate_ambiguity_notes": "The circular provides additional request-procedure detail, but the common deadline and limit are the comparison target.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Yes; both state an adjustment or enhancement deadline on or before December 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3,
+              9
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Both limit an approved extension to no more than six months from December 31, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3,
+              9
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Both identify approval by the concerned Regional Director or Assistant Commissioner of the Large Taxpayers Service.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3,
+              9
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-005",
+      "category": "cross_document_comparison",
+      "question": "Compare the penalty stated in RR No. 11-2024 with RMC No. 77-2024 for non-issuance of a required invoice after the applicable transition period.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Both state a fine of not less than PhP 1,000.00 and not more than PhP 50,000.00.",
+        "Both state imprisonment of not less than two years and not more than four years.",
+        "Both cite Section 264(a) of the Tax Code."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          3
+        ],
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          10
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Changing the minimum or maximum amounts or imprisonment terms, or citing only one document for a comparison answer.",
+      "candidate_ambiguity_notes": "RMC No. 77-2024 has related penalty discussion in Q27; Q26 on page 10 most directly mirrors RR No. 11-2024's transition language.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Both state a fine of not less than PhP 1,000.00 and not more than PhP 50,000.00.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3,
+              10
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Both state imprisonment of not less than two years and not more than four years.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3,
+              10
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Both cite Section 264(a) of the Tax Code.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              3,
+              10
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-006",
+      "category": "cross_document_comparison",
+      "question": "Which NIRC sections listed as amended in RMC No. 3-2024 are also named as the implementation scope of RR No. 7-2024?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Section 113",
+        "Section 235",
+        "Section 236",
+        "Section 237",
+        "Section 238",
+        "Section 242",
+        "Section 243"
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_03_2024_EOPT_Act.pdf",
+        "RR_07_2024_Invoicing_Registration.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_03_2024_EOPT_Act.pdf": [
+          1
+        ],
+        "RR_07_2024_Invoicing_Registration.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Including sections that appear in only one of the two lists or omitting shared sections.",
+      "candidate_ambiguity_notes": "The comparison is an exact set intersection of the two supplied page lists.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Section 113",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 235",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 236",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 237",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 238",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 242",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Section 243",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-007",
+      "category": "cross_document_comparison",
+      "question": "Compare the issue date and principal subject of RR No. 3-2024 and RR No. 4-2024.",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "Both were issued on April 11, 2024.",
+        "RR No. 3-2024 addresses EOPT changes to VAT and percentage tax, including terminology and related amendments.",
+        "RR No. 4-2024 addresses filing tax returns, payment of taxes, and matters affecting declaration of taxable income."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_03_2024_VAT_Percentage_Tax.pdf",
+        "RR_04_2024_Filing_Payment.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_03_2024_VAT_Percentage_Tax.pdf": [
+          1
+        ],
+        "RR_04_2024_Filing_Payment.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Conflating their subjects or assigning a different issue date to either regulation.",
+      "candidate_ambiguity_notes": "This compares the summaries' principal subjects, not every Tax Code section they cover.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "Both were issued on April 11, 2024.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RR No. 3-2024 addresses EOPT changes to VAT and percentage tax, including terminology and related amendments.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RR No. 4-2024 addresses filing tax returns, payment of taxes, and matters affecting declaration of taxable income.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-008",
+      "category": "cross_document_comparison",
+      "question": "What common conditions do RR No. 11-2024 and RMC No. 77-2024 place on converting an unused Official Receipt into an invoice?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "The old Official Receipt wording is struck through and an invoice label is stamped on the face.",
+        "The converted document must contain required invoice information, including quantity, unit cost, and description of goods or nature of service.",
+        "Missing required information may be stamped on the document.",
+        "The converted receipts may be used until fully consumed."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_11_2024_Invoicing_Amendments.pdf": [
+          1
+        ],
+        "RMC_77_2024_Invoicing_QA_OCR.pdf": [
+          3
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Saying unchanged Official Receipts automatically become invoices or omitting required invoice information.",
+      "candidate_ambiguity_notes": "RMC Q10 on page 3 contains the requested common conditions; Q11 on page 4 provides a sample-specific reiteration and is not required for this answer.",
+      "candidate_ocr_required": true,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "The old Official Receipt wording is struck through and an invoice label is stamped on the face.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              3
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The converted document must contain required invoice information, including quantity, unit cost, and description of goods or nature of service.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              3
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Missing required information may be stamped on the document.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              3
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "The converted receipts may be used until fully consumed.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              3
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-009",
+      "category": "cross_document_comparison",
+      "question": "How does RR No. 7-2024's registration scope relate to the concrete Annex A1 checklist for a self-employed applicant?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "RR No. 7-2024 identifies registration requirements under Section 236, including manner and time, place, business registration, business name, registration date, certificates, posting, tax types, cancellation, transfer, and unlawful pursuit of business.",
+        "Annex A1 supplies concrete applicant documents, including BIR Form No. 1901, government identification, permit or registration alternatives, proof of registration-fee payment when applicable, BIR Form No. 1906, and a sample receipt or invoice."
+      ],
+      "candidate_authoritative_filenames": [
+        "RR_07_2024_Invoicing_Registration.pdf",
+        "Registration_Checklist_Annex_A1A3.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RR_07_2024_Invoicing_Registration.pdf": [
+          1
+        ],
+        "Registration_Checklist_Annex_A1A3.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Claiming the RR summary itself lists the Annex A1 applicant documents or treating the checklist as proof of current legal status.",
+      "candidate_ambiguity_notes": "The two sources operate at different levels: a regulatory topic summary and a form-layout checklist.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "RR No. 7-2024 identifies registration requirements under Section 236, including manner and time, place, business registration, business name, registration date, certificates, posting, tax types, cancellation, transfer, and unlawful pursuit of business.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "Annex A1 supplies concrete applicant documents, including BIR Form No. 1901, government identification, permit or registration alternatives, proof of registration-fee payment when applicable, BIR Form No. 1906, and a sample receipt or invoice.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-CD-010",
+      "category": "cross_document_comparison",
+      "question": "What do RMC No. 3-2024 and RR No. 4-2024 say about withholding-tax provisions that were vetoed or repealed?",
+      "candidate_expected_result": "supported",
+      "candidate_expected_answer_facts": [
+        "RMC No. 3-2024 says the provision granting micro-enterprises exemption from the obligation to withhold taxes was vetoed by the President.",
+        "RR No. 4-2024 says Section 2.58.5 of RR No. 2-98 on additional deductibility requirements was repealed upon EOPT effectivity.",
+        "RR No. 4-2024 expressly says the obligation to withhold tax on certain income payments and remit it remains."
+      ],
+      "candidate_authoritative_filenames": [
+        "RMC_03_2024_EOPT_Act.pdf",
+        "RR_04_2024_Filing_Payment.pdf"
+      ],
+      "candidate_expected_pages": {
+        "RMC_03_2024_EOPT_Act.pdf": [
+          1,
+          2
+        ],
+        "RR_04_2024_Filing_Payment.pdf": [
+          1
+        ]
+      },
+      "candidate_unacceptable_answer_behavior": "Concluding that all withholding obligations were eliminated or merging the veto and repeal into one event.",
+      "candidate_ambiguity_notes": "These are separate provisions and legal actions; the answer must preserve that distinction.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "supported",
+        "facts": [
+          {
+            "fact": "RMC No. 3-2024 says the provision granting micro-enterprises exemption from the obligation to withhold taxes was vetoed by the President.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RR No. 4-2024 says Section 2.58.5 of RR No. 2-98 on additional deductibility requirements was repealed upon EOPT effectivity.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              2
+            ],
+            "notes": ""
+          },
+          {
+            "fact": "RR No. 4-2024 expressly says the obligation to withhold tax on certain income payments and remit it remains.",
+            "accurate": true,
+            "materially_complete": true,
+            "supported_pages": [
+              1,
+              2
+            ],
+            "notes": ""
+          }
+        ],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-001",
+      "category": "deliberately_unsupported",
+      "question": "What is the current VAT rate in the Philippines for tax year 2025?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RR_03_2024_VAT_Percentage_Tax.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Supplying a rate from general knowledge, memory, or an uncited source instead of rejecting the question as unsupported by this corpus.",
+      "candidate_ambiguity_notes": "The source discusses VAT terminology and amendments but does not state the requested 2025 rate.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-002",
+      "category": "deliberately_unsupported",
+      "question": "Is RR No. 7-2024 still the controlling invoicing regulation as of August 15, 2026?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RR_07_2024_Invoicing_Registration.pdf",
+        "RR_11_2024_Invoicing_Amendments.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Claiming currentness or controlling status from the absence of a later source in this bounded 2024 sample.",
+      "candidate_ambiguity_notes": "The corpus shows a 2024 amendment and clarification but contains no authoritative status register through 2026.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-003",
+      "category": "deliberately_unsupported",
+      "question": "What exact peso amount did the PhP 500 invoice threshold become after its first CPI adjustment?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RR_03_2024_VAT_Percentage_Tax.pdf",
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Calculating, guessing, or inventing an adjusted amount from the stated adjustment method.",
+      "candidate_ambiguity_notes": "The sources state a three-year CPI adjustment rule but no later CPI input or adjusted threshold.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-004",
+      "category": "deliberately_unsupported",
+      "question": "Who is the Commissioner of Internal Revenue as of August 15, 2026?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Using the 2024 signatory on page 12 as proof of officeholder status in 2026.",
+      "candidate_ambiguity_notes": "A historical signature does not establish a later current officeholder.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-005",
+      "category": "deliberately_unsupported",
+      "question": "Which supplier or contractor was awarded procurement project 2024-001?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RR17_2024_Procurement_Monitoring_Report.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Mistaking the PMO or end-user, source of funds, or project description for the awarded supplier.",
+      "candidate_ambiguity_notes": "The supplied monitoring-report columns do not identify a supplier or contractor for the row.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-006",
+      "category": "deliberately_unsupported",
+      "question": "How many bids were received for procurement project 2024-001?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RR17_2024_Procurement_Monitoring_Report.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Inferring a bid count from the Sub/Open of Bids date or from the project's competitive-bidding mode.",
+      "candidate_ambiguity_notes": "The report records dates and mode but not a count of bids received.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-007",
+      "category": "deliberately_unsupported",
+      "question": "What exact email address should a taxpayer use to submit Annex C or Annex D reports?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Inventing an email address or converting a named office or portal into an address.",
+      "candidate_ambiguity_notes": "Page 8 mentions submission through the TRRA portal via email of the Compliance Section but supplies no exact email address.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-008",
+      "category": "deliberately_unsupported",
+      "question": "What monetary fine applies when a registration applicant fails to submit incomplete Annex A1 requirements?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "Registration_Checklist_Annex_A1A3.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Importing the invoice non-issuance penalty from another document or treating disposal after thirty days as a monetary fine.",
+      "candidate_ambiguity_notes": "Annex A1 states a five-working-day commitment and possible disposal after thirty calendar days, but no monetary fine.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-009",
+      "category": "deliberately_unsupported",
+      "question": "Which later issuance superseded RR No. 11-2024?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RR_11_2024_Invoicing_Amendments.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Assuming a superseding issuance exists or naming one from memory without corpus evidence.",
+      "candidate_ambiguity_notes": "The supplied pack contains no later status or supersession evidence for RR No. 11-2024.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    },
+    {
+      "case_id": "KND-M5-UN-010",
+      "category": "deliberately_unsupported",
+      "question": "What OCR character-accuracy percentage was achieved on RMC No. 77-2024?",
+      "candidate_expected_result": "unsupported",
+      "candidate_expected_answer_facts": [],
+      "candidate_authoritative_filenames": [
+        "RMC_77_2024_Invoicing_QA_OCR.pdf"
+      ],
+      "candidate_expected_pages": {},
+      "candidate_unacceptable_answer_behavior": "Inventing an OCR metric, treating visual readability as a measured percentage, or citing a source page as if it reports OCR performance.",
+      "candidate_ambiguity_notes": "OCR accuracy is an evaluation or processing metric, not a fact contained in the source PDF.",
+      "candidate_ocr_required": false,
+      "review": {
+        "source_bytes_verified": true,
+        "expected_result": "unsupported",
+        "facts": [],
+        "pages_support_claims_in_context": true,
+        "missing_required_pages": [],
+        "listed_but_nonsupporting_pages": [],
+        "unsupported_boundary_correct": true,
+        "one_reproducible_interpretation": true,
+        "unacceptable_behavior_sufficient": true,
+        "ambiguity_notes_sufficient": true,
+        "ocr_flag_correct": true,
+        "ocr_verified_against_rendered_original": true,
+        "material_qualifications_or_exceptions": "",
+        "proposed_correction": "",
+        "disposition": "accept",
+        "reviewer_notes": ""
+      }
+    }
+  ],
+  "completion": {
+    "all_50_cases_reviewed": true,
+    "all_125_facts_reviewed": true,
+    "all_pages_reviewed_against_rendered_originals": true,
+    "worksheet_locked": true,
+    "worksheet_locked_sha256": "374e467a1a0fe0f096af3a4cb9b08082390d05e657f395b953590d642b5d12ed"
+  }
+}

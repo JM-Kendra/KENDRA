@@ -1,0 +1,681 @@
+{
+  "schema_version": 1,
+  "worksheet_type": "m5_gold_adjudication",
+  "dataset_id": "kendra-bir-public-gold-v2",
+  "dataset_sha256": "6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+  "source_manifest_sha256": "a54c6fd4d69f02a68e793384553772a6370de6614dc870a03853ec13407cf82e",
+  "reviewer_a_locked_worksheet_sha256": "12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+  "reviewer_b_locked_worksheet_sha256": "6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da",
+  "adjudicator": {
+    "name": "Boss Kim",
+    "authority_basis": "Kendra project owner authorization in current Codex chat after both independent reviewer worksheets were locked",
+    "decision_date": "2026-08-31",
+    "signature_or_attributable_approval_reference": "Current Codex chat instruction: proceed"
+  },
+  "mandatory_boundary_calls": {
+    "mf_01_materiality_and_effect": "No material OCR-substitution correction is required for the adjudicated v2 dataset. OCR-required cases remain accepted as visually verified by the locked worksheets.",
+    "document_identifier_page_scope": "Accept v2 page-array corrections that include physical page 1 for document identity where needed while preserving substantive claim support on the listed source pages. No v3 page-scope correction is required.",
+    "sf_01_independent_observer_is_separate_gate": true
+  },
+  "cases": [
+    {
+      "case_id": "KND-M5-DF-001",
+      "reviewers_agree": false,
+      "disagreement": "Reviewer B marked OCR visual verification true on a non-OCR case while Reviewer A left the field null/N/A. Both reviewers accepted the case, the fact, page support, OCR flag, ambiguity note, and unacceptable-behavior boundary.",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "The OCR visual-verification difference is nonmaterial bookkeeping for a non-OCR case; the adjudicated OCR requirement remains false."
+    },
+    {
+      "case_id": "KND-M5-DF-002",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-003",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-004",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-005",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-006",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-007",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-008",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-009",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-010",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-011",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-012",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-013",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-014",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-015",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-016",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-017",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-018",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-019",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-DF-020",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-001",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-002",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-003",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-004",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-005",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-006",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-007",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-008",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-009",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-LT-010",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-001",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-002",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-003",
+      "reviewers_agree": false,
+      "disagreement": "Both reviewers accepted the case. Reviewer A entered fact-level page numbers at the per-source granularity; Reviewer B entered the confirmed candidate page set for each accepted fact under the paper-transcription rule. Both confirmed no missing or nonsupporting pages.",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "The page-entry granularity difference does not require v3 because the frozen case-level page arrays are accepted by both reviewers as sufficient and supported in context."
+    },
+    {
+      "case_id": "KND-M5-CD-004",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-005",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-006",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-007",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-008",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-009",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-CD-010",
+      "reviewers_agree": false,
+      "disagreement": "Reviewer A review.expected_result is unsupported, but Reviewer A also marked all three facts accurate and complete, pages supporting claims in context, no missing or nonsupporting pages, and disposition accept. Reviewer B marked the result supported and disposition accept. The frozen candidate result is supported.",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "No dataset correction; adjudication resolves the reviewed result as supported.",
+      "rationale": "The internally inconsistent Reviewer A result field is resolved in favor of the frozen supported candidate because both reviewers accepted the case and facts, and Reviewer B matched the candidate result."
+    },
+    {
+      "case_id": "KND-M5-UN-001",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-002",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-003",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-004",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-005",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-006",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-007",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-008",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-009",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    },
+    {
+      "case_id": "KND-M5-UN-010",
+      "reviewers_agree": true,
+      "disagreement": "",
+      "evidence_considered": [
+        "Frozen dataset SHA-256 6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+        "Reviewer A worksheet SHA-256 12ad4b8a00b4f00b32f8a61ebddbbc929b8ef206a4ad92aefe2b7e7beb671359",
+        "Reviewer B worksheet SHA-256 6d65793bbc13f91ac55248581780d628c91d6cd5119ce78a09c01575d13f37da"
+      ],
+      "adjudicated_disposition": "accept",
+      "adjudicated_correction": "",
+      "rationale": "Both locked reviewers accepted the frozen candidate case without correction."
+    }
+  ],
+  "outcome": {
+    "accepted_cases": 50,
+    "rejected_cases": 0,
+    "excluded_cases": 0,
+    "revised_cases": 0,
+    "promoted_dataset_id": "kendra-bir-public-gold-v2",
+    "promoted_dataset_sha256": "6aace5184c6778cad8c0d1972d83c99b6d3837355064ecc88dc941d86bab8f86",
+    "status": "adjudicated_approved"
+  }
+}
