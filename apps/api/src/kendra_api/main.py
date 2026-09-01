@@ -64,6 +64,7 @@ def _attach_answering(application: FastAPI, settings: Settings) -> None:
         base_url=str(settings.ollama_url),
         model=settings.answer_model,
         timeout_seconds=settings.answer_timeout_seconds,
+        seed=settings.model_seed,
     )
     application.state.document_store = LocalDocumentStore(settings.document_store_root)
 

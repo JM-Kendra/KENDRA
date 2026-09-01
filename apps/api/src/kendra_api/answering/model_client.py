@@ -58,15 +58,27 @@ def render_evidence(evidence: list[Evidence]) -> str:
     return "\n".join(blocks)
 
 
+# EXP-11 finding (evaluation/M12_FINDINGS.md part (f)): with no explicit num_ctx,
+# Ollama silently served this deployment's requests at its own built-in default
+# (measured at 4096 tokens on kendra-ollama-1, against the model's trained
+# 32768). All 7 EXP-11 candidate prompts measured at up to 2,920 tokens -- under
+# both 4096 and this value -- but a future request with more or larger
+# retrieved chunks could cross an unset default without warning. Set explicitly
+# so the deployment's actual limit is a recorded decision, not a fallback.
+ANSWER_NUM_CTX = 8192
+
+
 class OllamaAnswerModel:
     def __init__(
         self,
         base_url: str,
         model: str,
         timeout_seconds: int = 120,
+        seed: int = 0,
         client: httpx.AsyncClient | None = None,
     ) -> None:
         self._model = model
+        self._seed = seed
         self._client = client or httpx.AsyncClient(
             base_url=base_url.rstrip("/"), timeout=timeout_seconds
         )
@@ -84,7 +96,11 @@ class OllamaAnswerModel:
                 "prompt": prompt,
                 "stream": False,
                 "format": "json",
-                "options": {"temperature": 0},
+                "options": {
+                    "temperature": 0,
+                    "num_ctx": ANSWER_NUM_CTX,
+                    "seed": self._seed,
+                },
             },
         )
         response.raise_for_status()

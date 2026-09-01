@@ -29,6 +29,12 @@ services:
 
   ollama:
     image: ollama/ollama:0.32.0
+    environment:
+      # Unset, this falls back to Ollama's own built-in default (measured at
+      # 4096 tokens, well under qwen2.5:7b-instruct's trained 32768 --
+      # evaluation/M12_FINDINGS.md part (f)). Matches ANSWER_NUM_CTX in
+      # apps/api/src/kendra_api/answering/model_client.py.
+      OLLAMA_CONTEXT_LENGTH: "8192"
     volumes:
       - ollama_data:/root/.ollama
     deploy:

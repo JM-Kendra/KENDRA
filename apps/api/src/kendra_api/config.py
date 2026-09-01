@@ -65,6 +65,11 @@ class Settings(BaseSettings):
     answer_timeout_seconds: int = Field(default=120, gt=0, le=3600)
     retrieval_top_k: int = Field(default=8, ge=1, le=100)
     retrieval_score_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    # EXP-11 finding (evaluation/M12_FINDINGS.md part (f)): temperature 0 alone
+    # does not guarantee reproducible generation. A fixed seed narrows this
+    # further; identical across every arm of a model comparison, it becomes a
+    # controlled variable rather than an unrecorded source of variance.
+    model_seed: int = Field(default=0)
 
     @field_validator("document_store_root")
     @classmethod
