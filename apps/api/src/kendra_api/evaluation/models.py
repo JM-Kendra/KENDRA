@@ -89,3 +89,8 @@ class RunConfig:
     fake_model: bool
     evaluation_run_id: str
     timestamp_utc: str
+    # docs/incidents/INC-001-ghost-evaluation-runs.md: True only when
+    # --allow-revision-mismatch overrode a detected source_revision mismatch
+    # against `git rev-parse HEAD`. False (the default) also covers --fake-model
+    # runs, which never perform this check at all.
+    source_revision_mismatch_overridden: bool = False

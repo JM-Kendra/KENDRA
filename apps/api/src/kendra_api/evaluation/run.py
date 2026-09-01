@@ -29,9 +29,20 @@ import httpx
 from kendra_api.evaluation.client import EvaluationClient, http_evaluation_client
 from kendra_api.evaluation.dataset import load_and_validate_dataset
 from kendra_api.evaluation.fake_model import build_fake_evaluation_client
+from kendra_api.evaluation.lock import RunLock, RunLockHeld
 from kendra_api.evaluation.models import CaseRunResult, GoldCase, PreflightError, RunConfig
-from kendra_api.evaluation.preflight import check_api_health, check_ollama_has_models
-from kendra_api.evaluation.report import apply_scored_worksheet, build_report, write_run_directory
+from kendra_api.evaluation.preflight import (
+    check_api_health,
+    check_ollama_has_models,
+    check_source_revision_matches_head,
+)
+from kendra_api.evaluation.report import (
+    append_case_result,
+    apply_scored_worksheet,
+    build_report,
+    finalize_run_directory,
+    initialize_run_directory,
+)
 from kendra_api.evaluation.scoring import predicted_label
 
 # `evaluation/gold_cases.json`, dataset `kendra-bir-public-gold-v2`, per M12_BRIEF.md
@@ -76,6 +87,31 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         ),
     )
     parser.add_argument(
+        "--allow-revision-mismatch",
+        action="store_true",
+        help=(
+            "override the preflight gate that otherwise refuses to run when "
+            "/api/v1/health's source_revision does not equal 'git rev-parse HEAD' "
+            "at --repo-root (docs/incidents/INC-001-ghost-evaluation-runs.md); "
+            "recorded as source_revision_mismatch_overridden in the run's report, "
+            "not silently accepted"
+        ),
+    )
+    parser.add_argument(
+        "--lock-path",
+        type=Path,
+        default=None,
+        help=(
+            "run-lock file path; refuses to start if it already exists, removed "
+            "on a clean exit only. Defaults to <repo-root>/evaluation/runs/.lock"
+        ),
+    )
+    parser.add_argument(
+        "--container-name",
+        default=None,
+        help="recorded in the lock file; defaults to kendra-eval-<evaluation-run-id>",
+    )
+    parser.add_argument(
         "--output-root", type=Path, default=None, help="defaults to <repo-root>/evaluation/runs/M12-gold"
     )
     parser.add_argument(
@@ -118,6 +154,20 @@ async def _amain(args: argparse.Namespace) -> int:
     dataset_path = args.dataset or (repo_root / "evaluation" / "gold_cases.json")
     output_root = args.output_root or (repo_root / "evaluation" / "runs" / "M12-gold")
 
+    # Lock acquired before anything else, including dataset validation --
+    # docs/incidents/INC-001-ghost-evaluation-runs.md: two invocations of this
+    # same runner overlapped, unnoticed, against the same live API and the same
+    # question_audit table. A second invocation must refuse to start, loudly,
+    # the moment it's attempted -- not after doing other work first.
+    evaluation_run_id = f"eval-{uuid.uuid4()}"
+    lock_path = args.lock_path or (repo_root / "evaluation" / "runs" / ".lock")
+    container_name = args.container_name or f"kendra-eval-{evaluation_run_id}"
+    try:
+        lock = RunLock.acquire(lock_path, run_id=evaluation_run_id, container_name=container_name)
+    except RunLockHeld as exc:
+        print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
+        return 1
+
     try:
         dataset = load_and_validate_dataset(
             dataset_path=dataset_path,
@@ -128,7 +178,6 @@ async def _amain(args: argparse.Namespace) -> int:
         print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
         return 1
 
-    evaluation_run_id = f"eval-{uuid.uuid4()}"
     seed = args.seed if args.seed is not None else random.SystemRandom().randint(0, 2**31 - 1)
     ordered_cases = list(dataset.cases)
     random.Random(seed).shuffle(ordered_cases)
@@ -137,6 +186,7 @@ async def _amain(args: argparse.Namespace) -> int:
         request_timeout_seconds = 1.0 if args.fake_model else 150.0
 
     ollama_client: httpx.AsyncClient | None = None
+    revision_mismatch_overridden = False
     try:
         if args.fake_model:
             client, _audit_sink = build_fake_evaluation_client(
@@ -164,35 +214,53 @@ async def _amain(args: argparse.Namespace) -> int:
                     answer_model=health_body.get("answer_model", ""),
                     embedding_model=health_body.get("embedding_model", ""),
                 )
+                revision_mismatch_overridden = check_source_revision_matches_head(
+                    health_body,
+                    repo_root=repo_root,
+                    allow_mismatch=args.allow_revision_mismatch,
+                )
             except PreflightError as exc:
                 print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
                 await client.aclose()
                 return 1
 
-        results = [await _run_case(client, case, evaluation_run_id) for case in ordered_cases]
+        timestamp = datetime.now(UTC)
+        config = RunConfig(
+            dataset_path=str(dataset_path),
+            dataset_sha256=dataset.dataset_sha256,
+            dataset_status=dataset.dataset_status,
+            source_revision=health_body.get("source_revision") or "unknown",
+            source_revision_dirty=bool(health_body.get("source_revision_dirty", False)),
+            answer_model=health_body.get("answer_model") or "unknown",
+            embedding_model=health_body.get("embedding_model") or "unknown",
+            retrieval_top_k=health_body.get("retrieval_top_k"),
+            retrieval_score_threshold=health_body.get("retrieval_score_threshold"),
+            seed=seed,
+            phase=args.phase,
+            api_base="in-process-fake-model" if args.fake_model else args.api_base,
+            fake_model=args.fake_model,
+            evaluation_run_id=evaluation_run_id,
+            timestamp_utc=timestamp.isoformat(),
+            source_revision_mismatch_overridden=revision_mismatch_overridden,
+        )
+        short_sha = config.source_revision[:8] if config.source_revision != "unknown" else "unknownrev"
+        run_dir = output_root / f"{timestamp.strftime('%Y%m%dT%H%M%SZ')}-{short_sha}"
+        # Written now, before the first case is asked -- not batched to the end.
+        # docs/incidents/INC-001-ghost-evaluation-runs.md: a run (or an unnoticed
+        # duplicate of one) that only produces output at completion is invisible
+        # to anyone checking the host-mounted directory while it's in progress.
+        initialize_run_directory(run_dir=run_dir, config=config)
+
+        results: list[CaseRunResult] = []
+        for case in ordered_cases:
+            result = await _run_case(client, case, evaluation_run_id)
+            append_case_result(run_dir=run_dir, result=result)
+            results.append(result)
+
         await client.aclose()
     finally:
         if ollama_client is not None:
             await ollama_client.aclose()
-
-    timestamp = datetime.now(UTC)
-    config = RunConfig(
-        dataset_path=str(dataset_path),
-        dataset_sha256=dataset.dataset_sha256,
-        dataset_status=dataset.dataset_status,
-        source_revision=health_body.get("source_revision") or "unknown",
-        source_revision_dirty=bool(health_body.get("source_revision_dirty", False)),
-        answer_model=health_body.get("answer_model") or "unknown",
-        embedding_model=health_body.get("embedding_model") or "unknown",
-        retrieval_top_k=health_body.get("retrieval_top_k"),
-        retrieval_score_threshold=health_body.get("retrieval_score_threshold"),
-        seed=seed,
-        phase=args.phase,
-        api_base="in-process-fake-model" if args.fake_model else args.api_base,
-        fake_model=args.fake_model,
-        evaluation_run_id=evaluation_run_id,
-        timestamp_utc=timestamp.isoformat(),
-    )
 
     report, worksheet = build_report(dataset=dataset, results=results, config=config)
     if args.scored_worksheet:
@@ -200,15 +268,8 @@ async def _amain(args: argparse.Namespace) -> int:
         report = apply_scored_worksheet(report, reviewed_worksheet)
         worksheet = reviewed_worksheet
 
-    short_sha = config.source_revision[:8] if config.source_revision != "unknown" else "unknownrev"
-    run_dir = output_root / f"{timestamp.strftime('%Y%m%dT%H%M%SZ')}-{short_sha}"
-    write_run_directory(
-        run_dir=run_dir,
-        config=config,
-        dataset=dataset,
-        results=results,
-        report=report,
-        worksheet=worksheet,
+    finalize_run_directory(
+        run_dir=run_dir, dataset=dataset, results=results, report=report, worksheet=worksheet
     )
 
     print(f"wrote {run_dir}")
@@ -217,6 +278,10 @@ async def _amain(args: argparse.Namespace) -> int:
         f"attempted={report['metrics']['attempted_case_count']} "
         f"timeouts={report['timeout_count']}"
     )
+    # Clean exit only -- a crash or a killed process leaves the lock in place on
+    # purpose, so the next invocation's acquire() surfaces exactly the failure
+    # this module exists to catch.
+    lock.release()
     return 0
 
 

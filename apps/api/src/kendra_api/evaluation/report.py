@@ -324,24 +324,42 @@ def render_misclassified_cases_markdown(results: list[CaseRunResult], dataset: G
     return "\n".join(lines)
 
 
-def write_run_directory(
+def initialize_run_directory(*, run_dir: Path, config: RunConfig) -> None:
+    """Creates `run_dir` and writes `run_config.json` and an empty `cases.jsonl`
+    immediately -- before the first case is asked, not after the last one
+    completes. `docs/incidents/INC-001-ghost-evaluation-runs.md`: a run whose
+    output only appears at completion is invisible to anyone checking the
+    host-mounted directory while it (or an unnoticed duplicate of it) is still
+    running. `append_case_result` fills `cases.jsonl` in as each case finishes."""
+    run_dir.mkdir(parents=True, exist_ok=True)
+    (run_dir / "run_config.json").write_text(
+        json.dumps(dataclasses.asdict(config), indent=2, sort_keys=True, default=str) + "\n",
+        encoding="utf-8",
+    )
+    (run_dir / "cases.jsonl").write_text("", encoding="utf-8")
+
+
+def append_case_result(*, run_dir: Path, result: CaseRunResult) -> None:
+    """Appends one case's result to `cases.jsonl` as soon as it completes.
+    Opened and closed per call (not held open across the run) so the file is
+    always in a consistent, readable state for anyone inspecting it mid-run."""
+    with (run_dir / "cases.jsonl").open("a", encoding="utf-8") as stream:
+        stream.write(json.dumps(dataclasses.asdict(result), sort_keys=True, default=str) + "\n")
+
+
+def finalize_run_directory(
     *,
     run_dir: Path,
-    config: RunConfig,
     dataset: GoldDataset,
     results: list[CaseRunResult],
     report: dict,
     worksheet: dict,
 ) -> None:
-    run_dir.mkdir(parents=True, exist_ok=True)
-
-    (run_dir / "run_config.json").write_text(
-        json.dumps(dataclasses.asdict(config), indent=2, sort_keys=True, default=str) + "\n",
-        encoding="utf-8",
-    )
-    with (run_dir / "cases.jsonl").open("w", encoding="utf-8") as stream:
-        for result in results:
-            stream.write(json.dumps(dataclasses.asdict(result), sort_keys=True, default=str) + "\n")
+    """Writes the aggregate files that can only be computed once every case is
+    in: `report.json`, `report.md`, `scoring_worksheet.json`,
+    `runner_failures.md`, `misclassified_cases.md`. Assumes
+    `initialize_run_directory` already created `run_dir` and wrote
+    `run_config.json`/`cases.jsonl`."""
     (run_dir / "report.json").write_text(
         json.dumps(report, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8"
     )
@@ -352,4 +370,26 @@ def write_run_directory(
     (run_dir / "runner_failures.md").write_text(render_runner_failures_markdown(results), encoding="utf-8")
     (run_dir / "misclassified_cases.md").write_text(
         render_misclassified_cases_markdown(results, dataset), encoding="utf-8"
+    )
+
+
+def write_run_directory(
+    *,
+    run_dir: Path,
+    config: RunConfig,
+    dataset: GoldDataset,
+    results: list[CaseRunResult],
+    report: dict,
+    worksheet: dict,
+) -> None:
+    """Convenience wrapper over the three functions above, for a caller that
+    already has every result in hand and does not need incremental visibility
+    (e.g. a test fixture). `kendra_api.evaluation.run`'s live runner calls the
+    granular functions directly instead, so `cases.jsonl` fills in as the run
+    progresses rather than appearing only here."""
+    initialize_run_directory(run_dir=run_dir, config=config)
+    for result in results:
+        append_case_result(run_dir=run_dir, result=result)
+    finalize_run_directory(
+        run_dir=run_dir, dataset=dataset, results=results, report=report, worksheet=worksheet
     )

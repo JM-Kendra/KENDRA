@@ -4,6 +4,9 @@ results against a system that was never actually ready (Section 2.6)."""
 
 from __future__ import annotations
 
+import subprocess
+from pathlib import Path
+
 import httpx
 
 from kendra_api.evaluation.models import PreflightError
@@ -73,3 +76,45 @@ async def check_ollama_has_models(
         raise PreflightError(
             f"model(s) not present in Ollama /api/tags: {missing} (have: {sorted(names)})"
         )
+
+
+def check_source_revision_matches_head(
+    health_body: dict, *, repo_root: Path, allow_mismatch: bool
+) -> bool:
+    """`docs/incidents/INC-001-ghost-evaluation-runs.md`: a run's citations and
+    audit records are only trustworthy against the code that actually served
+    them. A stale baked `KENDRA_SOURCE_REVISION` (an image built before the
+    latest commit landed) would silently produce a run whose recorded revision
+    does not match the code the deployment is actually running.
+
+    Returns `True` if a mismatch was found and overridden (the caller should
+    record this in the run's report), `False` if the two matched cleanly.
+    Raises `PreflightError` on a mismatch unless `allow_mismatch` is set."""
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        raise PreflightError(f"could not run 'git rev-parse HEAD' at {repo_root}: {exc}") from None
+    if completed.returncode != 0:
+        raise PreflightError(
+            f"'git rev-parse HEAD' failed at {repo_root}: {completed.stderr.strip()}"
+        )
+    head = completed.stdout.strip()
+    reported = health_body.get("source_revision")
+    if reported == head:
+        return False
+    if not allow_mismatch:
+        raise PreflightError(
+            f"source_revision mismatch: /api/v1/health reports {reported!r}, but "
+            f"'git rev-parse HEAD' at {repo_root} is {head!r} -- the deployment's "
+            "baked revision does not match the current checkout, so this run's "
+            "citations/audit records would carry a stale revision. Rebuild and "
+            "recreate the deployment, or pass --allow-revision-mismatch to run "
+            "anyway (recorded in the run's report, not silently accepted)"
+        )
+    return True

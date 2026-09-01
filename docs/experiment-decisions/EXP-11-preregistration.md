@@ -29,6 +29,15 @@ unchanged** — A2 changes what "a case answered" means per Section 7's already-
 qualitative scoring rule; it does not change how many of the N qualified cases
 must be answered.
 
+**Erratum, recorded 2026-09-01** (see the end of this file, after Amendment
+A2, for its full text): Section 3's non-regression set is described as "the 36
+gold cases not in the 7-case set above and not among the 13 false negatives" —
+checked directly against `evaluation/gold_cases.json`, that description
+resolves to **27** cases, not 36 (37 total with the 10 `deliberately_unsupported`
+cases the same sentence separately includes). **Section 3's text is not edited**
+— this erratum records the discrepancy without rewording the frozen section it
+describes.
+
 **What freezing this covers, precisely.** Stage 0 (Section 4) — its mechanism,
 reproduction criterion, and classification mapping — is fully specified and its
 harness (`apps/api/src/kendra_api/evaluation/stage0.py`) is implemented and
@@ -614,3 +623,47 @@ single-pass run over the full gold set per Section 6 step 4, not a
 frozen-packet repeated trial — A2 applies only to the frozen-packet
 comparison on the 6 qualified cases). It does not select `B1_LARGER`'s pin,
 which remains open exactly as A1 left it.
+
+---
+
+## Erratum — 2026-09-01
+
+**Section 3's non-regression set size is 27, not 36. `Section 3`'s text
+itself is not edited by this erratum** — it is frozen, and this is a
+correction recorded alongside it, not a rewording of it.
+
+Section 3 states: *"Plus, unconditionally, as a non-regression check on Stage
+1: all 10 `deliberately_unsupported` cases (`KND-M5-UN-001` through
+`KND-M5-UN-010`) and the 36 gold cases not in the 7-case set above and not
+among the 13 false negatives this run's `M12_FINDINGS.md` already accounts
+for."*
+
+Checked directly against `evaluation/gold_cases.json` (50 total cases) during
+EXP-11 Stage 1's non-regression run:
+
+- 7-case candidate set (Section 3): `KND-M5-CD-004`, `CD-005`, `DF-005`,
+  `DF-008`, `DF-009`, `DF-017`, `DF-020`.
+- 6 other false negatives, excluded from both stages (Section 3):
+  `KND-M5-CD-006`, `CD-009`, `CD-010`, `DF-012`, `LT-003`, `LT-007`.
+- 10 `deliberately_unsupported` cases: `KND-M5-UN-001` through `UN-010`.
+
+`50 − 7 − 6 = 37` cases remain once the 13 (7 + 6) excluded cases are removed.
+Of those 37, 10 are the `deliberately_unsupported` cases Section 3 already
+names separately, leaving **27** — not 36 — as "the gold cases not in the
+7-case set above and not among the 13 false negatives." The non-regression
+set Section 3 actually describes is therefore **37 cases total** (10 + 27),
+not the 46 (10 + 36) its own arithmetic would suggest.
+
+**This erratum does not change what the non-regression set *is*** — Section
+3's rule ("all 10 unsupported cases, plus every other gold case not in the
+7-case or 6-case exclusion sets") is unambiguous and was applied correctly
+using the real dataset; only the frozen text's own restated count ("36") is
+wrong. EXP-11 Stage 1's non-regression check
+(`evaluation/runs/EXP-11/stage1-20260901T120327Z-221e1bcd/stage1_summary.md`)
+used the correct 37-case set, computed this way, not the frozen text's "36."
+
+**Why this is recorded as an erratum rather than corrected in place:** this
+project's rule is that frozen criteria are locked before evidence is
+examined, and Sections 1–10 may not be reworded after the freeze — including
+to fix an arithmetic error discovered afterward. The rule itself is not in
+question; only its restated count was wrong when written.

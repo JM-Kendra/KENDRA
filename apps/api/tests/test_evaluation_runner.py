@@ -66,6 +66,11 @@ async def _run_fake_model(tmp_path: Path, *, seed: int = 7, scored_worksheet: Pa
         str(tmp_path),
         "--seed",
         str(seed),
+        # Isolated per test: --repo-root is the real checkout (needed for the
+        # dataset validator), but the lock must never touch the real repo's
+        # evaluation/runs/.lock or collide across tests/parallel workers.
+        "--lock-path",
+        str(tmp_path / ".lock"),
     ]
     if scored_worksheet is not None:
         argv += ["--scored-worksheet", str(scored_worksheet)]
