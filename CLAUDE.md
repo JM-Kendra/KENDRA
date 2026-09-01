@@ -122,6 +122,12 @@ before any evidence is examined:
 - The RMC 03-2024 page-1 duplication magnitude (~34.5× Docling occurrence volume within
   the correct page) is documented but not root-caused. It no longer affects retention,
   since Docling no longer retains.
+  **Correction, 2026-09-01:** checked directly against the currently-ingested corpus's
+  `chunks` table and does not reproduce there — RMC 03-2024 page 1 has 3 chunks, page 2
+  has 2, a normal distribution with no skew. This does not root-cause or close the
+  original finding above (it was measured differently, against Docling occurrence
+  volume, not the current chunk table) and the original note is kept rather than
+  deleted. See `evaluation/M12_FINDINGS.md` part (b) for the query and how it came up.
 - No mechanism detects Poppler omitting non-digit material content (ADR-007 Section 8).
 
 Write regression tests **before** any future diagnostic returns where possible, so their

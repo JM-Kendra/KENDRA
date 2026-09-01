@@ -209,3 +209,91 @@ is superseded only by a human review of `scoring_worksheet.json` supplied back v
 `--scored-worksheet` (`apps/api/src/kendra_api/evaluation/run.py`); until that
 happens, it stays unscored, and `acceptance_claim` stays `false` on every report
 regardless of what the provisional number says.
+
+## (d) The 11 "unknown" cases: was the fact actually in the context given to the model?
+
+**How this was checked.** For each of the 11 cases tagged "unknown" in part (b),
+the real `QdrantRetriever` was invoked again (same `top_k=8`, `score_threshold=0.5`,
+read-only, generation bypassed) and the *full chunk text* of every returned
+evidence item was read — not just its document and page number, which is all part
+(b) checked. Each gold `expected_answer_facts` string was then checked against that
+concatenated text for its key strings: **present** (the fact's substance, including
+its specific figures/names, appears, allowing minor paraphrase or OCR noise),
+**partially present** (some required detail is there but a specific value is cut
+off or missing), or **absent** (not in the retrieved text at all, even though the
+correct document and/or page nominally appears per part (b)'s coarser check).
+
+**This corrects two cases from part (b).** Part (b) checked document+page presence
+only and counted `KND-M5-DF-012` and `KND-M5-LT-007` among the nine "full evidence
+present" unknowns. Reading the actual chunk text shows neither one actually
+contains the required data: both target `RR17_2024_Procurement_Monitoring_Report.pdf`,
+whose page 1 alone is split into **30 separate chunks** (checked directly against
+the `chunks` table — most pages in this corpus are 2-3 chunks; this one page has
+30, driven by how wide, sparse table rows extract to text). With only 8 evidence
+slots shared across the entire corpus, a single specific project's row on that page
+has to out-score 29 sibling chunks from the same page just to be included, and for
+both of these cases it didn't. The specific data-bearing chunk was confirmed to
+exist in the ingested corpus by querying it directly, and to be plausible for the
+question's evidence gate: full retrieval score-threshold detail is in part (b);
+this is a chunk-density problem layered on top, specific to this one wide-format
+document. Reclassified below as **facts not in context**, not "unknown, retrieval
+succeeded."
+
+### Facts in context, model abstained anyway (7 cases)
+
+| case_id | fact | status | evidence (short) |
+|---|---|---|---|
+| `KND-M5-CD-004` | adjustment/enhancement deadline ≤ Dec 31, 2024 (both docs) | present | RR 11-2024: "adjustments shall be undertaken on or before December 31, 2024"; RMC 77-2024: "before December 31, 2024 stating the reason ... for the request for extension" |
+| | extension ≤ six months from Dec 31, 2024 (both docs) | **partially present** | RR 11-2024: "shall not be longer than six (6) months from December 31, 2024" (full). RMC 77-2024's retrieved chunk starts mid-word: "...onths from December 31, 2024" — a chunk-boundary artifact cut off the word "six" itself, even though the same figure is stated in the OCR'd source |
+| | approval by Regional Director / Asst. Commissioner LTS (both docs) | present | RR 11-2024 and RMC 77-2024 both contain "approved by the concerned Regional Director or Assistant Commissioner of the Large Taxpayers Service" near-verbatim |
+| `KND-M5-CD-005` | fine PhP 1,000–50,000 (both docs) | present | RR 11-2024 and RMC 77-2024 both contain "not less than One Thousand Pesos (Php 1,000.00) but not more than Fifty Thousand Pesos (Php 50,000.00)" verbatim |
+| | imprisonment 2–4 years (both docs) | present | both contain "not less than two (2) years but not more than four (4) years" verbatim |
+| | cites Section 264(a) (both docs) | present | both contain "Section 264(a) of the Tax Code" verbatim |
+| `KND-M5-DF-005` | no COR replacement required for displayed Registration Fee | present | "not required to replace its existing BIR Certificate of Registration that displays the Registration Fee" — verbatim |
+| | existing COR remains valid | present | "The COR shall retain its validity although the Registration Fee is shown therein" — verbatim |
+| | updating needed only for non-fee changes | present | "Updating the COR is only necessary if there are changes to the registration information, excluding Registration Fee" — verbatim |
+| `KND-M5-DF-008` | RMC 3-2024 issued January 10, 2024 | present | "issued on January 10, 2024" — verbatim |
+| | RA 11976 + Veto Message signed January 5, 2024 | present | "both signed by President Ferdinand R. Marcos Jr. on January 5, 2024" — verbatim |
+| `KND-M5-DF-009` | 90 calendar days from effectivity for IRR | present | "Within ninety (90) calendar days from the effectivity of the Act ... shall promulgate the necessary rules and regulations" — verbatim, on the retrieved RMC 03-2024 p.2 chunk |
+| `KND-M5-DF-017` | business style not required on invoice | present | "Business Style of the buyer or seller is not required to be indicated in the Invoice" — verbatim |
+| | seller may indicate business name for branding | present | "the seller may indicate its business name in the Invoice for trade name or store name identification or branding purposes" — verbatim |
+| `KND-M5-DF-020` | effective April 27, 2024 | present | "effective on April 27, 2024" — verbatim |
+| | 15 days from April 12, 2024 publication | present | "fifteen (15) days from the date of publication on the BIR official website on April 12, 2024" — verbatim |
+
+All seven have every required fact's key strings sitting in the context handed to
+the model, several verbatim or near-verbatim to the gold fact string itself. These
+are the strongest evidence in this whole review that the failure is downstream of
+retrieval — in prompt construction or generation — not a content-availability
+problem.
+
+### Facts not in context (4 cases, one corrected from part (b))
+
+| case_id | fact | status | why |
+|---|---|---|---|
+| `KND-M5-CD-010` | micro-enterprise withholding exemption vetoed (RMC 3-2024) | absent | Not on the retrieved RMC 03-2024 p.1 chunk (a general summary). The sentence exists verbatim on p.2 — confirmed because `KND-M5-DF-009`'s retrieval (a differently-phrased question) independently pulled that exact p.2 chunk — but p.2 wasn't retrieved for *this* question's phrasing |
+| | RR 4-2024 §2.58.5 repeal on EOPT effectivity | absent | Retrieved RR 04-2024 p.1 chunk is only its opening summary paragraph; no mention of Section 2.58.5 |
+| | RR 4-2024: withholding obligation remains | absent | Same chunk; not present |
+| `KND-M5-DF-012` | total ABC PhP 2,730,755.00 (project 2024-001) | **absent** (corrects part (b)) | Confirmed present in the corpus at chunk `e2cd7fd1-...` (page 1, one of 30 page-1 chunks) but not among the 8 retrieved |
+| | total contract cost PhP 2,622,648.24 | **absent** (corrects part (b)) | Same chunk as above; not retrieved |
+| `KND-M5-LT-003` | Sections 245, 248, 269 (NIRC amended-list, p.2) | absent | Retrieved RMC 03-2024 chunk is p.1 only; p.2 (where this list continues) was not retrieved at all |
+| | Section 34(K) repealed | absent | Same — not on the retrieved p.1 chunk |
+| `KND-M5-LT-007` | 2024-001 / 2024-002 / 2024-005 rows (project, PMO, ABC, contract cost) | **absent** (corrects part (b)) | Retrieved evidence contains *other* projects (2024-056, 2024-200, 2024-253) and aggregate totals from the same wide table, but none of the three requested rows |
+
+### Split
+
+| | Count | Cases |
+|---|---:|---|
+| Facts in context, model abstained anyway | 7 | CD-004, CD-005, DF-005, DF-008, DF-009, DF-017, DF-020 |
+| Facts not in context | 4 | CD-010, DF-012, LT-003, LT-007 |
+
+Combined with part (b)'s verified cross-document retrieval limit (`KND-M5-CD-006`,
+`KND-M5-CD-009` — distinct from `KND-M5-CD-010`, which is in this section's
+facts-not-in-context group, not that one), the full 13 false negatives split as:
+**6 with a genuine content-availability gap** (2 cross-document-limit + 4
+facts-not-in-context) **and 7 where the model had what it needed and declined
+anyway** (2 + 4 + 7 = 13). The generation-side question raised in part (b) narrows
+accordingly: it applies specifically to `KND-M5-CD-004`, `KND-M5-CD-005`,
+`KND-M5-DF-005`, `KND-M5-DF-008`, `KND-M5-DF-009`, `KND-M5-DF-017`, and
+`KND-M5-DF-020` — not to the full 11-case "unknown" set part (b) originally
+grouped together, four of which turn out to have a content-availability
+explanation after this section's deeper check.
