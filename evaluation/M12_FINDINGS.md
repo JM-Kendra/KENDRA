@@ -355,3 +355,84 @@ parallels how EXP-03 (`docs/EXPERIMENT_PLAN.md` Section 5) originally set the
 current 1200/200 chunking policy — a change here is the same class of decision
 and needs its own preregistration, not an ad hoc edit. Neither proposal above is
 implemented, scheduled, or preregistered by this document.
+
+## (f) EXP-11 Stage 0 pre-Stage-1 truncation check (read-only)
+
+**Full report:** `evaluation/runs/EXP-11/20260901T014805Z-0bcc9dd7/truncation_check.md`
+(also copied to `~/Downloads/reports/` per the requester's instruction; both
+are outside git per the existing `/evaluation/runs/` ignore rule, same as
+`stage0_cases.jsonl`/`stage0_summary.md` in that same run directory). This
+section is a summary; the full report has the per-case reconstruction, exact
+commands, and full quoted evidence.
+
+**Why this check was run:** before EXP-11 Stage 1 (the `B0` vs `B1_LARGER`
+model comparison, gated on Stage 0's 6 `model-abstained` cases per
+`stage0_summary.md`), confirm that none of Stage 0's classifications were an
+artifact of Ollama silently truncating an oversized prompt rather than a
+genuine model decision to abstain.
+
+**`model_client.py`'s only decoding option is `temperature: 0`** — no `num_ctx`,
+`num_predict`, or `seed` is set anywhere in this codebase (confirmed by grep).
+**The effective serving context on `kendra-ollama-1` is 4096 tokens** — not
+`qwen2.5:7b-instruct`'s trained 32768 — because `OLLAMA_CONTEXT_LENGTH` is
+unset on the container and nothing in this deployment ever passes `num_ctx`;
+confirmed directly via `ollama ps` immediately after a live call (`CONTEXT
+4096`), not inferred from the model's own advertised context length.
+
+**Per-case token counts, measured exactly (not estimated)** by replaying each
+of the 7 candidate cases' evidence retrieval live (real `QdrantRetriever`,
+`top_k=8`, `score_threshold=0.5`, same corpus/source revision as Stage 0 and
+this document's part (d)), building the identical prompt `model_client.py`
+builds, and reading Ollama's own `prompt_eval_count` for it (this build of
+Ollama, 0.32.0, has no `/api/tokenize` endpoint):
+
+| case_id | evidence items | prompt tokens | of 4096-token window |
+|---|---:|---:|---:|
+| `KND-M5-CD-004` | 8 | 2,802 | 68% |
+| `KND-M5-CD-005` | 8 | 2,810 | 69% |
+| `KND-M5-DF-005` | 8 | 2,701 | 66% |
+| `KND-M5-DF-008` | 2 | 1,012 | 25% |
+| `KND-M5-DF-009` | 8 | 2,736 | 67% |
+| `KND-M5-DF-017` | 8 | 2,920 | 71% |
+| `KND-M5-DF-020` | 8 | 2,835 | 69% |
+
+**Truncation is not confirmed.** Every case sits well under the 4096-token
+window, with headroom to spare for the (short, 40–90 token) response — the
+worst case (`KND-M5-DF-017`) uses 71% of the window. This is a negative result
+specific to these 7 cases as retrieved today; it does not clear the 4096-vs-32768
+gap itself, which remains a live, undocumented configuration risk independent
+of whether it happened to bite here (a larger `top_k` or longer chunks in a
+future case could still cross it).
+
+**`docker logs kendra-ollama-1` search for "truncat" is inconclusive, not a
+clean negative.** The one hit in the entire log (`truncated = 0`, dated
+2026-08-26) predates both the M12 clean run window (`20260831T125331Z`) and
+the Stage 0 run window (`20260901T014805Z`) by days. Neither window has *any*
+log coverage — 0 lines in either `--since`/`--until` range — and the gap is
+current, not just historical: live calls made during this same check produced
+zero new log lines despite `kendra-ollama-1` responding normally. This channel
+cannot corroborate or refute truncation for either run; the token-count
+reconstruction above is the only evidence this check relies on.
+
+**A protocol deviation was found and is recorded in
+`docs/EXPERIMENT_REGISTRY.md`'s `EXP-11` row and in the run directory's
+`truncation_check.md` (Section 5):** `EXP-11-preregistration.md` Section 4's
+frozen mechanism requires Stage 0 to use a static, pinned evidence packet
+seeded from this document's own part (d) diagnostic, explicitly "no live
+Qdrant query, no live embedding call." `stage0_summary.md` (line 5) instead
+describes evidence "freshly re-fetched via the real `QdrantRetriever`" — a live
+retrieval call, not the frozen packet the preregistration specifies. Compounding
+this, no machine-readable record of part (d)'s own captured chunk IDs was ever
+persisted anywhere (this document records prose excerpts and a document/page
+table only), so the "same chunk IDs, same order" check this exercise called for
+cannot be performed against any artifact — for either part (d) or Stage 0. Page-
+and document-level results are consistent across all three independent
+retrievals (part (d)'s original diagnostic, Stage 0's re-fetch, and this
+check's own replay) for the cases spot-checked, but that is not the same claim
+as chunk-identical replay.
+
+**Bottom line:** truncation is not confirmed, so no truncation-driven
+amendment is drafted here (per this task's own conditional). The protocol
+deviation above does not concern token-window truncation and is recorded, not
+remediated, here — it is a separate methodological gap for whoever reviews
+Stage 0 before relying on it to gate Stage 1.
