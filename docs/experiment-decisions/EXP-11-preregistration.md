@@ -18,6 +18,17 @@ required by the freeze above; Amendment A1 supersedes only the specific Section
 originally covered (`20260901T014805Z-0bcc9dd7`) is marked superseded under A1
 — retained, not deleted.
 
+**Amendment A2, recorded 2026-09-01** (see the end of this file, after
+Amendment A1, for its full text): defines a three-trial repetition scheme for
+Stage 1's frozen-packet run — each of the 6 Stage-0-qualified cases, in each
+arm, is run three times, and a case counts as "answered" only if all three
+trials return `supported` with at least one valid citation. Per-arm flip rate
+(how often a case's three trials disagree) is recorded as a byproduct, not a
+scoring criterion. **Section 8's decision-rule threshold (N, N−1-of-N) is
+unchanged** — A2 changes what "a case answered" means per Section 7's already-
+qualitative scoring rule; it does not change how many of the N qualified cases
+must be answered.
+
 **What freezing this covers, precisely.** Stage 0 (Section 4) — its mechanism,
 reproduction criterion, and classification mapping — is fully specified and its
 harness (`apps/api/src/kendra_api/evaluation/stage0.py`) is implemented and
@@ -511,3 +522,95 @@ frozen-packet methodology (item 4, now partially addressed by A1(a)'s actual
 persistence mechanism but not itself a reviewer sign-off), and the local
 resource check (item 5) remain open exactly as before this amendment. Stage 1
 is not run by this amendment.
+
+---
+
+## Amendment A2 — 2026-09-01
+
+**Status:** Recorded and effective 2026-09-01. Additive only, layered on top of
+Amendment A1. **Sections 1–10 remain verbatim, unreworded.** This amendment
+adds a repetition scheme to Section 7's frozen-packet scoring; it does not
+reword Section 7's text, and **Section 8's decision rule (the N / N−1-of-N
+threshold) is unchanged in every particular** — A2 changes what counts as one
+case being "answered," not how many answered cases the threshold requires.
+
+**Why.** Section 4's own settings note (superseded in its literal wording by
+A1(b), but the underlying concern it raised is not resolved by adding a seed
+alone) already warned that "temperature 0 narrows but does not guarantee
+bit-identical output... backend/GPU floating-point nondeterminism can still
+vary a run" — and the Stage 0 rerun under A1 confirmed this empirically:
+`KND-M5-DF-017` still flipped from `insufficient_evidence` to `supported`
+under a fixed `seed: 0`. A single trial per case per arm in Stage 1 would let
+exactly this kind of flip decide the hypothesis by chance. A2 adds repetition
+to make that risk visible and to raise the bar for what counts as a genuine,
+repeatable answer, without touching the threshold that decides the hypothesis.
+
+### A2(a) — Three trials per case per arm
+
+For Stage 1's frozen-packet run (Section 6 procedure, the `B0`/`B1_LARGER`
+comparison on the Stage-0-qualified cases), **each case is run three times in
+each arm** — same persisted evidence packet (A1(a)), same question, same
+decoding settings (`temperature: 0`, `num_ctx: 8192`, `seed: 0` per A1(b)) —
+three independent `answer_question()` calls per (case, arm) pair, not a single
+call. This applies to both `B0_BASELINE` and `B1_LARGER`; A2 does not single
+out one arm for repetition and not the other, since either arm's single-trial
+result could otherwise be the one that happens to flip.
+
+### A2(b) — "Answered" requires all three trials to agree, supported, with a citation
+
+**Supersedes Section 7's "a case counts as answered only if `status ==
+'supported'` and every one of that case's `expected_answer_facts` is judged
+present" — additively: A2 does not remove the human fact-review requirement
+Section 7 already states, it adds a stricter repeatability gate in front of
+it.**
+
+A case counts as **answered**, in a given arm, only if **all three trials**
+satisfy every one of these:
+
+1. `status == "supported"`;
+2. at least one valid citation is present (checked directly against the real
+   `answer_question()` pipeline: `apps/api/src/kendra_api/answering/service.py`'s
+   `_run_pipeline` can only reach `status == "supported"` after every claim's
+   `evidence_ids` resolved against admitted evidence and
+   `CitationResolver.build()` constructed a citation from a real, registry-resolved
+   `SourceRecord` for each one — a "supported" result with zero citations is not
+   reachable through this code path, confirmed by reading the function rather
+   than assumed; this check is still recorded explicitly per trial rather than
+   inferred from status alone, since a future code change could in principle
+   decouple the two and A2 does not want that decoupling to go unnoticed);
+3. Section 7's existing human fact-review requirement (every
+   `expected_answer_facts` entry judged present in the claim text) is
+   satisfied.
+
+**Any trial that fails any of the three above** (an abstention, a conflicting-
+evidence result, a schema/gate failure, a `supported` result missing a
+required fact) makes that case **not answered** in that arm, regardless of
+the other two trials' results. A case with two `supported`-and-complete trials
+and one abstention is not answered — this is deliberately stricter than "best
+of three" or "majority of three."
+
+### A2(c) — Flip rate: recorded, not scored
+
+**Per-arm flip rate** is recorded as a byproduct for every one of the 6
+qualified cases in each arm: the fraction of that case's three trials whose
+`final_status` differs from the other trials' modal (most common) status for
+that case-arm pair (e.g., two `insufficient_evidence` + one `supported` counts
+that case as having flipped once, a flip rate of 1/3 for that case in that
+arm). An arm's overall flip rate is the mean of its 6 per-case flip rates.
+**This number does not enter the decision rule (Section 8) in any way** — it
+is reported alongside the answered/not-answered tally as context for reading
+the result, consistent with this project's practice of recording observations
+separately from the frozen scoring criteria (`stage0_summary.md`'s
+"Observations" sections use the same pattern).
+
+### What this amendment does not do
+
+It does not reword Sections 1–10 or Section 7's text, does not change the
+candidate case set (Section 3), does not change Section 8's threshold or its
+N-dependent branches, does not change the non-regression check (Section 7's
+second paragraph, Section 3's non-regression set) beyond the trial count
+implied by A2(a) not applying there (the non-regression check is a live,
+single-pass run over the full gold set per Section 6 step 4, not a
+frozen-packet repeated trial — A2 applies only to the frozen-packet
+comparison on the 6 qualified cases). It does not select `B1_LARGER`'s pin,
+which remains open exactly as A1 left it.
