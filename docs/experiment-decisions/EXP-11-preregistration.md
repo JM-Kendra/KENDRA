@@ -8,6 +8,16 @@ before evidence is examined. The pre-freeze draft remains at
 `evaluation/EXP-11_PREREG_DRAFT.md` with a pointer to this file; it is not
 deleted or redirected, so the drafting history stays visible.
 
+**Amendment A1, recorded 2026-09-01** (see the end of this file, after Section
+10, for its full text): corrects how Stage 0's evidence packets are sourced
+(a persisted, one-time-captured file set, not live retrieval on every run) and
+formalizes decoding seed as a controlled variable now that
+`OllamaAnswerModel` sends one. Sections 1–10 remain verbatim and unreworded, as
+required by the freeze above; Amendment A1 supersedes only the specific Section
+4/5 mechanism details it names, additively. The Stage 0 run this freeze
+originally covered (`20260901T014805Z-0bcc9dd7`) is marked superseded under A1
+— retained, not deleted.
+
 **What freezing this covers, precisely.** Stage 0 (Section 4) — its mechanism,
 reproduction criterion, and classification mapping — is fully specified and its
 harness (`apps/api/src/kendra_api/evaluation/stage0.py`) is implemented and
@@ -379,3 +389,125 @@ counted as any of the five classifications. If `B1_LARGER` cannot be obtained
 or run locally (model unavailable, resource exhaustion, timeout), the Stage 1
 attempt is recorded as incomplete with its cause; an incomplete run is not
 evidence for or against the hypothesis.
+
+---
+
+## Amendment A1 — 2026-09-01
+
+**Status:** Recorded and effective 2026-09-01, at the commit named in
+`docs/EXPERIMENT_REGISTRY.md`'s `EXP-11` row for this amendment. Additive only.
+**Sections 1–10 above remain verbatim, unreworded, per the freeze.** This
+amendment supersedes specific mechanism details in Sections 4 and 5 (named
+below) without editing their text, and does not touch the frozen decision rule
+(Section 8) or scoring rule (Section 7) in any way.
+
+**Why.** `evaluation/M12_FINDINGS.md` part (f) (the pre-Stage-1 truncation
+check) found that the Stage 0 run this freeze originally covered
+(`evaluation/runs/EXP-11/20260901T014805Z-0bcc9dd7/`) did not follow Section 4
+mechanism item 2 as written: instead of a static, pinned evidence packet
+captured once from `M12_FINDINGS.md` part (d)'s diagnostic, it used evidence
+"freshly re-fetched via the real `QdrantRetriever`" on each run — a live
+retrieval call, the exact thing Section 4 item 2 forbids. That check also
+found no machine-readable record of part (d)'s own captured chunks was ever
+persisted anywhere, so no chunk-identical replay could be verified against any
+artifact, for either that run or part (d) itself. This amendment closes both
+gaps going forward without rewording the sections that named the original
+(unmet) requirement.
+
+### A1(a) — Evidence packets: captured once, persisted, loaded from disk
+
+**Supersedes Section 4 mechanism item 2 and Section 5's "frozen retrieved
+evidence packet" language, which named the requirement but not a durable
+mechanism for meeting it.**
+
+Each of the 7 candidate cases' evidence (Section 3) is captured **exactly
+once** via live retrieval (real `QdrantRetriever`, `top_k=8`,
+`score_threshold=0.5`, real `bge-m3` embedder, against the
+`0bcc9dd7d0aaf7bd370e8d3eb60303a42e8ef91c` source revision) and persisted to
+`evaluation/runs/EXP-11/packets/<case_id>.json`, one file per case, containing:
+
+- `case_id`, `question`, `captured_at` (UTC timestamp of capture), `source_revision`,
+  `retrieval_config` (`top_k`, `score_threshold`, `embedding_model`);
+- `evidence`: an ordered array, each entry an `order` index (0-based, the
+  order `render_evidence()` will render and `ev-N` numbering will follow) plus
+  every field of `kendra_api.answering.models.Evidence` (`evidence_id`,
+  `text`, `document_id`, `version_id`, `filename`, `page`, `chunk_id`,
+  `source_sha256`, `processing_run_id`, `extraction_method`,
+  `generation_id`) — the full set needed to reconstruct a faithful `Evidence`
+  object and to pass real admission (`_admit` needs `version_id`), not only
+  the chunk id/text/order this amendment's own name for the file emphasizes.
+
+A `MANIFEST.sha256` file in the same directory lists each packet file's own
+SHA-256 (`sha256  filename`, one per line, sorted by filename); the **packet
+set hash** is the SHA-256 of that manifest file's exact bytes — a single value
+that changes if any packet file's content changes, is added, or is removed.
+Both are checked into the same untracked location as the packets themselves
+(see the open question below).
+
+**From this amendment forward, every Stage 0 and Stage 1 run loads evidence
+for these 7 cases exclusively from these files.** No run may call
+`QdrantRetriever.retrieve()` (or any other live Qdrant/embedding call) for
+these cases again. A run that needs to re-derive the packets (e.g., a corpus
+re-ingest) must recapture them under a new, explicitly-dated sub-amendment,
+not by quietly re-running live retrieval — the same rule Section 5 already
+applies to why the packet is frozen at all, now given an actual persistence
+mechanism.
+
+**Open question, deliberately not decided by this amendment:** the packets
+directory (`evaluation/runs/EXP-11/packets/`) sits under the existing
+`/evaluation/runs/` gitignore rule and is therefore untracked, consistent with
+every other file previously written under that path (`stage0_cases.jsonl`,
+`stage0_summary.md`). Unlike those, this packet set is now load-bearing for
+every future Stage 0/Stage 1 run rather than a single run's own output. Whether
+that warrants a `.gitignore` carve-out to track it in version control is left
+to whoever reviews this amendment — not decided here, so it isn't silently
+folded into "additive" scope beyond what was asked.
+
+### A1(b) — Decoding seed: a controlled variable, identical in both arms
+
+**Supersedes Section 4's "No model-generation seed exists to match" bullet and
+Section 5's "no seed exists to pin" parenthetical — both were accurate when
+written and are now superseded by a code change, not by new evidence about the
+old code.**
+
+`apps/api/src/kendra_api/answering/model_client.py`'s `OllamaAnswerModel` now
+sends an explicit `seed` option on every `/api/generate` request (commit
+`answering: explicit num_ctx and seed`, `docs/EXPERIMENT_REGISTRY.md`-dated
+2026-09-01), defaulting to `0` and configurable via `KENDRA_MODEL_SEED`. This
+deployment runs with the default (`seed: 0`) unless an operator overrides it.
+
+**Seed is now a controlled variable under Section 5, identical across every
+arm this experiment runs:** the Stage 0 rerun under this amendment, and (when
+it eventually runs) both `B0_BASELINE` and `B1_LARGER` in Stage 1, all use
+`seed: 0` unless a future amendment explicitly changes and records a different
+value for all arms at once. A seed is not, by itself, a guarantee of
+bit-identical output (backend/GPU floating-point nondeterminism can still
+vary a run, same caveat Section 4 already gives temperature `0`) — it narrows
+variance further and removes "no seed was ever recorded" as a source of
+irreproducibility going forward.
+
+### A1(c) — Original Stage 0 run: superseded, retained
+
+`evaluation/runs/EXP-11/20260901T014805Z-0bcc9dd7/` (its `stage0_cases.jsonl`,
+`stage0_summary.md`, and `truncation_check.md`) is marked **superseded** by
+this amendment, for the reason given above. It is **not deleted** — the
+directory and its contents remain exactly as they were, with a
+`SUPERSEDED_BY_A1.md` marker file added inside pointing to the new run
+directory this amendment's rerun produces. Every finding already drawn from
+that run (`M12_FINDINGS.md` part (f)'s truncation conclusions, the token
+counts, the `docker logs` gap) stands as a finding about that specific run and
+is not retracted; the run itself is simply no longer the current basis for
+Stage 1 eligibility, which the rerun under this amendment now supplies.
+
+### What this amendment does not do
+
+It does not reword Sections 1–10, does not change the candidate case set
+(Section 3), does not change the reproduction criterion or classification
+mapping (Section 4's tables), does not change the controlled-variable list
+beyond adding seed (Section 5), and does not touch the scoring rule (Section
+7) or the decision rule (Section 8) in any way. `B1_LARGER`'s pin
+(Requires-before-freezing item 2), reviewer confirmation of the
+frozen-packet methodology (item 4, now partially addressed by A1(a)'s actual
+persistence mechanism but not itself a reviewer sign-off), and the local
+resource check (item 5) remain open exactly as before this amendment. Stage 1
+is not run by this amendment.
