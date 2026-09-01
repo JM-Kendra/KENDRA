@@ -297,3 +297,61 @@ accordingly: it applies specifically to `KND-M5-CD-004`, `KND-M5-CD-005`,
 `KND-M5-DF-020` — not to the full 11-case "unknown" set part (b) originally
 grouped together, four of which turn out to have a content-availability
 explanation after this section's deeper check.
+
+## (e) Retrieval architecture: a shared top-k merge has no per-document floor
+
+Both content-availability gaps documented in this review — the cross-document
+retrieval limit (part (b): `KND-M5-CD-006`, `KND-M5-CD-009`) and the wide-table
+chunk-density miss (part (d): `KND-M5-DF-012`, `KND-M5-LT-007`) — trace to the
+same underlying mechanism, not two unrelated bugs.
+
+`QdrantRetriever.retrieve()` (`apps/api/src/kendra_api/answering/retrieval.py`)
+queries every active document's Qdrant collection, merges every returned
+candidate into one list by raw score, and truncates **once**, globally, to
+`top_k=8`. Nothing in that merge guarantees any particular document — let alone
+every document a cross-document case needs — keeps even one slot:
+
+- **Cross-document case:** a required second document's chunks simply score
+  lower than chunks from unrelated documents and lose every slot in the shared
+  window (`KND-M5-CD-006`, `KND-M5-CD-009` — confirmed by direct retrieval
+  replay, part (b)).
+- **Wide-table document:** one page of `RR17_2024_Procurement_Monitoring_Report.pdf`
+  alone splits into 30 chunks (confirmed directly against the `chunks` table,
+  part (d)) — a specific data-bearing chunk has to outscore 29 same-page,
+  same-document siblings, *in addition to* every other document's chunks, just
+  to be considered.
+
+Both are instances of one architectural property: the merge has no floor. A
+document, or a specific row within one document's page, can be real, correctly
+embedded, and directly relevant, and still lose every slot to volume from
+elsewhere in the corpus.
+
+**Proposed, not implemented:**
+
+1. **A per-document quota in the top-k merge.** Reserve a minimum number of
+   slots (e.g., at least one, possibly scaled by how many documents a request's
+   scope spans) across the documents represented in the candidate pool before
+   filling remaining slots by best score. This targets the cross-document gap
+   directly — it would guarantee `KND-M5-CD-006`'s and `KND-M5-CD-009`'s missing
+   second document at least a chance to be represented, rather than losing
+   outright to volume from unrelated documents.
+2. **Table-aware chunking that keeps rows with headers.** The current chunker
+   (`KENDRA_CHUNK_SIZE_CHARS=1200`, `KENDRA_CHUNK_OVERLAP_CHARS=200`) splits
+   extracted text purely by character count, which is what drives one table
+   page to 30 chunks. A table-aware strategy that detects tabular structure and
+   keeps each data row bundled with enough header/label context to be
+   self-contained and independently discoverable would reduce the
+   chunk-count-per-page explosion this finding measured directly.
+
+**Any chunking change requires re-ingest and a new corpus baseline under
+ADR-007 — stated explicitly so it isn't treated as a small fix.** The
+currently-ingested corpus, hash-verified and referenced throughout every M12
+report and this document, would no longer match a changed chunker's output. A
+new pipeline identity and a fresh ingestion pass would be required, and every
+finding recorded in this document against the current baseline
+(`0bcc9dd7d0aaf7bd370e8d3eb60303a42e8ef91c`) would need to be read as historical
+against that baseline, not silently re-validated against a new one. This
+parallels how EXP-03 (`docs/EXPERIMENT_PLAN.md` Section 5) originally set the
+current 1200/200 chunking policy — a change here is the same class of decision
+and needs its own preregistration, not an ad hoc edit. Neither proposal above is
+implemented, scheduled, or preregistered by this document.
