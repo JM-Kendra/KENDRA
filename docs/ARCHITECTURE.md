@@ -284,7 +284,7 @@ The exact Qwen model, quantization, context limit, BGE-M3 runtime, CPU/GPU alloc
 
 ## 12. Small experiments required before implementation
 
-These experiments are architecture gates, not optional tuning after the system is built. The time-boxed plans, controlled inputs, metrics, and pass/fail criteria for EXP-01 through EXP-06 are defined in [EXPERIMENT_PLAN.md](EXPERIMENT_PLAN.md).
+These experiments are architecture gates, not optional tuning after the system is built. The time-boxed plans, controlled inputs, metrics, and pass/fail criteria for EXP-01 through EXP-06 are defined in [EXPERIMENT_PLAN.md](EXPERIMENT_PLAN.md). **[EXPERIMENT_REGISTRY.md](EXPERIMENT_REGISTRY.md) is the single source of truth for which IDs are allocated, their status, and any collisions — check it before assuming an ID below is free elsewhere or before claiming a new one.**
 
 | ID | Question | Smallest useful experiment | Decision produced |
 |---|---|---|---|

@@ -560,6 +560,8 @@ web rebuild after a change.
    grounding mode are engineering defaults/prototypes, not selected configurations.
 7. **EXP-07 identifier collision:** architecture reserves EXP-07 for offline-build validation,
    while an OCR preregistration draft also uses EXP-07. Resolve before freezing either plan.
+   Recorded, still open, in `docs/EXPERIMENT_REGISTRY.md` — the single source of truth for
+   experiment-ID allocation and status as of 2026-09-01; check it before naming a new ID.
 8. **ADR-008, ADR-009, ADR-010, and ADR-011 are proposed, not accepted or activated.** The MVP
    specification remains frozen.
 

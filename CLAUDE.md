@@ -59,6 +59,12 @@ not be implemented.**
   evidence is examined, and preregister a new run.
 - **Never treat parser success or text volume as proof of completeness.** That was the
   original EXP-01 defect.
+- **A new experiment ID is allocated only by adding a row to
+  `docs/EXPERIMENT_REGISTRY.md` first.** Check that table before naming a new `EXP-NN`
+  anywhere — filing a draft or writing a code comment under an ID without a row there
+  is not an allocation. `EXP-04`, `EXP-07`, and `EXP-08` all collided with an ID already
+  claimed elsewhere in tracked docs; the registry exists so that stops happening by
+  habit rather than by luck.
 - **Never log extracted content.** Errors are content-free with a code only.
 - Do not change `evaluation/gold_cases.json` from `initial_expert_review_required`. These
   experiments validate representation fidelity, not legal or tax interpretation.
