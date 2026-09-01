@@ -59,6 +59,12 @@ not be implemented.**
   evidence is examined, and preregister a new run.
 - **Never treat parser success or text volume as proof of completeness.** That was the
   original EXP-01 defect.
+- **A new experiment ID is allocated only by adding a row to
+  `docs/EXPERIMENT_REGISTRY.md` first.** Check that table before naming a new `EXP-NN`
+  anywhere — filing a draft or writing a code comment under an ID without a row there
+  is not an allocation. `EXP-04`, `EXP-07`, and `EXP-08` all collided with an ID already
+  claimed elsewhere in tracked docs; the registry exists so that stops happening by
+  habit rather than by luck.
 - **Never log extracted content.** Errors are content-free with a code only.
 - Do not change `evaluation/gold_cases.json` from `initial_expert_review_required`. These
   experiments validate representation fidelity, not legal or tax interpretation.
@@ -122,6 +128,12 @@ before any evidence is examined:
 - The RMC 03-2024 page-1 duplication magnitude (~34.5× Docling occurrence volume within
   the correct page) is documented but not root-caused. It no longer affects retention,
   since Docling no longer retains.
+  **Correction, 2026-09-01:** checked directly against the currently-ingested corpus's
+  `chunks` table and does not reproduce there — RMC 03-2024 page 1 has 3 chunks, page 2
+  has 2, a normal distribution with no skew. This does not root-cause or close the
+  original finding above (it was measured differently, against Docling occurrence
+  volume, not the current chunk table) and the original note is kept rather than
+  deleted. See `evaluation/M12_FINDINGS.md` part (b) for the query and how it came up.
 - No mechanism detects Poppler omitting non-digit material content (ADR-007 Section 8).
 
 Write regression tests **before** any future diagnostic returns where possible, so their

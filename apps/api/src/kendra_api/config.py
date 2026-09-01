@@ -55,7 +55,21 @@ class Settings(BaseSettings):
     embedding_model: str = "bge-m3"
     embedding_batch_size: int = Field(default=16, gt=0, le=256)
     qdrant_collection_prefix: str = "kendra_ingestion"
-    pipeline_revision: str = "unversioned"
+
+    # Milestone 10 answering. `retrieval_top_k` and `retrieval_score_threshold` are
+    # engineering defaults, NOT experiment-derived: EXP-02, which ADR-003 and
+    # MVP_SPEC Step 9 require in order to select them, has never been run.
+    # Milestone 10 is off by default. An unconfigured API abstains rather than answers.
+    answering_enabled: bool = False
+    answer_model: str = "qwen2.5:7b-instruct"
+    answer_timeout_seconds: int = Field(default=120, gt=0, le=3600)
+    retrieval_top_k: int = Field(default=8, ge=1, le=100)
+    retrieval_score_threshold: float = Field(default=0.5, ge=0.0, le=1.0)
+    # EXP-11 finding (evaluation/M12_FINDINGS.md part (f)): temperature 0 alone
+    # does not guarantee reproducible generation. A fixed seed narrows this
+    # further; identical across every arm of a model comparison, it becomes a
+    # controlled variable rather than an unrecorded source of variance.
+    model_seed: int = Field(default=0)
 
     @field_validator("document_store_root")
     @classmethod

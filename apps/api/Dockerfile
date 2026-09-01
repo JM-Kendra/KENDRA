@@ -35,6 +35,17 @@ CMD ["python", "-m", "pytest", "-q"]
 
 FROM base AS runtime
 
+# Baked at build time so a plain `docker compose up` (no export, no rebuild) still
+# reports a real revision, not "unknown" -- see docker-compose.yml's `api` build.args.
+# Empty by default: a build that doesn't pass one bakes an empty string, which
+# resolve_source_revision() treats as not-set and falls through to its next source
+# (git in the container, then "unknown") -- never a fabricated commit id. An
+# operator-supplied runtime env var (`docker run -e` / `docker compose run -e`, or a
+# local compose override) still takes precedence over this baked default, same as
+# any other Dockerfile ENV.
+ARG KENDRA_SOURCE_REVISION=""
+ENV KENDRA_SOURCE_REVISION=${KENDRA_SOURCE_REVISION}
+
 RUN python -m pip install --no-cache-dir . \
     && groupadd --system kendra \
     && useradd --system --gid kendra --home-dir /nonexistent --shell /usr/sbin/nologin kendra

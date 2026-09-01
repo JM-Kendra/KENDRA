@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
-  "dataset_id": "kendra-bir-public-gold-v1",
+  "dataset_id": "kendra-bir-public-gold-v2",
+  "supersedes_dataset_id": "kendra-bir-public-gold-v1",
   "dataset_status": "initial_expert_review_required",
   "source_collection": "Kendra AI BIR public evaluation sample pack",
   "source_manifest_filename": "APPROVAL_MANIFEST.json",
@@ -455,7 +456,7 @@
       "expected_result": "supported",
       "expected_answer_facts": ["RR No. 11-2024 requires the inventory by July 31, 2024, in duplicate, with booklet counts and serial numbers.", "RMC No. 77-2024 identifies Annex C as the inventory-report format for manual or loose-leaf receipts and gives July 31, 2024 as the deadline.", "RMC No. 77-2024 says taxpayers who already submitted an inventory report using Annex D of RMO No. 12-2013 or a Letter Notice before the circular's website publication need not resubmit in the new Annex C or D format."],
       "authoritative_filenames": ["RR_11_2024_Invoicing_Amendments.pdf", "RMC_77_2024_Invoicing_QA_OCR.pdf"],
-      "expected_pages": {"RR_11_2024_Invoicing_Amendments.pdf": [2], "RMC_77_2024_Invoicing_QA_OCR.pdf": [9]},
+      "expected_pages": {"RR_11_2024_Invoicing_Amendments.pdf": [1, 2], "RMC_77_2024_Invoicing_QA_OCR.pdf": [1, 9]},
       "unacceptable_answer_behavior": "Using the Annex D machine-renaming deadline as the Annex C inventory deadline or omitting the no-resubmission exception.",
       "ambiguity_notes": "The same label Annex D appears in an older RMO and in this circular; the answer must preserve the source context.",
       "ocr_required": true
@@ -539,7 +540,7 @@
       "expected_result": "supported",
       "expected_answer_facts": ["RMC No. 3-2024 says the provision granting micro-enterprises exemption from the obligation to withhold taxes was vetoed by the President.", "RR No. 4-2024 says Section 2.58.5 of RR No. 2-98 on additional deductibility requirements was repealed upon EOPT effectivity.", "RR No. 4-2024 expressly says the obligation to withhold tax on certain income payments and remit it remains."],
       "authoritative_filenames": ["RMC_03_2024_EOPT_Act.pdf", "RR_04_2024_Filing_Payment.pdf"],
-      "expected_pages": {"RMC_03_2024_EOPT_Act.pdf": [2], "RR_04_2024_Filing_Payment.pdf": [1]},
+      "expected_pages": {"RMC_03_2024_EOPT_Act.pdf": [1, 2], "RR_04_2024_Filing_Payment.pdf": [1]},
       "unacceptable_answer_behavior": "Concluding that all withholding obligations were eliminated or merging the veto and repeal into one event.",
       "ambiguity_notes": "These are separate provisions and legal actions; the answer must preserve that distinction.",
       "ocr_required": false

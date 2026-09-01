@@ -25,6 +25,7 @@ from kendra_api.ingestion.registry import PostgresRegistry
 from kendra_api.ingestion.storage import LocalDocumentAdmissionStore
 from kendra_api.ingestion.validation import load_intake_manifest, resolve_intake_path
 from kendra_api.ingestion.vector_store import QdrantVectorGenerationStore
+from kendra_api.source_revision import resolve_source_revision
 
 
 def _extractor(settings: Settings) -> PageExtractionPipeline | NativePrimaryDetectionPipeline:
@@ -80,7 +81,7 @@ async def _run(pdf: str, manifest_arg: str) -> None:
         ),
         max_bytes=settings.pdf_max_bytes,
         max_pages=settings.pdf_max_pages,
-        pipeline_revision=settings.pipeline_revision,
+        pipeline_revision=resolve_source_revision().revision,
     )
     try:
         result = await pipeline.ingest(pdf_path, manifest)

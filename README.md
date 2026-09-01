@@ -62,6 +62,15 @@ Run every command from the repository root.
    docker compose build
    ```
 
+   To rebuild the `api` image with a real `KENDRA_SOURCE_REVISION` baked in (so
+   `/api/v1/health` and citations report the actual revision without exporting the
+   variable at every `docker compose up`), use the `build` Makefile target instead,
+   which exports it from the current commit for you:
+
+   ```bash
+   make build
+   ```
+
 4. Start all five services:
 
    ```bash

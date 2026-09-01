@@ -25,6 +25,13 @@ class HealthResponse(BaseModel):
 
     status: Literal["ready", "not_ready"]
     services: dict[str, ServiceReadiness]
+    source_revision: str
+    source_revision_dirty: bool
+    answering_enabled: bool
+    answer_model: str
+    embedding_model: str
+    retrieval_top_k: int
+    retrieval_score_threshold: float
 
 
 async def _safe_check(probe: ReadinessProbe) -> ProbeResult:
@@ -49,6 +56,13 @@ async def health(request: Request) -> JSONResponse:
     response = HealthResponse(
         status="ready" if all(result.ready for result in results) else "not_ready",
         services=services,
+        source_revision=request.app.state.source_revision,
+        source_revision_dirty=request.app.state.source_revision_dirty,
+        answering_enabled=request.app.state.answering_enabled,
+        answer_model=request.app.state.answer_model_name,
+        embedding_model=request.app.state.embedding_model_name,
+        retrieval_top_k=request.app.state.retrieval_top_k,
+        retrieval_score_threshold=request.app.state.retrieval_score_threshold,
     )
     return JSONResponse(
         status_code=200 if response.status == "ready" else 503,

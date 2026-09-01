@@ -29,8 +29,21 @@ services:
 
   ollama:
     image: ollama/ollama:0.32.0
+    environment:
+      # Unset, this falls back to Ollama's own built-in default (measured at
+      # 4096 tokens, well under qwen2.5:7b-instruct's trained 32768 --
+      # evaluation/M12_FINDINGS.md part (f)). Matches ANSWER_NUM_CTX in
+      # apps/api/src/kendra_api/answering/model_client.py.
+      OLLAMA_CONTEXT_LENGTH: "8192"
     volumes:
       - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 10s
@@ -44,6 +57,12 @@ services:
     build:
       context: ./apps/api
       target: runtime
+      args:
+        # Bakes the revision into the image at build time (Dockerfile's `runtime`
+        # stage ARG/ENV) so a plain `docker compose up` reports it without an export
+        # at every start -- only at build/rebuild time. Blank if not exported here;
+        # see the `environment:` comment below for why it isn't also set there.
+        KENDRA_SOURCE_REVISION: ${KENDRA_SOURCE_REVISION:-}
     environment:
       KENDRA_ENVIRONMENT: ${KENDRA_ENVIRONMENT:-development}
       KENDRA_LOG_LEVEL: ${KENDRA_LOG_LEVEL:-INFO}
@@ -69,7 +88,26 @@ services:
       KENDRA_EMBEDDING_MODEL: ${KENDRA_EMBEDDING_MODEL:-bge-m3}
       KENDRA_EMBEDDING_BATCH_SIZE: ${KENDRA_EMBEDDING_BATCH_SIZE:-16}
       KENDRA_QDRANT_COLLECTION_PREFIX: ${KENDRA_QDRANT_COLLECTION_PREFIX:-kendra_ingestion}
-      KENDRA_PIPELINE_REVISION: ${KENDRA_PIPELINE_REVISION:-unversioned}
+      # KENDRA_SOURCE_REVISION is intentionally NOT set here. Compose's `environment:`
+      # substitution always assigns a concrete value -- even `${VAR:-}` explicitly
+      # sets an empty string -- which would override the image's own baked-in
+      # default (see the Dockerfile and this service's build.args above) on every
+      # `docker compose up`, defeating it. Leaving the key out entirely lets the
+      # image's baked value show through; an operator who needs to override it at
+      # container-start without rebuilding can still do so explicitly, e.g.
+      # `docker compose run -e KENDRA_SOURCE_REVISION=<sha> api ...` or a local
+      # compose override file -- `docker run -e` / an explicit override always beats
+      # an image's own ENV default, same as any other Dockerfile ENV.
+      # No .git is mounted into this read-only container either way, so
+      # source_revision.py's own git fallback never fires here; if neither the build
+      # arg nor a runtime override supplies a revision, it degrades honestly to
+      # "unknown" rather than crashing the API at startup.
+      KENDRA_SOURCE_REVISION_DIRTY: ${KENDRA_SOURCE_REVISION_DIRTY:-false}
+      KENDRA_ANSWERING_ENABLED: ${KENDRA_ANSWERING_ENABLED:-false}
+      KENDRA_ANSWER_MODEL: ${KENDRA_ANSWER_MODEL:-qwen2.5:7b-instruct}
+      KENDRA_ANSWER_TIMEOUT_SECONDS: ${KENDRA_ANSWER_TIMEOUT_SECONDS:-120}
+      KENDRA_RETRIEVAL_TOP_K: ${KENDRA_RETRIEVAL_TOP_K:-8}
+      KENDRA_RETRIEVAL_SCORE_THRESHOLD: ${KENDRA_RETRIEVAL_SCORE_THRESHOLD:-0.5}
     volumes:
       - type: bind
         source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}
@@ -131,7 +169,7 @@ services:
       KENDRA_EMBEDDING_MODEL: ${KENDRA_EMBEDDING_MODEL:-bge-m3}
       KENDRA_EMBEDDING_BATCH_SIZE: ${KENDRA_EMBEDDING_BATCH_SIZE:-16}
       KENDRA_QDRANT_COLLECTION_PREFIX: ${KENDRA_QDRANT_COLLECTION_PREFIX:-kendra_ingestion}
-      KENDRA_PIPELINE_REVISION: ${KENDRA_PIPELINE_REVISION:-unversioned}
+      KENDRA_SOURCE_REVISION: ${KENDRA_SOURCE_REVISION:-unknown}
     volumes:
       - type: bind
         source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}

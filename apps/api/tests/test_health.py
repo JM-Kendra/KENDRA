@@ -62,10 +62,12 @@ async def test_health_returns_503_when_a_dependency_is_unavailable() -> None:
         response = await client.get("/api/v1/health")
 
     assert response.status_code == 503
-    assert response.json() == {
-        "status": "not_ready",
-        "services": {
-            "postgres": {"status": "not_ready", "code": "unreachable"},
-            "document_store": {"status": "ready", "code": "available"},
-        },
+    body = response.json()
+    assert body["status"] == "not_ready"
+    assert body["services"] == {
+        "postgres": {"status": "not_ready", "code": "unreachable"},
+        "document_store": {"status": "ready", "code": "available"},
     }
+    assert body["answering_enabled"] is False
+    assert body["source_revision"]
+    assert isinstance(body["source_revision_dirty"], bool)
