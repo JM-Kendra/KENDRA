@@ -1,22 +1,36 @@
-# EXP-07 — OCR render resolution and recognition model
+# EXP-12 — OCR render resolution and recognition model
 
 **Status:** Draft. **Not frozen and not a registration.** It becomes
-`evaluation/runs/EXP-07/<run-id>/registration.json` only when Section 4's truth set is complete
+`evaluation/runs/EXP-12/<run-id>/registration.json` only when Section 4's truth set is complete
 and the file is checksummed **before any candidate is run**.
-**Drafted:** 2026-08-20
-**Gates:** [ADR-009](../adr/009-ocr-render-and-model-fidelity.md), proposed.
+**Drafted:** 2026-08-20 as `EXP-07`. **Renamed to `EXP-12` on 2026-09-01** to
+resolve the identifier collision with `docs/ARCHITECTURE.md`'s own `EXP-07`
+("Is the build genuinely offline?", an unrelated question) — reviewer decision:
+`ARCHITECTURE.md` keeps `EXP-07`, this draft moves. Recorded in
+`docs/EXPERIMENT_REGISTRY.md` and `KENDRA_MIGRATION_HANDOFF.md` (dated
+resolution note, original collision note kept, not deleted). All in-document
+references below were mechanically renamed from `EXP-07` to `EXP-12`; no other
+content changed by the rename.
+**Not yet updated by this rename:** `docs/adr/009-ocr-render-and-model-fidelity.md`
+and `docs/experiment-decisions/ocr-substitution-measurement.md` still cite this
+experiment as `EXP-07` in several places (ADR-009 names it as this experiment's
+empirical gate). Those references are now stale and are flagged here as a
+follow-up, not silently left unmentioned; updating them was out of scope for
+this rename.
+**Gates:** [ADR-009](../adr/009-ocr-render-and-model-fidelity.md), proposed —
+itself not yet updated to cite `EXP-12`, see above.
 **Requires before freezing:** reviewer-supplied correct readings for the 27 substitutions
 (Section 4). Nothing in Sections 2, 5 or 6 may be revised after the first candidate runs.
-**Addendum required:** `EXPERIMENT_PLAN.md` lists EXP-01 through EXP-06. Adding EXP-07 to it
+**Addendum required:** `EXPERIMENT_PLAN.md` lists EXP-01 through EXP-06. Adding EXP-12 to it
 needs reviewer approval and is not done unilaterally by this draft.
 
 ## 1. Question and decision
 
-**EXP-07 — Which bounded combination of render resolution and Tesseract recognition model
+**EXP-12 — Which bounded combination of render resolution and Tesseract recognition model
 reduces digit substitution on OCR-retained pages without regressing any token that is already
 correct?**
 
-Produces: a selected OCR configuration named by a reviewed `EXP-07.md`, or an explicit failure
+Produces: a selected OCR configuration named by a reviewed `EXP-12.md`, or an explicit failure
 selecting none.
 
 ## 2. Frozen candidate matrix
@@ -202,7 +216,7 @@ A candidate is **eligible** only if **all** hold:
 then to the `fast` model — cheaper wins, so cost never argues for a heavier configuration that
 bought nothing.
 
-If **no candidate is eligible**, select none and record EXP-07 as failed. The zero-regression
+If **no candidate is eligible**, select none and record EXP-12 as failed. The zero-regression
 condition is not relaxed, and no candidate is chosen as least-bad.
 
 ## 7. What selection does and does not mean

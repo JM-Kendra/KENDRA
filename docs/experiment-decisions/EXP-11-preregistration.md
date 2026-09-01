@@ -1,31 +1,42 @@
-# EXP-11 (frozen — see pointer below) — model comparison on facts-in-context-but-abstained cases
+# EXP-11 — model comparison on facts-in-context-but-abstained cases
 
-**Frozen, 2026-09-01, at commit `19192da8469f8ee0a8bdf1e791969056e8e3232d`.**
-The frozen copy is [`docs/experiment-decisions/EXP-11-preregistration.md`](../docs/experiment-decisions/EXP-11-preregistration.md) —
-Sections 1–10 there may not be reworded after that freeze. **This file is kept
-as the pre-freeze drafting history** (the three renames this experiment went
-through before landing on `EXP-11`) and is not itself updated further; edit the
-frozen copy's own record instead, or a new revision record, once Stage 1's
-still-open prerequisites (see the frozen copy's prerequisite table) are
-resolved.
+**Status:** **FROZEN, 2026-09-01, at commit `19192da8469f8ee0a8bdf1e791969056e8e3232d`.**
+This is the frozen copy of `evaluation/EXP-11_PREREG_DRAFT.md` at that commit's
+content, verbatim in Sections 1–10 below — nothing in those sections may be
+reworded after this freeze, per this project's rule that criteria are locked
+before evidence is examined. The pre-freeze draft remains at
+`evaluation/EXP-11_PREREG_DRAFT.md` with a pointer to this file; it is not
+deleted or redirected, so the drafting history stays visible.
 
-**Status (as of the freeze):** DRAFT before freezing. Written per the
-requester's instruction; not run at draft time. It becomes a real registration
-only after every item in *Requires before freezing* is satisfied, checksummed
-**before either candidate is run**.
-**Drafted:** 2026-09-01. **Rename history:** filed as `EXP-04_PREREG_DRAFT.md`,
-renamed to `EXP-08_PREREG_DRAFT.md` after `EXP-04` was found already assigned to
-a different experiment, renamed again to this file (`EXP-11_PREREG_DRAFT.md`)
-after `EXP-08` was *also* found already assigned. `EXP-11` was checked against
-`docs/EXPERIMENT_REGISTRY.md` (the single source of truth for ID allocation as
-of this date) before being claimed here and does not collide with anything
-currently recorded there. See that registry for the full ID list and the two
-resolved collisions (`EXP-04`, `EXP-08`) this draft's earlier names left behind.
-**Identifier registered:** `docs/EXPERIMENT_PLAN.md` Section 9 and
-`docs/EXPERIMENT_REGISTRY.md` both carry this claim. This experiment feeds
-`EXP-04`'s model-selection question — a narrow signal about whether model size
-explains specific generation-side abstentions — rather than replacing or
-substituting for it.
+**What freezing this covers, precisely.** Stage 0 (Section 4) — its mechanism,
+reproduction criterion, and classification mapping — is fully specified and its
+harness (`apps/api/src/kendra_api/evaluation/stage0.py`) is implemented and
+hermetically tested as of this commit. Freezing locks that specification before
+Stage 0 is run against the live model, which is the point: the classification
+rule cannot be adjusted after seeing which bucket a case lands in. **Stage 1
+(the `B0` vs `B1_LARGER` comparison, Sections 5–8) is frozen in the same sense
+— its scoring and decision rules may not be reworded after a candidate runs —
+but three of its own prerequisites remain genuinely open, not satisfied by this
+freeze, and are carried forward rather than silently marked done:**
+
+| Original "Requires before freezing" item | Status at this freeze |
+|---|---|
+| 1. Registry entry confirmed current | **Satisfied.** `docs/EXPERIMENT_REGISTRY.md` lists `EXP-11` with no unresolved collision as of this date. |
+| 2. `B1_LARGER` pinned by exact tag and digest | **Open.** Still only proposed (`qwen2.5:14b-instruct`), not pinned. Gates Stage 1 only — Stage 0 does not use `B1_LARGER` at all. |
+| 3. Stage 0's harness implemented and its hermetic test passing | **Satisfied.** `apps/api/src/kendra_api/evaluation/stage0.py` and `apps/api/tests/test_stage0.py` exist and pass as of commit `19192da`. |
+| 4. Reviewer confirmation on frozen-packet methodology | **Open.** Gates Stage 1 only. |
+| 5. Local resource check for a 14B-class model | **Open.** Gates Stage 1 only. |
+| 6. No answering behavior, prompt, or gate threshold changed | **Satisfied so far** — holds as of this freeze; remains a standing constraint on both stages going forward. |
+
+**Consequence: Stage 0 may run under this frozen specification. Stage 1 may
+not run until items 2, 4, and 5 above are separately satisfied and recorded.**
+This freeze does not retroactively claim those three items are done — they are
+listed open, deliberately, rather than swept into "frozen" as if satisfied.
+
+---
+
+The remainder of this document is Sections 1 through 10 of
+`evaluation/EXP-11_PREREG_DRAFT.md`, copied verbatim at the commit named above.
 
 ## 1. Question and decision
 
@@ -368,30 +379,3 @@ counted as any of the five classifications. If `B1_LARGER` cannot be obtained
 or run locally (model unavailable, resource exhaustion, timeout), the Stage 1
 attempt is recorded as incomplete with its cause; an incomplete run is not
 evidence for or against the hypothesis.
-
-## Requires before freezing
-
-1. **Registry entry confirmed current.** `docs/EXPERIMENT_REGISTRY.md` still
-   lists `EXP-11` as this draft's claim with no new collision introduced since
-   drafting. If a later addition to the registry conflicts, this draft is void
-   until re-checked.
-2. **`B1_LARGER` pinned by exact tag and digest**, and its decoding
-   configuration (temperature, and a seed if its serving path exposes one)
-   recorded here before any run.
-3. **Stage 0's harness implemented and its hermetic test passing.** See
-   `apps/api/src/kendra_api/evaluation/` and its test suite — implemented in
-   the same commit that added this reproduction criterion, but never run
-   against the live model as part of that work.
-4. **Reviewer confirmation that replaying a frozen evidence packet through a
-   different answer model is methodologically acceptable** for this narrow
-   question, given `EXP-05-preregistration-draft.md`'s own caution (§3) about
-   not letting an easy pass substitute for a harder, more representative test.
-5. **Local resource check** — running a 14B-class model locally alongside the
-   existing stack (Postgres/Qdrant/Ollama, `qwen2.5vl:7b` already resident on
-   this workstation's native Ollama instance) fits available VRAM/RAM without
-   destabilizing required services. Not yet checked.
-6. **No answering behavior, prompt, or gate threshold changed** to make this
-   run possible — per the requester's own instruction for this draft. If
-   running `B1_LARGER` (or Stage 0 itself) through the existing contract
-   requires such a change, that need is recorded and freezing waits on its own
-   review, not folded in silently.
