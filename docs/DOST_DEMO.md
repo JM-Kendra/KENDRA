@@ -476,10 +476,20 @@ curl -s http://127.0.0.1:8000/api/v1/health | python3 -m json.tool
 docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
   -v "$(pwd)/scripts:/scripts:ro" api /scripts/verify_audit_chain.py
 
-# 7. Tear down completely — this drill must not leave state behind.
+# 7. Preserve the drill's own evaluation/runs/ before tearing anything down —
+#    it lives inside the scratch clone and is deleted with it in step 9.
+#    Round 5's drill lost its entire run directory (cases.jsonl,
+#    misclassified_cases.md, report.json, run_config.json,
+#    runner_failures.md, scoring_worksheet.json) this way; only the
+#    fragments quoted in that round's report survived. evaluation/runs/ is
+#    git-ignored, so this is a plain file copy, not a commit.
+rsync -a "$SCRATCH_CLONE_DIR/evaluation/runs/" "$(pwd)/evaluation/runs/"
+ls -la "$(pwd)/evaluation/runs/"
+
+# 8. Tear down completely — this drill must not leave state behind.
 docker compose -p kendra-recovery-drill down --volumes
 
-# 8. Remove the scratch clone itself. A plain `rm -rf` fails partway through:
+# 9. Remove the scratch clone itself. A plain `rm -rf` fails partway through:
 #    admitted originals under document-repository/objects/ are 0444-mode,
 #    owned by uid 999 (the ingest container's user), per the immutability
 #    invariant (`ARCHITECTURE.md` Section 9) -- the host user that created the
