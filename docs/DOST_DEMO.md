@@ -441,6 +441,20 @@ releases and the timing is specific to one measured run on one workstation.
 The commands below are the reusable procedure:
 
 ```bash
+# 0. .env from the template, with a disposable local password, plus two
+#    port overrides. A drill runs a second full stack on the same host as
+#    the still-running main dev stack, which otherwise collides on the
+#    default 127.0.0.1:8000/:3000 bindings -- round 5's drill discovered
+#    this mid-run (a build failed with "port is already allocated") and
+#    improvised the fix live. Pre-specifying it here means nothing has to
+#    be improvised.
+cp .env.example .env
+sed -i 's/^KENDRA_POSTGRES_PASSWORD=.*/KENDRA_POSTGRES_PASSWORD=drill-only-local-password/' .env
+echo "KENDRA_API_PORT=8001" >> .env
+echo "KENDRA_WEB_PORT=3001" >> .env
+make check-template
+make drill-env
+
 # 1. Bring up a fully separate project (fresh named volumes; existing
 #    kendra_* volumes and the kendra-* containers are untouched).
 docker compose -p kendra-recovery-drill up -d postgres qdrant ollama
@@ -459,13 +473,33 @@ for f in intake/*.pdf; do
     "$(basename "$f")" --manifest "${name}.manifest.json"
 done
 
-# 4. Bring up api/web against the freshly ingested state and confirm health.
+# 4. Build api/web with the checked-out commit baked in as
+#    KENDRA_SOURCE_REVISION (compose `up` alone would use a stale cached
+#    image without it), bring them up, and confirm health.
+KENDRA_SOURCE_REVISION=$(git rev-parse HEAD) docker compose -p kendra-recovery-drill build api web
 docker compose -p kendra-recovery-drill up -d api web
-curl -s http://127.0.0.1:8000/api/v1/health | python3 -m json.tool
+curl -s http://127.0.0.1:8001/api/v1/health | python3 -m json.tool
 
-# 5. Run the gold evaluation with the hardened runner against this fresh
-#    project (named container, default lock, default revision preflight).
-#    See the Milestone 13 final report for the exact invocation used.
+# 5. Enable answering for the duration of this eval only, then run the gold
+#    evaluation with the hardened runner against this fresh project (named
+#    container, no --rm, default lock, default revision preflight, --seed
+#    0). --seed only shuffles the order cases are processed in -- it has no
+#    bearing on the generator's own output, whose seed is fixed separately
+#    and unconditionally (apps/api/src/kendra_api/answering/model_client.py).
+#    Pinning it here anyway makes case-processing order reproducible across
+#    runs, which round 5's drill omitted (it drew a random seed instead).
+#    Adjust --output-root/--container-name per the current round's report.
+docker run --name kendra-eval-recovery-drill \
+  --network kendra-recovery-drill_kendra_private \
+  -v "$(pwd)":/repo -w /repo kendra-api-eval-runner \
+  --repo-root /repo --phase cold --seed 0 \
+  --api-base http://kendra-recovery-drill-api-1:8000 \
+  --ollama-base http://kendra-recovery-drill-ollama-1:11434 \
+  --output-root /repo/evaluation/runs/M13-recovery-drill \
+  --container-name kendra-eval-recovery-drill
+# No --rm: standing rule 5 requires the container survive for inspection.
+# Remove it manually after this run's evidence is captured:
+docker rm kendra-eval-recovery-drill
 
 # 6. Verify the hash chain from genesis. (`docker compose exec api python
 #    scripts/verify_audit_chain.py` does not work -- the api runtime image

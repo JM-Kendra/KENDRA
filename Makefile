@@ -1,4 +1,4 @@
-.PHONY: build test test-full verify-chain check-template
+.PHONY: build test test-full verify-chain check-template drill-env
 
 # Rebuilds api/web with KENDRA_SOURCE_REVISION (both images) and, once the
 # current commit is tagged, KENDRA_RELEASE_TAG (api) / NEXT_PUBLIC_KENDRA_GIT_COMMIT
@@ -70,4 +70,44 @@ check-template:
 		'KENDRA_ANSWER_MODEL = qwen2.5:7b-instruct'; \
 	check 'KENDRA_EMBEDDING_MODEL: bge-m3' \
 		'KENDRA_EMBEDDING_MODEL = bge-m3'; \
+	exit $$status
+
+# Confirms a drill's own .env (in the current directory, not .env.example)
+# actually carries the three drill-specific overrides documented in
+# docs/DOST_DEMO.md Sec 10 step 0 -- KENDRA_API_PORT=8001/KENDRA_WEB_PORT=3001
+# (so the drill's api/web don't collide with the still-running main dev
+# stack's 8000/3000 defaults) and a KENDRA_POSTGRES_PASSWORD that has
+# actually been changed from .env.example's own placeholder value (never the
+# operator's real password). Checks the VALUE against the required override,
+# not just that the key is present -- a presence-only check passes against
+# an unmodified copy of .env.example, since it already sets
+# KENDRA_API_PORT=8000/KENDRA_WEB_PORT=3000/KENDRA_POSTGRES_PASSWORD=<placeholder>,
+# which is exactly the collision round 5's drill hit. Run from inside the
+# scratch clone.
+drill-env:
+	@if [ ! -f .env ]; then echo "FAIL no .env in $$(pwd)"; exit 1; fi; \
+	echo "--- .env differences from .env.example ---"; \
+	diff .env.example .env || true; \
+	echo "--- required drill-specific overrides ---"; \
+	status=0; \
+	template_password=$$(grep -E '^KENDRA_POSTGRES_PASSWORD=' .env.example | cut -d= -f2-); \
+	if grep -qE '^KENDRA_API_PORT=8001$$' .env; then \
+		echo "OK   KENDRA_API_PORT=8001"; \
+	else \
+		echo "FAIL KENDRA_API_PORT is not overridden to 8001"; \
+		status=1; \
+	fi; \
+	if grep -qE '^KENDRA_WEB_PORT=3001$$' .env; then \
+		echo "OK   KENDRA_WEB_PORT=3001"; \
+	else \
+		echo "FAIL KENDRA_WEB_PORT is not overridden to 3001"; \
+		status=1; \
+	fi; \
+	env_password=$$(grep -E '^KENDRA_POSTGRES_PASSWORD=' .env | cut -d= -f2-); \
+	if [ -n "$$env_password" ] && [ "$$env_password" != "$$template_password" ]; then \
+		echo "OK   KENDRA_POSTGRES_PASSWORD changed from the .env.example placeholder"; \
+	else \
+		echo "FAIL KENDRA_POSTGRES_PASSWORD is still the .env.example placeholder (or unset)"; \
+		status=1; \
+	fi; \
 	exit $$status
