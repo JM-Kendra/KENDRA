@@ -27,6 +27,7 @@ class HealthResponse(BaseModel):
     services: dict[str, ServiceReadiness]
     source_revision: str
     source_revision_dirty: bool
+    release_tag: str
     answering_enabled: bool
     answer_model: str
     embedding_model: str
@@ -58,6 +59,7 @@ async def health(request: Request) -> JSONResponse:
         services=services,
         source_revision=request.app.state.source_revision,
         source_revision_dirty=request.app.state.source_revision_dirty,
+        release_tag=request.app.state.release_tag,
         answering_enabled=request.app.state.answering_enabled,
         answer_model=request.app.state.answer_model_name,
         embedding_model=request.app.state.embedding_model_name,

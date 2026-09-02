@@ -162,6 +162,15 @@ button:focus-visible {
   line-height: 1.55;
 }
 
+.build-footer {
+  width: min(760px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 0 0 2rem;
+  color: var(--muted);
+  font-size: 0.76rem;
+  letter-spacing: 0.02em;
+}
+
 @media (max-width: 560px) {
   main {
     padding: 3rem 0;

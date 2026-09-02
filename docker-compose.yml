@@ -63,6 +63,9 @@ services:
         # at every start -- only at build/rebuild time. Blank if not exported here;
         # see the `environment:` comment below for why it isn't also set there.
         KENDRA_SOURCE_REVISION: ${KENDRA_SOURCE_REVISION:-}
+        # Same mechanism, for the release tag (e.g. "demo-dost-v1"). Blank for
+        # any build taken before tagging or any non-release build.
+        KENDRA_RELEASE_TAG: ${KENDRA_RELEASE_TAG:-}
     environment:
       KENDRA_ENVIRONMENT: ${KENDRA_ENVIRONMENT:-development}
       KENDRA_LOG_LEVEL: ${KENDRA_LOG_LEVEL:-INFO}
@@ -251,6 +254,10 @@ services:
       target: runtime
       args:
         NEXT_PUBLIC_KENDRA_API_BASE_URL: ${NEXT_PUBLIC_KENDRA_API_BASE_URL:-http://127.0.0.1:8000}
+        # Bakes the current Git commit into the client bundle at build time
+        # (Dockerfile's `build` stage ARG/ENV) for the web footer. Never
+        # hard-coded; see the Makefile `build` target.
+        NEXT_PUBLIC_KENDRA_GIT_COMMIT: ${NEXT_PUBLIC_KENDRA_GIT_COMMIT:-}
     environment:
       NODE_ENV: production
     ports:

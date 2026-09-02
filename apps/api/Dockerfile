@@ -46,6 +46,13 @@ FROM base AS runtime
 ARG KENDRA_SOURCE_REVISION=""
 ENV KENDRA_SOURCE_REVISION=${KENDRA_SOURCE_REVISION}
 
+# Same baking pattern as KENDRA_SOURCE_REVISION above, for the release tag
+# (e.g. "demo-dost-v1"). Empty by default -- a build taken before tagging (or
+# any non-release build) simply has no tag to report; main.py reads this via
+# a plain os.environ.get with an empty-string default, never fabricating one.
+ARG KENDRA_RELEASE_TAG=""
+ENV KENDRA_RELEASE_TAG=${KENDRA_RELEASE_TAG}
+
 RUN python -m pip install --no-cache-dir . \
     && groupadd --system kendra \
     && useradd --system --gid kendra --home-dir /nonexistent --shell /usr/sbin/nologin kendra
