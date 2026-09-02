@@ -1,7 +1,11 @@
 # Kendra — project instructions
 
 Local-first, citation-verifiable document intelligence for Philippine government offices.
-Milestones 1–10 and 12 are on `main`. Milestone 11 (OCR render/model fidelity) is defined
+Milestones 1–10, 12, and 13 are on `main`. Milestone 13 (demonstration release) merged
+2026-09-02 (`Merge Milestone 13: demonstration release demo-dost-v1.2 (drilled and gated
+under ADR-014)`, `1bbd3f3`); `prototype/milestone-13-demo-release` is kept for reference,
+not deleted. Next work is pilot preparation per `docs/PILOT_PLAN.md`'s open items, not new
+milestone work. Milestone 11 (OCR render/model fidelity) is defined
 (`ADR-011`) but **`ADR-011` is `Proposed`, not `Accepted`, and lives only on
 `prototype/milestone-10-verification-contract`. Do not merge Milestone 11 work to `main`
 until `ADR-011` is accepted.** Milestone 10 (retrieval and question answering) is
