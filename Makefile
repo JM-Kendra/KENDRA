@@ -1,4 +1,4 @@
-.PHONY: build test test-full
+.PHONY: build test test-full verify-chain
 
 # Rebuilds api/web with KENDRA_SOURCE_REVISION (both images) and, once the
 # current commit is tagged, KENDRA_RELEASE_TAG (api) / NEXT_PUBLIC_KENDRA_GIT_COMMIT
@@ -30,3 +30,15 @@ test:
 test-full:
 	docker build --target eval-runner --build-context fixtures=. -t kendra-api-eval-runner ./apps/api
 	docker run --rm --entrypoint python -v "$$(pwd)":/repo -w /repo/apps/api kendra-api-eval-runner -m pytest -q
+
+# Verifies the question_audit hash chain against the LIVE main dev stack.
+# `docker compose exec api python scripts/verify_audit_chain.py` (as CLAUDE.md
+# used to document) does not work: the api runtime image never COPYs
+# scripts/ in, and the container's read_only rootfs blocks `docker cp` as a
+# workaround. `docker compose run` instead reuses the api service's own
+# image, network, and environment (including .env, loaded by compose
+# automatically -- no credentials hard-coded here) while bind-mounting
+# scripts/ read-only and overriding the entrypoint; --no-deps skips starting
+# postgres/qdrant/ollama, which are already running on the main stack.
+verify-chain:
+	docker compose run --rm --no-deps --entrypoint python -v "$$(pwd)/scripts:/scripts:ro" api /scripts/verify_audit_chain.py

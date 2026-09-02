@@ -156,8 +156,8 @@ docker compose --env-file .env.example config --quiet
 # Rebuild api/web with the current commit (and, once tagged, the release tag) baked in
 make build
 
-# Verify the question_audit hash chain against the live database
-docker compose exec api python scripts/verify_audit_chain.py
+# Verify the question_audit hash chain against the live main dev stack
+make verify-chain
 ```
 
 **`test` vs. `test-full`:** `test`'s standard `docker build --target test` image is

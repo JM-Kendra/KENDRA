@@ -151,7 +151,7 @@ hash from its own contents and confirms an unbroken link from genesis to the
 latest row.
 
 ```bash
-docker compose exec api python scripts/verify_audit_chain.py
+make verify-chain
 ```
 
 - **Pilot gate:** `PASS` with zero unexplained rows, checked before and

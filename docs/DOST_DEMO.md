@@ -458,8 +458,14 @@ curl -s http://127.0.0.1:8000/api/v1/health | python3 -m json.tool
 #    project (named container, default lock, default revision preflight).
 #    See the Milestone 13 final report for the exact invocation used.
 
-# 6. Verify the hash chain from genesis.
-docker compose -p kendra-recovery-drill exec api python scripts/verify_audit_chain.py
+# 6. Verify the hash chain from genesis. (`docker compose exec api python
+#    scripts/verify_audit_chain.py` does not work -- the api runtime image
+#    never COPYs scripts/ in, and its read_only rootfs blocks `docker cp` as
+#    a workaround. `docker compose run` reuses the api service's own image,
+#    network, and environment while bind-mounting scripts/ read-only; this
+#    is the drill-project form of `make verify-chain`.)
+docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
+  -v "$(pwd)/scripts:/scripts:ro" api /scripts/verify_audit_chain.py
 
 # 7. Tear down completely — this drill must not leave state behind.
 docker compose -p kendra-recovery-drill down --volumes
