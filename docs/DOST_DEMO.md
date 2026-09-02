@@ -262,13 +262,37 @@ Both are supplied dynamically, never hand-typed into a committed file:
 
 ## 6. Release gold evaluation
 
-Filled in once the release commit's rerun completes (see the Milestone 13
-final report for the authoritative numbers): run-id, `source_revision`
-confirmation, `question_audit` row counts before/after, and hash-chain
-verification. The rerun uses the hardened runner
-(`kendra_api.evaluation.run`) — named container, default lock path, default
-revision-match preflight, no `--allow-revision-mismatch` — against this
-release's own tagged commit, not the 2026-08-31 M12 runs or any EXP-11 run.
+Run against release-candidate commit `903b10895d543bad337cabab97e7e1d8d1ea4690`
+(the commit `demo-dost-v1` tags — Section 5), using the hardened runner
+(`kendra_api.evaluation.run`) — named container `kendra-eval-m13-release`, no
+`--rm`, default lock path (`evaluation/runs/.lock`), default revision-match
+preflight, no `--allow-revision-mismatch`. Not a reuse of the 2026-08-31 M12
+runs or any EXP-11 run.
+
+- **Run directory:** `evaluation/runs/M13-release/20260902T022843Z-903b1089/`
+  (`evaluation_run_id eval-f0f2fc29-c398-4773-b52e-a4fb7f27a99b`) — preserved
+  locally, ignored by Git (`/evaluation/runs/*` in `.gitignore`).
+- **`report.json`'s `source_revision`:** `903b10895d543bad337cabab97e7e1d8d1ea4690`
+  — matches the tagged commit exactly; `source_revision_mismatch_overridden:
+  false` in `run_config.json`.
+- **Classification accuracy: `0.82`** (`TP 32 / FN 8 / FP 1 / TN 9`) — the
+  single false positive is `KND-M5-UN-002`, the already-disclosed temporal-
+  boundary defect (Section 4, item 3), not a new failure. Matches the figure
+  Section 4 cited from EXP-13's run exactly, since nothing answering-relevant
+  changed between that commit and this release (footer/build-arg plumbing
+  and documentation only).
+- **Unsupported false-answer rate: `0.1`** (1 of 10), matching
+  `docs/PILOT_PLAN.md` Section 2.1's measured baseline.
+- **`question_audit`: 300 before, 350 after — a clean `+50`**, confirmed by
+  direct `SELECT count(*)`, with this run's own 50 rows individually
+  confirmed by `evaluation_run_id`.
+- **Hash chain: `PASS: 350 records, chain verified from genesis`**
+  (`scripts/verify_audit_chain.py`), run immediately after.
+- All three demo-script cases (Section 2) matched their scripted outcome
+  exactly in this run: `KND-M5-DF-009` and `KND-M5-DF-020` returned
+  `supported` with the cited pages; `KND-M5-UN-007` returned
+  `insufficient_evidence` with the exact required sentence and zero
+  citations.
 
 ## 7. Hardware requirements
 
