@@ -16,13 +16,19 @@ and confirmed.
 - `demo-dost-v1` — commit `903b1089` — **superseded**. It predates the `docker-compose.yml`
   `ingest`-service env-passthrough fix (`4b09600`) and cannot be deployed from scratch as
   tagged. See `docs/DOST_DEMO.md`.
-- `demo-dost-v1.1` — commit `6a671dee` — **current for the answering/eval story, but not
-  confirmed from-scratch deployable**. Gold eval reproduced `v1`'s exact confusion matrix
-  (`0.82` accuracy, sole FP `KND-M5-UN-002`) with zero preflight retries (Task 2's fix
-  confirmed). A from-tag drill found the Task 1 ownership-fix command itself fails on a
-  genuinely fresh `document-repository/` (the three subdirectories don't exist yet to
-  `chown`). A corrected `README.md` instruction is committed after the tag but cannot
-  retroactively fix the tagged state. See `docs/DOST_DEMO.md` Section 6.2 and Section 10.
+- `demo-dost-v1.1` — commit `6a671dee` — **superseded**. Gold eval reproduced `v1`'s exact
+  confusion matrix (`0.82` accuracy, sole FP `KND-M5-UN-002`) with zero preflight retries,
+  but a from-tag drill found the ownership-fix command itself fails on a genuinely fresh
+  `document-repository/` — not from-scratch deployable as tagged. See `docs/DOST_DEMO.md`
+  Section 6.2 and Section 10.
+- `demo-dost-v1.2` — commit `b8286729` — **current**. First tag drilled from a fresh origin
+  clone, top to bottom, *before* being tagged (Milestone 13 round 7 rule 13: every drill
+  command had to already be documented, no mid-drill fixes) — from-scratch deployability is
+  confirmed as tagged, not merely asserted. Gated under `ADR-014` (Accepted, `N = 47` of 50
+  per-case agreement between the drill and release evaluations, full per-case disclosure of
+  every differing case), which replaced the prior rounds' informal exact-confusion-matrix
+  requirement after that proved not reliably achievable across independently built vector
+  indexes. See `docs/DOST_DEMO.md` Section 6.3 and Section 10.
 
 ## Binding invariants — never violate these
 
@@ -120,8 +126,9 @@ and confirmed.
   sink; `scripts/verify_audit_chain.py` verifies it against the live database.
 - `apps/api/src/kendra_api/evaluation/` — the gold-evaluation runner (`run.py`), `RunLock`
   (`lock.py`), preflight checks (`preflight.py`).
-- `docs/adr/` — architecture decisions. `ADR-007` and `ADR-012` are active/accepted;
-  `ADR-011` is proposed only; `ADR-004`/`005`/`006` are superseded or rejected.
+- `docs/adr/` — architecture decisions. `ADR-007`, `ADR-012`, and `ADR-014` are
+  active/accepted; `ADR-011` is proposed only; `ADR-004`/`005`/`006` are superseded or
+  rejected.
 - `docs/experiment-decisions/` — EXP records. `EXP-01` is the canonical failure record;
   `EXP-13`'s frozen preregistration and its adoption ADR (`ADR-012`) are separate documents
   — do not conflate a frozen "not supported" verdict with a later adoption decision.

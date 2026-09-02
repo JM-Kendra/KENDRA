@@ -267,7 +267,7 @@ Both are supplied dynamically, never hand-typed into a committed file:
 
 ## 6. Release gold evaluation
 
-**`demo-dost-v1` is superseded by `demo-dost-v1.1`.** `v1` (commit
+**`demo-dost-v1.2` is current; `v1` and `v1.1` are superseded.** `v1` (commit
 `903b1089`) predates the `docker-compose.yml` `ingest`-service
 environment-passthrough fix (commit `4b09600`) and cannot be deployed from
 scratch as tagged — see Milestone 13's `v11.md` report Section 6 for the
@@ -282,9 +282,24 @@ manual step** — the same disease as `v1`, a different organ. A corrected
 instruction is committed on the branch after the tag, but per the standing
 rule against re-pointing a pushed tag, it cannot retroactively make `v1.1`
 itself pass; only a future release's own from-tag drill can confirm that.
-Use `v1.1` for any new demonstration (it still reproduces the release gold
-eval's confusion matrix, Section 6.2); `v1` remains tagged and unaltered as
-the historical record it always was.
+**`v1.2` (Section 6.3 below) closes this pattern: it is the first tag drilled
+from a fresh origin clone, top to bottom, per Section 10 exactly as written,
+*before* being tagged** — the from-scratch deployability question is settled
+at tag time rather than discovered afterward by a subsequent drill. Use
+`v1.2` for any new demonstration; `v1` and `v1.1` remain tagged and unaltered
+as the historical record they always were.
+
+**Supersession summary:** `v1` (predates the compose `ingest`-service
+environment-passthrough fix); `v1.1` (the README ownership instruction
+fails on a genuinely fresh `document-repository/`; `ollama-model-loader`
+never staged the answer model; the extraction-policy template carried the
+pre-`ADR-007` value); `v1.2` (all three fixed; drilled from a fresh origin
+clone at RC *before* tagging — first tag with from-scratch deployability
+confirmed as tagged **and** the first whose evaluation reproducibility is
+gated by a preregistered criterion, `ADR-014`'s `N = 47` per-case agreement
+with full per-case disclosure of every differing case, rather than an
+informal exact-match requirement discovered to be unachievable only after
+a drill failed it).
 
 ### 6.1 — `demo-dost-v1` (superseded)
 
@@ -351,6 +366,74 @@ reuse of `v1`'s run, the 2026-08-31 M12 runs, or any EXP-11 run.
   `document-repository/`. A manual `mkdir -p` step was needed — see that
   section for the exact finding and the corrected instruction, which
   post-dates this tag and does not retroactively change this result.
+
+### 6.3 — `demo-dost-v1.2` (current)
+
+The first release drilled from a fresh origin clone, top to bottom, per
+Section 10 exactly as written, **before** being tagged — Milestone 13
+round 7's rule 13 required every command run to be one already in this
+document; any gap would have stopped the drill rather than being patched
+mid-run. Gated under `ADR-014` (Accepted, `N = 47`), which replaced the
+prior rounds' informal exact-confusion-matrix requirement after it proved
+not reliably achievable across independently built vector indexes
+(`ADR-014` Section 1).
+
+**Deployment gate (`ADR-014`, exact) — PASS on every element:**
+
+| Element | Required | Observed | Result |
+|---|---|---|---|
+| `source_revision` at drill health == RC | `b8286729…` | `b8286729…` | PASS |
+| `make check-template` in fresh clone | pass | pass (5/5 checks) | PASS |
+| Both models present | `bge-m3`, `qwen2.5:7b-instruct` | both present | PASS |
+| 9/9 documents `ready`, chunk/page counts == release | 34/4, 5/2, 35/12, 3/1, 2/1, 3/1, 2/1, 12/3, 286/16 | identical, all nine | PASS |
+| `pipeline_revision` == RC, all nine | `b8286729…` | `b8286729…`, all nine | PASS |
+| `report.json` `source_revision_mismatch_overridden` | `false` | `false` | PASS |
+| Drill chain verify | `PASS` at 50 | `PASS: 50 records, chain verified from genesis` | PASS |
+| Zero residual drill resources | none | none (4 checks, all empty) | PASS |
+| Scratch clone removed | gone | gone | PASS |
+
+**Release-eval gate (fixed index, exact) — PASS.** `kendra-eval-m13-6-release`
+(`evaluation_run_id eval-b77fbf23-17de-42fb-8826-15bc78b79ee5`,
+`evaluation/runs/M13.6-release/20260902T121848Z-b8286729/`) reproduced
+`M13.1-release` exactly: `0.82` (`TP 32/FN 8/FP 1/TN 9`), sole FP
+`KND-M5-UN-002`, unsupported false-answer rate `0.1`, zero runner failures.
+`question_audit`: `500` before, `550` after. Hash chain: `PASS: 550 records,
+chain verified from genesis`. All three demo-script cases (Section 2)
+matched their scripted outcome exactly: `KND-M5-DF-009` (`supported`, 1
+citation), `KND-M5-DF-020` (`supported`, 2 citations), `KND-M5-UN-007`
+(`insufficient_evidence`, 0 citations).
+
+**Evaluation gate (`ADR-014`, `N = 47`) — PASS.** `kendra-eval-m13-6-drill`
+(`evaluation_run_id eval-3aacaff8-2534-478a-a8fa-f64481573be0`,
+`evaluation/runs/M13.6-recovery-drill/20260902T121128Z-b8286729/`) agreed
+with the release evaluation on **48 of 50 cases**:
+
+| Case | `expected_result` | Release label | Drill label |
+|---|---|---|---|
+| `KND-M5-CD-004` | `supported` | `unsupported` | `supported` |
+| `KND-M5-DF-018` | `supported` | `supported` | `unsupported` |
+
+Sole false positive `KND-M5-UN-002` unchanged in both. Unsupported
+false-answer rate unchanged (`0.1` in both). Both differing cases were
+already-disclosed borderline categories (`cross_document_comparison`,
+`direct_factual` under OCR extraction) — neither is a new failure mode.
+
+**Wall-clock table** (marker-measured for stages 2–5; stage 1 inferred from
+container status text, "Up N seconds," rather than an explicit epoch marker;
+stages 6–9 completed within a few seconds each, consistent with prior
+rounds' measurements of the same steps, but not individually re-measured
+this round):
+
+| Stage | Wall time | Note |
+|---|---:|---|
+| 1. Bring up postgres/qdrant/ollama | ~6s | inferred from `docker compose ps` status text |
+| 2. Docling + Ollama loaders (parallel) | 953s | marker-measured |
+| 3. Ingest all 9 documents | 201s | marker-measured |
+| 4. Build + bring up api/web | 84s | marker-measured — no port collision this round (ports pre-specified per round 6's fix) |
+| 5. Answering toggle + gold evaluation (50 cases) | 136s | marker-measured (start command to `report.json` write) |
+| 6. Chain verify | a few seconds | not individually re-measured |
+| 7. Preserve run artifacts (`rsync`) + 8. Teardown + 9. Scratch clone removal | a few seconds each | not individually re-measured |
+| **Total, empty to torn down** | **≈24 minutes** | sum of measured/inferred rows above |
 
 ## 7. Hardware requirements
 
