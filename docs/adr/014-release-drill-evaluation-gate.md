@@ -144,13 +144,19 @@ it.** Round 5's drill remains, in its own report, a recorded gate failure.
 ## 4. Alternatives considered
 
 1. **Exact confusion-matrix reproduction (the status quo to date).**
-   Rejected: Task 2's evidence shows this is not achievable across
-   independently built ANN indexes even when the underlying chunks and
-   generator are identical and the generator itself is proven deterministic
-   — the gate was measuring index-rebuild variance while labeled as measuring
-   deployment correctness. Continuing to require it would mean no from-scratch
-   drill of a system built on an independently-constructed vector index could
-   ever pass on a bad day, regardless of how correctly it was deployed.
+   Rejected: it failed on the only index-rebuild drill run against it
+   (round 5), on a run where the generator was independently ruled out as
+   the cause (Task 2c: zero disagreements across three fixed-index runs) and
+   the ingested chunk/page counts matched the release exactly (Task 2a). One
+   failure with the generator eliminated is not proof the requirement can
+   never be met — n=1 does not establish "not achievable," only that it is
+   not reliably achievable on the evidence collected so far — but it is
+   already enough to show the gate was measuring index-rebuild variance,
+   an axis this project does not otherwise control for, while being labeled
+   as a measure of deployment correctness. Continuing to require exact
+   reproduction risks failing a correctly deployed drill on a day the index
+   happens to land differently, for reasons unrelated to whether the
+   deployment itself is correct.
 2. **N-of-M trial agreement, per `EXP-11` Amendment A2.** A2 requires three
    independent trials of the *same* (case, arm) pair — same persisted
    evidence packet, same index — to unanimously agree before a case counts as
