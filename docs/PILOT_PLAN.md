@@ -71,6 +71,25 @@ listed in Section 5.
    exists, not how already-admitted originals are protected. **Not
    implemented this round** — docs only.
 
+3. **Offline model bundle.** `ollama-model-loader` (`docker-compose.yml`,
+   fixed to stage both the embedding and answer model in this same round —
+   see the commit history) pulls both models from the network, and Docling's
+   `docling-model-loader` does the same for the layout/table models. A pilot
+   deployment is meant to run genuinely offline once staged
+   (`ARCHITECTURE.md`'s offline-readiness intent, gated on `EXP-07`, "is the
+   build genuinely offline?" — not independently re-verified by this
+   milestone), but a pilot site may not have the outbound network access
+   this staging step assumes: no `ollama pull`, no Hugging Face fetch for
+   Docling's models.
+
+   **Proposed scope:** stage models from a local bundle carried on media
+   instead of pulled live — an exported Ollama blob directory (`ollama.tar`
+   or the raw `/root/.ollama` blob store) for `bge-m3`/`qwen2.5:7b-instruct`,
+   and the equivalent pre-fetched Docling artifact directory, both with a
+   checksum manifest so a corrupted or substituted bundle is detected before
+   use rather than silently loaded. No network access required at any point
+   during staging or ingestion. **Not implemented this round** — docs only.
+
 ## 1. Why not headline accuracy alone
 
 `docs/PRODUCT_BRIEF.md`'s provisional pilot targets and
