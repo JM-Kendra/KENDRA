@@ -436,3 +436,66 @@ amendment is drafted here (per this task's own conditional). The protocol
 deviation above does not concern token-window truncation and is recorded, not
 remediated, here — it is a separate methodological gap for whoever reviews
 Stage 0 before relying on it to gate Stage 1.
+
+## (g) The six EXP-11 abstentions were correct behavior given the rendered input
+
+**How this was checked.** A read-only inspection (reported as "v8 item-4" in
+this project's session records; also `docs/experiment-decisions/EXP-13-preregistration.md`
+§0) printed `render_evidence()`'s (`apps/api/src/kendra_api/answering/model_client.py`)
+exact output for `KND-M5-CD-004`'s persisted evidence packet
+(`evaluation/runs/EXP-11/packets/KND-M5-CD-004.json`) and then checked all 8
+of that packet's evidence items, not just the three inspected verbatim.
+
+**Finding, stated exactly as checked:**
+
+1. `render_evidence()` emits, for every evidence item, exactly
+   `<evidence id="ev-N">{text}</evidence>` — no document name, title, page,
+   checksum, or path of any kind. This is the deployment's current and only
+   rendering as of this document; confirmed directly from the function's
+   real output, not from its docstring's own claim.
+2. The `RMC No. 77-2024` chunks in `KND-M5-CD-004`'s packet (evidence items
+   at `order` 3, 4, 5 — the ones needed to establish anything about that
+   document) **never name their own document anywhere in their body text.**
+   Neither "RMC" nor "77-2024" appears in any of the packet's 8 items,
+   including the `RR No. 11-2024` chunks. The only place the string
+   "RMC No. 77-2024" appears anywhere in the constructed prompt is the
+   question itself.
+
+**Conclusion.** Given points 1 and 2 together, the model has no way —
+structural (the rendering) or textual (the chunk content) — to determine
+which evidence item, if any, came from a document named "RMC No. 77-2024."
+`SYSTEM_INSTRUCTION`'s own rule is "Never answer from prior knowledge. If the
+evidence does not establish the answer, return status
+insufficient_evidence" — and evidence that cannot even be attributed to the
+named document a question asks about does not establish an answer *about that
+document*, regardless of whether the right facts happen to be sitting
+somewhere in the undifferentiated block of quoted text. **The six EXP-11
+candidate cases' original abstentions (`KND-M5-CD-004`, `KND-M5-CD-005`,
+`KND-M5-DF-005`, `KND-M5-DF-008`, `KND-M5-DF-009`, `KND-M5-DF-020`, all under
+`B0_BASELINE` in Stage 0) were therefore correct, safe behavior given the
+input the model actually received — not an unexplained defect.** Parts (b),
+(d), and (f) of this document characterized these as a puzzle ("the model had
+what it needed and declined anyway"); this section resolves that puzzle: the
+model did not have what it needed to attribute the facts to the named
+documents the questions asked about, only to *some* document.
+
+**A supporting asymmetry, observed and not further pursued here:** EXP-11
+Stage 1 found `B1_LARGER` (`qwen2.5:14b-instruct`) willing to answer 4 of the
+6 cases anyway (2 fact-complete, 2 fact-incomplete — `stage1_summary.md`),
+but it still abstained, like `B0_BASELINE`, on both cross-document comparison
+cases (`KND-M5-CD-004`, `KND-M5-CD-005`) — the two where correctly answering
+*requires* attributing separate facts to two differently-named documents at
+once, which is exactly the attribution this section shows is structurally
+unavailable. The single-document cases (`DF-*`) only require the model to
+assume the evidence it was given matches the one document named in the
+question, a weaker and evidently sometimes-crossed bar; the cross-document
+cases cannot be crossed the same way. This is consistent with, not
+independent confirmation of, this section's finding — recorded as an
+observation rather than a separately checked result.
+
+**What this does not establish:** that labeling evidence with its document
+name would fix these abstentions, or that doing so is safe (a labeled
+rendering creates its own risk — a claim echoing a filename/page it was never
+supposed to see — see `EXP-13-preregistration.md` Section 7's label-leak
+check). That is `EXP-13`'s own, separate, frozen question; this section
+establishes only the diagnostic finding that motivated it.

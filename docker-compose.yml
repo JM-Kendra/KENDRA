@@ -108,6 +108,10 @@ services:
       KENDRA_ANSWER_TIMEOUT_SECONDS: ${KENDRA_ANSWER_TIMEOUT_SECONDS:-120}
       KENDRA_RETRIEVAL_TOP_K: ${KENDRA_RETRIEVAL_TOP_K:-8}
       KENDRA_RETRIEVAL_SCORE_THRESHOLD: ${KENDRA_RETRIEVAL_SCORE_THRESHOLD:-0.5}
+      # EXP-13 (docs/experiment-decisions/EXP-13-preregistration.md): "current"
+      # is the unchanged default; "labeled" is experimental (R1_LABELED), never
+      # adopted as the default regardless of that experiment's outcome.
+      KENDRA_EVIDENCE_RENDERING: ${KENDRA_EVIDENCE_RENDERING:-current}
     volumes:
       - type: bind
         source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}

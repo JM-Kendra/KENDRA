@@ -70,6 +70,12 @@ class Settings(BaseSettings):
     # further; identical across every arm of a model comparison, it becomes a
     # controlled variable rather than an unrecorded source of variance.
     model_seed: int = Field(default=0)
+    # EXP-13 (docs/experiment-decisions/EXP-13-preregistration.md): "current" is
+    # this deployment's unchanged default (apps/api/src/kendra_api/answering/
+    # model_client.py's render_evidence, byte-identical to pre-EXP-13 behavior).
+    # "labeled" selects render_evidence_with_labels (R1_LABELED) -- experimental,
+    # never the default, not adopted regardless of EXP-13's outcome.
+    evidence_rendering: Literal["current", "labeled"] = "current"
 
     @field_validator("document_store_root")
     @classmethod

@@ -1,10 +1,16 @@
 """Answer gate (MVP_SPEC Step 10).
 
 The model receives the question, a fixed instruction, and numbered delimited
-evidence. It gets opaque evidence IDs and nothing else — no filename, page,
-checksum, or path — so model output cannot name a source even if the document
-text tells it to.
-"""
+evidence. By default (`render_evidence`) it gets opaque evidence IDs and
+nothing else — no filename, page, checksum, or path — so model output cannot
+name a source even if the document text tells it to.
+
+EXP-13 (`docs/experiment-decisions/EXP-13-preregistration.md`) found that this
+default rendering also means the model has no way to attribute an evidence
+item to a *named* document at all, and added `render_evidence_with_labels` as
+an experimental alternative, selected via `KENDRA_EVIDENCE_RENDERING`
+(`current` | `labeled`, default `current`). Default behavior is unchanged
+byte-for-byte — `render_evidence` itself is not modified."""
 
 from __future__ import annotations
 
@@ -49,13 +55,50 @@ class UnavailableAnswerModel:
 
 
 def render_evidence(evidence: list[Evidence]) -> str:
-    """Delimited, numbered, metadata-free rendering."""
+    """Delimited, numbered, metadata-free rendering. Unmodified by EXP-13 --
+    this is the default (`KENDRA_EVIDENCE_RENDERING=current`) and must stay
+    byte-identical to its behavior before EXP-13 existed."""
     blocks = []
     for item in evidence:
         blocks.append(
             f"<evidence id=\"{item.evidence_id}\">\n{item.text}\n</evidence>"
         )
     return "\n".join(blocks)
+
+
+def render_evidence_with_labels(evidence: list[Evidence]) -> str:
+    """EXP-13 `R1_LABELED`: adds an explicit per-chunk document label and page,
+    derived from the same server-owned `Evidence.filename`/`.page` fields
+    `render_evidence` already receives -- no new data model, per the frozen
+    preregistration's Requires-before-freezing item 1 (resolved at freeze: the
+    label is the existing `filename` verbatim, not a new human-title mapping,
+    since only `render_evidence` may change this round). Selected only via
+    `KENDRA_EVIDENCE_RENDERING=labeled`; never the default."""
+    blocks = []
+    for item in evidence:
+        blocks.append(
+            f'<evidence id="{item.evidence_id}" document="{item.filename}" page="{item.page}">\n'
+            f"{item.text}\n</evidence>"
+        )
+    return "\n".join(blocks)
+
+
+def detect_label_leak(claim_text: str, evidence: list[Evidence]) -> list[str]:
+    """EXP-13 Section 7's label-leak check: a claim must never echo the
+    document label or page `render_evidence_with_labels` adds. Returns every
+    filename/page-reference found leaked into `claim_text` (empty if none).
+    Only meaningful when `R1_LABELED`'s rendering was used for the trial being
+    checked -- `render_evidence`'s own output never gives the model a label to
+    leak in the first place, so this is expected to find nothing for
+    `current`-mode trials regardless of claim content."""
+    leaked: list[str] = []
+    for item in evidence:
+        if item.filename and item.filename in claim_text:
+            leaked.append(item.filename)
+        page_marker = f"page {item.page}"
+        if page_marker.lower() in claim_text.lower():
+            leaked.append(page_marker)
+    return leaked
 
 
 # EXP-11 finding (evaluation/M12_FINDINGS.md part (f)): with no explicit num_ctx,
@@ -68,6 +111,12 @@ def render_evidence(evidence: list[Evidence]) -> str:
 ANSWER_NUM_CTX = 8192
 
 
+_RENDERERS = {
+    "current": render_evidence,
+    "labeled": render_evidence_with_labels,
+}
+
+
 class OllamaAnswerModel:
     def __init__(
         self,
@@ -75,10 +124,16 @@ class OllamaAnswerModel:
         model: str,
         timeout_seconds: int = 120,
         seed: int = 0,
+        rendering_mode: str = "current",
         client: httpx.AsyncClient | None = None,
     ) -> None:
+        if rendering_mode not in _RENDERERS:
+            raise ValueError(
+                f"rendering_mode must be one of {sorted(_RENDERERS)}, got {rendering_mode!r}"
+            )
         self._model = model
         self._seed = seed
+        self._render = _RENDERERS[rendering_mode]
         self._client = client or httpx.AsyncClient(
             base_url=base_url.rstrip("/"), timeout=timeout_seconds
         )
@@ -86,7 +141,7 @@ class OllamaAnswerModel:
     async def generate(self, question: str, evidence: list[Evidence]) -> str:
         prompt = (
             f"{SYSTEM_INSTRUCTION}\n\n"
-            f"Evidence:\n{render_evidence(evidence)}\n\n"
+            f"Evidence:\n{self._render(evidence)}\n\n"
             f"Question: {question}\n"
         )
         response = await self._client.post(
