@@ -170,13 +170,14 @@ docker compose --env-file .env.example config --quiet
 
 ## Demonstration releases
 
-A tagged demonstration release (for example `demo-dost-v1`) bakes its Git
-commit into both images (and its tag into the `api` image) rather than
-requiring anyone to remember which checkout produced them:
+A tagged demonstration release (for example `demo-dost-v1.1`, the current
+release — see `docs/DOST_DEMO.md`) bakes its Git commit into both images
+(and its tag into the `api` image) rather than requiring anyone to remember
+which checkout produced them:
 
 1. Confirm the working tree is clean and tests pass (`docker run --rm
    kendra-api-test`, `docker build --target test ./apps/web`).
-2. Tag the commit: `git tag demo-dost-v1`.
+2. Tag the commit: `git tag demo-dost-v1.1`.
 3. Rebuild with the tag baked in:
 
    ```bash
@@ -199,7 +200,7 @@ requiring anyone to remember which checkout produced them:
 
    Open `http://127.0.0.1:3000` and check the page footer for the same
    commit.
-5. Push the branch and the tag: `git push origin <branch> demo-dost-v1`.
+5. Push the branch and the tag: `git push origin <branch> demo-dost-v1.1`.
 
 See [`docs/DOST_DEMO.md`](docs/DOST_DEMO.md) for the seven-minute
 demonstration guide, architecture diagram, honest limitations, hardware and

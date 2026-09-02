@@ -1,19 +1,23 @@
-# DOST demonstration release — `demo-dost-v1`
+# DOST demonstration release — `demo-dost-v1.1`
 
-**Status:** Milestone 13 demonstration package. This is a scripted, honest
-walkthrough of a prototype, not a claim of production readiness, legal
-authority, or accuracy guarantees. Read this alongside
+**Status:** Milestone 13 demonstration package, current release
+`demo-dost-v1.1` (`demo-dost-v1` is superseded — Section 6). This is a
+scripted, honest walkthrough of a prototype, not a claim of production
+readiness, legal authority, or accuracy guarantees. Read this alongside
 [`docs/PILOT_PLAN.md`](PILOT_PLAN.md), [`docs/MVP_SPEC.md`](MVP_SPEC.md), and
 [`docs/milestones/M12_STATUS.md`](milestones/M12_STATUS.md), which this
 document does not restate or soften.
 
-## 1. What `demo-dost-v1` is
+## 1. What `demo-dost-v1.1` is
 
 A tagged Git commit and a pair of Docker images (`api`, `web`) built from it,
 carrying their own commit and tag identity (Section 5) so a reviewer can
 confirm exactly what ran. It packages Milestones 1–10 and 12 as they exist on
-`main`, plus this milestone's release plumbing. It does not add any answering,
-retrieval, or extraction behavior beyond what Milestone 12 already merged.
+`main`, plus this milestone's release plumbing, plus a Milestone 13 follow-up
+round that fixed a host-permission gap, an evaluation-runner lock-ordering
+bug, and brought `CLAUDE.md` current (`v12.md`). It does not add any
+answering, retrieval, or extraction behavior beyond what Milestone 12
+already merged.
 
 ## 2. Seven-minute demonstration guide
 
@@ -263,8 +267,22 @@ Both are supplied dynamically, never hand-typed into a committed file:
 
 ## 6. Release gold evaluation
 
+**`demo-dost-v1` is superseded by `demo-dost-v1.1`.** `v1` (commit
+`903b1089`) predates the `docker-compose.yml` `ingest`-service
+environment-passthrough fix (commit `4b09600`) and cannot be deployed from
+scratch as tagged — see Milestone 13's `v11.md` report Section 6 for the
+two bugs that fix addresses. `v1.1` (Section 6.2 below) is expected to
+deploy from scratch with zero manual intervention now that those fixes are
+in place; the from-scratch drill run against the pushed `v1.1` tag itself
+(not the working tree) is what will confirm that claim rather than merely
+assert it — see the recovery-drill section of this document once that run
+completes. Use `v1.1` for any new demonstration; `v1` remains tagged and
+unaltered as the historical record it always was.
+
+### 6.1 — `demo-dost-v1` (superseded)
+
 Run against release-candidate commit `903b10895d543bad337cabab97e7e1d8d1ea4690`
-(the commit `demo-dost-v1` tags — Section 5), using the hardened runner
+(the commit `demo-dost-v1` tags), using the hardened runner
 (`kendra_api.evaluation.run`) — named container `kendra-eval-m13-release`, no
 `--rm`, default lock path (`evaluation/runs/.lock`), default revision-match
 preflight, no `--allow-revision-mismatch`. Not a reuse of the 2026-08-31 M12
@@ -278,22 +296,51 @@ runs or any EXP-11 run.
   false` in `run_config.json`.
 - **Classification accuracy: `0.82`** (`TP 32 / FN 8 / FP 1 / TN 9`) — the
   single false positive is `KND-M5-UN-002`, the already-disclosed temporal-
-  boundary defect (Section 4, item 3), not a new failure. Matches the figure
-  Section 4 cited from EXP-13's run exactly, since nothing answering-relevant
-  changed between that commit and this release (footer/build-arg plumbing
-  and documentation only).
-- **Unsupported false-answer rate: `0.1`** (1 of 10), matching
-  `docs/PILOT_PLAN.md` Section 2.1's measured baseline.
+  boundary defect (Section 4, item 3), not a new failure.
+- **Unsupported false-answer rate: `0.1`** (1 of 10).
 - **`question_audit`: 300 before, 350 after — a clean `+50`**, confirmed by
   direct `SELECT count(*)`, with this run's own 50 rows individually
   confirmed by `evaluation_run_id`.
 - **Hash chain: `PASS: 350 records, chain verified from genesis`**
   (`scripts/verify_audit_chain.py`), run immediately after.
 - All three demo-script cases (Section 2) matched their scripted outcome
-  exactly in this run: `KND-M5-DF-009` and `KND-M5-DF-020` returned
-  `supported` with the cited pages; `KND-M5-UN-007` returned
-  `insufficient_evidence` with the exact required sentence and zero
-  citations.
+  exactly in this run.
+- This run's own release-eval attempt needed one retry, mid-run, at the git
+  revision preflight (`safe.directory`) — see `v11.md` Section 4. That gap
+  is what Task 2 of the Milestone 13 follow-up round fixed; `v1.1`'s own run
+  (Section 6.2) needed none.
+
+### 6.2 — `demo-dost-v1.1` (current)
+
+Rerun against release-candidate commit
+`6a671dee7df6d8fb263deb4a372f87c91d71816f` (the commit `demo-dost-v1.1`
+tags), using the hardened runner with Task 1–2's fixes already in place —
+named container `kendra-eval-m13-1-release`, no `--rm`, default lock path,
+default revision-match preflight, no `--allow-revision-mismatch`. Not a
+reuse of `v1`'s run, the 2026-08-31 M12 runs, or any EXP-11 run.
+
+- **Run directory:** `evaluation/runs/M13.1-release/20260902T044009Z-6a671dee/`
+  (`evaluation_run_id eval-f8338dde-fa4f-4b78-b760-a219bf13690e`) — preserved
+  locally, ignored by Git.
+- **`report.json`'s `source_revision`:** `6a671dee7df6d8fb263deb4a372f87c91d71816f`
+  — matches the tagged commit exactly; `source_revision_mismatch_overridden:
+  false`.
+- **Zero retries needed** — the runner passed its git-revision preflight on
+  the first attempt, confirming Task 2's fix.
+- **Classification accuracy: `0.82`** (`TP 32 / FN 8 / FP 1 / TN 9`) —
+  identical confusion matrix to `v1`'s run; the sole false positive is again
+  `KND-M5-UN-002`. Expected: nothing between the two releases changed
+  answering behavior (permissions, lock ordering, docs, `CLAUDE.md`).
+- **Unsupported false-answer rate: `0.1`** (1 of 10) — unchanged.
+- **`question_audit`: 350 before, 400 after — a clean `+50`**, confirmed by
+  direct `SELECT count(*)` and by this run's `evaluation_run_id` count.
+- **Hash chain: `PASS: 400 records, chain verified from genesis`.**
+- All three demo-script cases matched their scripted outcome exactly:
+  `KND-M5-DF-009` (`supported`, 1 citation), `KND-M5-DF-020` (`supported`,
+  2 citations), `KND-M5-UN-007` (`insufficient_evidence`, 0 citations).
+- **From-scratch deployability:** not yet confirmed at the time this section
+  was written — see the recovery-drill section of this document for the
+  from-tag drill result, added in a follow-up commit once that drill runs.
 
 ## 7. Hardware requirements
 

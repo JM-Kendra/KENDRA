@@ -16,8 +16,10 @@ and confirmed.
 - `demo-dost-v1` — commit `903b1089` — **superseded**. It predates the `docker-compose.yml`
   `ingest`-service env-passthrough fix (`4b09600`) and cannot be deployed from scratch as
   tagged. See `docs/DOST_DEMO.md`.
-- `demo-dost-v1.1` — in progress (Milestone 13 follow-up round). Update this line to the
-  tagged commit once it lands.
+- `demo-dost-v1.1` — commit `6a671dee` — **current**. Gold eval reproduced `v1`'s exact
+  confusion matrix (`0.82` accuracy, sole FP `KND-M5-UN-002`) with zero preflight retries
+  (Task 2's fix confirmed). The tag itself is created immediately after this commit, at
+  this same commit (tags need not sit at branch tip). See `docs/DOST_DEMO.md` Section 6.2.
 
 ## Binding invariants — never violate these
 
