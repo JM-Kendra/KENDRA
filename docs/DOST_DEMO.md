@@ -566,27 +566,53 @@ echo "KENDRA_WEB_PORT=3001" >> .env
 make check-template
 make drill-env
 
-# 1. Bring up a fully separate project (fresh named volumes; existing
+# 1. Create document-repository/ and intake/, and stage the demonstration
+#    corpus into intake/. A drill stages the nine approved PDFs and
+#    manifests from the main repo's own intake/ (never git-committed, reused
+#    unchanged across releases); a real deployment stages them from the
+#    approved corpus instead. This step had no documented form anywhere in
+#    this procedure through round 7 -- every drill through that round ran it
+#    improvised at the terminal (Milestone 13 round 7, Task 3's own audit
+#    against this document found the gap after the fact).
+mkdir -p document-repository
+mkdir -p intake
+cp "$MAIN_REPO_DIR"/intake/*.pdf intake/
+cp "$MAIN_REPO_DIR"/intake/*.manifest.json intake/
+
+# 2. Fix document-repository/ ownership for the ingest container's non-root
+#    user (uid 999). mkdir -p precedes chown here because objects/,
+#    manifests/, and .staging/ do not exist on a genuinely fresh directory --
+#    they are created lazily by LocalDocumentAdmissionStore.admit() on first
+#    ingestion -- and a from-tag drill against demo-dost-v1.1 (below, "Recovery
+#    drill against demo-dost-v1.1") found the ownership-only form of this
+#    command fails with "No such file or directory" on such a directory. See
+#    README.md's Troubleshooting section for the full rationale (why this is
+#    an ownership fix, not a permission grant).
+docker run --rm -v "$(pwd)/document-repository":/repo alpine sh -c \
+  "mkdir -p /repo/objects /repo/manifests /repo/.staging && \
+   chown -R 999:999 /repo/objects /repo/manifests /repo/.staging && \
+   chmod 755 /repo/objects /repo/manifests /repo/.staging"
+
+# 3. Bring up a fully separate project (fresh named volumes; existing
 #    kendra_* volumes and the kendra-* containers are untouched).
 docker compose -p kendra-recovery-drill up -d postgres qdrant ollama
 
-# 2. Stage models into the *new* project's ollama volume (already-pulled
+# 4. Stage models into the *new* project's ollama volume (already-pulled
 #    layers are shared from the local Docker image/layer cache, but the
 #    named volume itself starts empty).
 docker compose -p kendra-recovery-drill --profile ingestion-setup run --rm docling-model-loader
 docker compose -p kendra-recovery-drill --profile ingestion-setup run --rm ollama-model-loader
 
-# 3. Ingest the demonstration corpus (all nine approved PDFs already staged
-#    under intake/) into the fresh registry. KENDRA_SOURCE_REVISION exported
-#    here is what actually gets recorded as pipeline_revision
-#    (resolve_source_revision(), apps/api/src/kendra_api/ingestion/cli.py);
-#    docker-compose.yml's ingest service already passes it through -- round
-#    5's drill never exported it for this loop (only for the step 4 build),
-#    so its own ingested rows would have recorded "unknown", not a real
-#    commit. The main stack's own long-lived rows predate this mechanism
-#    entirely and show the older Settings-default literal "unversioned"
-#    (Milestone 13 round 6, v17.md Task 2e) -- not reproducible by current
-#    code, not re-ingested, left as historical.
+# 5. Ingest the demonstration corpus (staged under intake/ by step 1) into
+#    the fresh registry. KENDRA_SOURCE_REVISION exported here is what
+#    actually gets recorded as pipeline_revision (resolve_source_revision(),
+#    apps/api/src/kendra_api/ingestion/cli.py); docker-compose.yml's ingest
+#    service already passes it through -- round 5's drill never exported it
+#    for this loop (only for the step 6 build), so its own ingested rows
+#    would have recorded "unknown", not a real commit. The main stack's own
+#    long-lived rows predate this mechanism entirely and show the older
+#    Settings-default literal "unversioned" (Milestone 13 round 6, Task 2e)
+#    -- not reproducible by current code, not re-ingested, left as historical.
 KENDRA_SOURCE_REVISION=$(git rev-parse HEAD)
 export KENDRA_SOURCE_REVISION
 for f in intake/*.pdf; do
@@ -595,28 +621,38 @@ for f in intake/*.pdf; do
     "$(basename "$f")" --manifest "${name}.manifest.json"
 done
 
-# 4. Build api/web with the checked-out commit baked in as
+# 6. Build api/web with the checked-out commit baked in as
 #    KENDRA_SOURCE_REVISION (compose `up` alone would use a stale cached
-#    image without it), bring them up, and confirm health.
+#    image without it), bring them up, and wait for readiness on the health
+#    endpoint's own status field rather than guessing a fixed sleep -- every
+#    drill through round 7 used an undocumented sleep here instead, timed
+#    only by trial and error on one workstation.
 KENDRA_SOURCE_REVISION=$(git rev-parse HEAD) docker compose -p kendra-recovery-drill build api web
 docker compose -p kendra-recovery-drill up -d api web
+timeout 60 bash -c 'until curl -sf http://127.0.0.1:8001/api/v1/health | grep -Eq "\"status\":\s*\"ready\""; do sleep 2; done'
 curl -s http://127.0.0.1:8001/api/v1/health | python3 -m json.tool
 
-# 5. Enable answering for the duration of this eval only (recreate api with
-#    KENDRA_ANSWERING_ENABLED=true, confirm via health), then run the gold
-#    evaluation with the hardened runner against this fresh project (named
-#    container, no --rm, default lock, default revision preflight, --seed
-#    0). --seed only shuffles the order cases are processed in -- it has no
-#    bearing on the generator's own output, whose seed is fixed separately
-#    and unconditionally (apps/api/src/kendra_api/answering/model_client.py).
-#    Pinning it here anyway makes case-processing order reproducible across
-#    runs, which round 5's drill omitted (it drew a random seed instead).
-#    Adjust --output-root/--container-name per the current round's report.
+# 7. Enable answering for the duration of this eval only (recreate api with
+#    KENDRA_ANSWERING_ENABLED=true), wait for readiness the same way, confirm
+#    via health, then run the gold evaluation with the hardened runner
+#    against this fresh project (named container, no --rm, default lock,
+#    default revision preflight, --seed 0). --seed only shuffles the order
+#    cases are processed in -- it has no bearing on the generator's own
+#    output, whose seed is fixed separately and unconditionally
+#    (apps/api/src/kendra_api/answering/model_client.py). Pinning it here
+#    anyway makes case-processing order reproducible across runs, which
+#    round 5's drill omitted (it drew a random seed instead). Adjust
+#    --output-root/--container-name per the current round's report.
+#    docker rm -f the eval container name first: a stale container left over
+#    from an earlier, aborted attempt at the same name otherwise makes
+#    `docker run --name ...` fail outright rather than start cleanly.
 KENDRA_API_PORT=8001 KENDRA_WEB_PORT=3001 KENDRA_ANSWERING_ENABLED=true \
   docker compose -p kendra-recovery-drill up -d --force-recreate --no-deps api
+timeout 60 bash -c 'until curl -sf http://127.0.0.1:8001/api/v1/health | grep -Eq "\"status\":\s*\"ready\""; do sleep 2; done'
 curl -s http://127.0.0.1:8001/api/v1/health | python3 -c \
   "import json,sys; d=json.load(sys.stdin); print('answering_enabled:', d['answering_enabled'])"
 
+docker rm -f kendra-eval-recovery-drill 2>/dev/null || true
 docker run --name kendra-eval-recovery-drill \
   --network kendra-recovery-drill_kendra_private \
   -v "$(pwd)":/repo -w /repo kendra-api-eval-runner \
@@ -629,7 +665,7 @@ docker run --name kendra-eval-recovery-drill \
 # Remove it manually after this run's evidence is captured:
 docker rm kendra-eval-recovery-drill
 
-# 6. Verify the hash chain from genesis. (`docker compose exec api python
+# 8. Verify the hash chain from genesis. (`docker compose exec api python
 #    scripts/verify_audit_chain.py` does not work -- the api runtime image
 #    never COPYs scripts/ in, and its read_only rootfs blocks `docker cp` as
 #    a workaround. `docker compose run` reuses the api service's own image,
@@ -638,8 +674,8 @@ docker rm kendra-eval-recovery-drill
 docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
   -v "$(pwd)/scripts:/scripts:ro" api /scripts/verify_audit_chain.py
 
-# 7. Preserve the drill's own evaluation/runs/ before tearing anything down —
-#    it lives inside the scratch clone and is deleted with it in step 9.
+# 9. Preserve the drill's own evaluation/runs/ before tearing anything down —
+#    it lives inside the scratch clone and is deleted with it in step 11.
 #    Round 5's drill lost its entire run directory (cases.jsonl,
 #    misclassified_cases.md, report.json, run_config.json,
 #    runner_failures.md, scoring_worksheet.json) this way; only the
@@ -648,21 +684,29 @@ docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
 rsync -a "$SCRATCH_CLONE_DIR/evaluation/runs/" "$MAIN_REPO_DIR/evaluation/runs/"
 ls -la "$MAIN_REPO_DIR/evaluation/runs/"
 
-# 8. Tear down completely — this drill must not leave state behind.
+# 10. Tear down completely — this drill must not leave state behind.
 docker compose -p kendra-recovery-drill down --volumes
 
-# 9. Remove the scratch clone itself. A plain `rm -rf` fails partway through:
-#    admitted originals under document-repository/objects/ are 0444-mode,
-#    owned by uid 999 (the ingest container's user), per the immutability
-#    invariant (`ARCHITECTURE.md` Section 9) -- the host user that created the
-#    clone cannot delete files it does not own. Use a one-off privileged
-#    container instead, the same technique as the ownership fix, mounting the
-#    scratch clone's *parent* directory (mounting the clone itself as the
-#    container's root and trying to remove it from inside fails with
-#    "Resource busy").
+# 11. Remove the scratch clone itself. A plain `rm -rf` fails partway through:
+#     admitted originals under document-repository/objects/ are 0444-mode,
+#     owned by uid 999 (the ingest container's user), per the immutability
+#     invariant (`ARCHITECTURE.md` Section 9) -- the host user that created
+#     the clone cannot delete files it does not own. Use a one-off privileged
+#     container instead, the same technique as the ownership fix, mounting
+#     the scratch clone's *parent* directory (mounting the clone itself as
+#     the container's root and trying to remove it from inside fails with
+#     "Resource busy").
 docker run --rm -v "$(dirname "$SCRATCH_CLONE_DIR")":/scratch alpine sh -c \
   "rm -rf /scratch/$(basename "$SCRATCH_CLONE_DIR")"
 ```
+
+A release evaluation run directly against the main stack (Section 6.1–6.3)
+follows the same runner-invocation pattern as step 7 above, minus the
+scratch-clone context: same `docker rm -f <container-name> 2>/dev/null ||
+true` pre-step before `docker run --name ...` (a stale container from an
+earlier attempt at the same name otherwise blocks the run), same
+readiness-wait loop on `/api/v1/health` after any `up`/`--force-recreate`
+before invoking the runner, rather than a fixed sleep.
 
 ### Attempt 1 — bugs found and fixed (2026-09-02, `kendra-recovery-drill` project)
 
