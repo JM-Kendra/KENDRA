@@ -147,12 +147,14 @@ Do not add `--volumes` unless you intentionally want to delete derived local ser
 
 ## Automated checks
 
-Backend tests run in an isolated test image and do not require live services. Run this from the repository root — the `--build-context fixtures=.` flag pulls in `scripts/validate_gold_cases.py` and `evaluation/gold_cases.json` from the repo root, which the evaluation-runner lock tests need to build a throwaway git repository in `tmp_path` (see `apps/api/tests/conftest.py`); neither file lives under `apps/api`'s own build context:
+Backend tests run in an isolated test image and do not require live services. Run this from the repository root — the `--build-context fixtures=.` flag pulls in `scripts/validate_gold_cases.py` and `evaluation/gold_cases.json` from the repo root, which the evaluation-runner lock tests need to build a throwaway git repository in `tmp_path` (see `apps/api/tests/conftest.py`); neither file lives under `apps/api`'s own build context. `make test` runs both steps:
 
 ```bash
 docker build --target test --build-context fixtures=. -t kendra-api-test ./apps/api
 docker run --rm kendra-api-test
 ```
+
+This is the containerized *subset* (`120 passed, 2 skipped, 43 deselected`) — two files need a real, on-disk git checkout to run at all and are excluded by design (`test_evaluation_runner.py`, `test_source_revision.py`; see `CLAUDE.md`'s "Commands"). `make test-full` runs the complete suite (`141 passed, 43 deselected, 0 skipped`) by bind-mounting this checkout into the same image instead of building a throwaway one.
 
 The backend suite generates its digital and scanned PDFs under pytest temporary directories. It commits no generated PDFs or extracted content. Both fixtures exercise Docling's actual local PDF parser; the scanned fixture then invokes the container's actual Poppler/Tesseract tools. Unit tests do not download model artifacts.
 

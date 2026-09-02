@@ -137,12 +137,15 @@ and confirmed.
 ## Commands
 
 ```bash
-# Backend tests, isolated, no live services -- run from the repo root; the
-# --build-context flag pulls scripts/validate_gold_cases.py and
-# evaluation/gold_cases.json into the image for the lock tests' throwaway
-# repo fixture (apps/api/tests/conftest.py), since neither lives under
-# apps/api's own build context.
-docker build --target test --build-context fixtures=. -t kendra-api-test ./apps/api && docker run --rm kendra-api-test
+# Backend tests, isolated, no live services -- the containerized subset only
+# (120 passed, 2 skipped, 43 deselected as of demo-dost-v1.2). Equivalent to
+# `docker build --target test --build-context fixtures=. -t kendra-api-test
+# ./apps/api && docker run --rm kendra-api-test`, run from the repo root.
+make test
+
+# Complete backend suite (141 passed, 43 deselected, 0 skipped), including 21
+# tests that need a real on-disk git checkout and only run bind-mounted.
+make test-full
 
 # Frontend tests and typecheck
 docker build --target test -t kendra-web-test ./apps/web
@@ -157,9 +160,33 @@ make build
 docker compose exec api python scripts/verify_audit_chain.py
 ```
 
-Full test suite baseline: see the most recent milestone report in the operator's reports
-folder for the current pass/skip/deselect counts — do not assume a fixed number here, it
-changes every round.
+**`test` vs. `test-full`:** `test`'s standard `docker build --target test` image is
+hermetic (no `.git`, no live services) but structurally cannot run
+`tests/test_evaluation_runner.py` or `tests/test_source_revision.py` — both
+check facts about the *real* enclosing checkout itself (`.gitignore`
+behavior, a real `HEAD` to compare against), which a throwaway `tmp_path`
+repo cannot stand in for regardless of git availability (see `v14.md`
+Section 2 / `v15.md` Task 3 for the full investigation). `test-full` bind-
+mounts this checkout into the `eval-runner` image instead, so those 21 tests
+run too. Both are the canonical way to run the suite; neither number is
+stale unless a future round's own commit adds or removes tests — see the
+most recent milestone report for the current baseline.
+
+**The `fixtures` build context** (`--build-context fixtures=.`, baked into
+the `make test`/`make test-full` targets and the `eval-runner` stage both
+extend): pulls exactly two files — `scripts/validate_gold_cases.py` and
+`evaluation/gold_cases.json` — from the repo root into the test image, for
+the lock tests' throwaway repo fixture (`apps/api/tests/conftest.py`); ~62KB
+total, negligible against the ~2.5GB image dominated by PyTorch/Docling/
+transformers. It does **not** bake in `.git` or any other repository file.
+It **does** copy whatever bytes are on disk at build time, uncommitted
+changes included — same as every other `COPY` in this Dockerfile, but now
+reaching outside `apps/api`'s own build context for the first time. A dirty,
+uncommitted edit to either file changes what the test image bakes without
+that dependency being visible from inside `apps/api/`; if the dataset
+changes without updating `DEFAULT_DATASET_SHA256` in
+`kendra_api.evaluation.run`, the affected lock tests fail loudly (a sha256
+mismatch) rather than silently testing stale data.
 
 ## Active task queue
 
