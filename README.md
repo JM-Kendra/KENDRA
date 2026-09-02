@@ -168,6 +168,45 @@ Validate the resolved Compose configuration without starting services:
 docker compose --env-file .env.example config --quiet
 ```
 
+## Demonstration releases
+
+A tagged demonstration release (for example `demo-dost-v1`) bakes its Git
+commit and tag into both images rather than requiring anyone to remember
+which checkout produced them:
+
+1. Confirm the working tree is clean and tests pass (`docker run --rm
+   kendra-api-test`, `docker build --target test ./apps/web`).
+2. Tag the commit: `git tag demo-dost-v1`.
+3. Rebuild with the tag baked in:
+
+   ```bash
+   make build
+   ```
+
+   This computes `KENDRA_SOURCE_REVISION` and `NEXT_PUBLIC_KENDRA_GIT_COMMIT`
+   from `git rev-parse HEAD` and `KENDRA_RELEASE_TAG` from `git describe
+   --tags --exact-match HEAD` (harmlessly empty on an untagged commit), then
+   passes all three to `docker compose build api web`. Nothing is
+   hand-typed into a Dockerfile or compose file.
+
+4. Recreate the running containers (`docker compose up -d --force-recreate
+   api web`) and confirm both surfaces agree with the tag:
+
+   ```bash
+   curl -s http://127.0.0.1:8000/api/v1/health | python3 -m json.tool
+   # source_revision and release_tag should match the tagged commit
+   ```
+
+   Open `http://127.0.0.1:3000` and check the page footer for the same
+   commit.
+5. Push the branch and the tag: `git push origin <branch> demo-dost-v1`.
+
+See [`docs/DOST_DEMO.md`](docs/DOST_DEMO.md) for the seven-minute
+demonstration guide, architecture diagram, honest limitations, hardware and
+deployment requirements, and the tested recovery plan, and
+[`docs/PILOT_PLAN.md`](docs/PILOT_PLAN.md) for the pilot success metrics a
+release like this one is measured against.
+
 ## Troubleshooting
 
 - If health returns `503`, run `docker compose ps` and `docker compose logs --tail=100 <service>` using the unavailable service name.
