@@ -1,4 +1,4 @@
-.PHONY: build test test-full verify-chain
+.PHONY: build test test-full verify-chain check-template
 
 # Rebuilds api/web with KENDRA_SOURCE_REVISION (both images) and, once the
 # current commit is tagged, KENDRA_RELEASE_TAG (api) / NEXT_PUBLIC_KENDRA_GIT_COMMIT
@@ -42,3 +42,32 @@ test-full:
 # postgres/qdrant/ollama, which are already running on the main stack.
 verify-chain:
 	docker compose run --rm --no-deps --entrypoint python -v "$$(pwd)/scripts:/scripts:ro" api /scripts/verify_audit_chain.py
+
+# Renders docker-compose.yml against .env.example (what a fresh clone actually
+# gets, not this workstation's own long-lived .env) and pins the four values a
+# fresh from-scratch drill has twice failed on so far. Checks the VALUE, not
+# just presence -- round 4's failure was a wrong value present
+# (KENDRA_EXTRACTION_COMPLETENESS_POLICY resolved to the pre-ADR-007 default),
+# which a presence-only grep would have passed. Meant to run before every
+# future drill so a stale template never again costs ~17 minutes of model
+# staging before the failure surfaces at ingestion.
+check-template:
+	@rendered="$$(docker compose --env-file .env.example --profile ingestion config)"; \
+	status=0; \
+	check() { \
+		if echo "$$rendered" | grep -qE "$$1"; then \
+			echo "OK   $$2"; \
+		else \
+			echo "FAIL $$2"; \
+			status=1; \
+		fi; \
+	}; \
+	check 'KENDRA_EXTRACTION_COMPLETENESS_POLICY: native-primary-detection-v1' \
+		'KENDRA_EXTRACTION_COMPLETENESS_POLICY = native-primary-detection-v1 (ADR-007)'; \
+	check 'KENDRA_EXTRACTION_CANDIDATE_MINIMUM_AGREEMENT: "?0\.90"?' \
+		'KENDRA_EXTRACTION_CANDIDATE_MINIMUM_AGREEMENT = 0.90'; \
+	check 'KENDRA_ANSWER_MODEL: qwen2\.5:7b-instruct' \
+		'KENDRA_ANSWER_MODEL = qwen2.5:7b-instruct'; \
+	check 'KENDRA_EMBEDDING_MODEL: bge-m3' \
+		'KENDRA_EMBEDDING_MODEL = bge-m3'; \
+	exit $$status

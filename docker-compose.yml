@@ -173,11 +173,18 @@ services:
       KENDRA_MINIMUM_PAGE_TEXT_CHARS: ${KENDRA_MINIMUM_PAGE_TEXT_CHARS:-40}
       # Milestone 13 recovery-drill finding: these two were missing from this
       # service's environment block, so the one-off ingestion command always
-      # fell back to Settings' own default (native-page-token-coverage-v1)
-      # regardless of .env -- silently ignoring ADR-007's adopted policy and
-      # producing extraction_conflict failures a fresh from-scratch bring-up
-      # should not hit. The `api` service needs neither (it never extracts).
-      KENDRA_EXTRACTION_COMPLETENESS_POLICY: ${KENDRA_EXTRACTION_COMPLETENESS_POLICY:-native-page-token-coverage-v1}
+      # fell back to Settings' own default regardless of .env -- silently
+      # ignoring ADR-007's adopted policy and producing extraction_conflict
+      # failures a fresh from-scratch bring-up should not hit. The `api`
+      # service needs neither (it never extracts). The fallback value itself
+      # was also still the pre-ADR-007 default until a later round found a
+      # fresh clone's own untouched .env.example hits the identical failure
+      # for the identical reason -- ADR-007 (accepted 2026-08-19) was never
+      # propagated into this fallback, .env.example, or Settings' own class
+      # default; all three now match "KENDRA_EXTRACTION_COMPLETENESS_POLICY=
+      # native-primary-detection-v1" (docs/adr/007-native-primary-detection.md
+      # Section 2.3).
+      KENDRA_EXTRACTION_COMPLETENESS_POLICY: ${KENDRA_EXTRACTION_COMPLETENESS_POLICY:-native-primary-detection-v1}
       KENDRA_EXTRACTION_CANDIDATE_MINIMUM_AGREEMENT: ${KENDRA_EXTRACTION_CANDIDATE_MINIMUM_AGREEMENT:-0.90}
       KENDRA_CHUNK_SIZE_CHARS: ${KENDRA_CHUNK_SIZE_CHARS:-1200}
       KENDRA_CHUNK_OVERLAP_CHARS: ${KENDRA_CHUNK_OVERLAP_CHARS:-200}
