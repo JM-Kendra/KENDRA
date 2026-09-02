@@ -466,7 +466,18 @@ docker compose -p kendra-recovery-drill --profile ingestion-setup run --rm docli
 docker compose -p kendra-recovery-drill --profile ingestion-setup run --rm ollama-model-loader
 
 # 3. Ingest the demonstration corpus (all nine approved PDFs already staged
-#    under intake/) into the fresh registry.
+#    under intake/) into the fresh registry. KENDRA_SOURCE_REVISION exported
+#    here is what actually gets recorded as pipeline_revision
+#    (resolve_source_revision(), apps/api/src/kendra_api/ingestion/cli.py);
+#    docker-compose.yml's ingest service already passes it through -- round
+#    5's drill never exported it for this loop (only for the step 4 build),
+#    so its own ingested rows would have recorded "unknown", not a real
+#    commit. The main stack's own long-lived rows predate this mechanism
+#    entirely and show the older Settings-default literal "unversioned"
+#    (Milestone 13 round 6, v17.md Task 2e) -- not reproducible by current
+#    code, not re-ingested, left as historical.
+KENDRA_SOURCE_REVISION=$(git rev-parse HEAD)
+export KENDRA_SOURCE_REVISION
 for f in intake/*.pdf; do
   name=$(basename "$f" .pdf)
   docker compose -p kendra-recovery-drill --profile ingestion run --rm ingest \

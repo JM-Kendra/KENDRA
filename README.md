@@ -121,10 +121,10 @@ docker compose up -d postgres qdrant ollama
 
 The ingestion profile mounts the staged Docling model volume read-only and explicitly disables Docling OCR. Missing model artifacts fail ingestion; they are never fetched silently during the controlled run. Tesseract is the only OCR fallback.
 
-Set `KENDRA_PIPELINE_REVISION` in `.env` to the exact Git commit being run. Place the PDF and manifest under `intake/`, then invoke the profile-scoped command:
+Export `KENDRA_SOURCE_REVISION` to the exact Git commit being run before invoking ingestion — this is the value actually recorded as each processing run's `pipeline_revision` (`resolve_source_revision()`, `apps/api/src/kendra_api/ingestion/cli.py`); an unset value resolves to the literal `"unknown"` rather than silently guessing. Place the PDF and manifest under `intake/`, then invoke the profile-scoped command:
 
 ```bash
-docker compose --profile ingestion run --rm ingest approved-sample.pdf --manifest approved-sample.json
+KENDRA_SOURCE_REVISION=$(git rev-parse HEAD) docker compose --profile ingestion run --rm ingest approved-sample.pdf --manifest approved-sample.json
 ```
 
 The command emits one machine-readable receipt. An exact-checksum duplicate returns `"duplicate": true` and the existing version identity rather than creating new PostgreSQL records, originals, chunks, or vectors. A processing failure preserves the admitted original, marks the PostgreSQL version/run/generation failed where possible, and never activates the partial Qdrant generation.

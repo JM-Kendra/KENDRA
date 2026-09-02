@@ -70,6 +70,8 @@ check-template:
 		'KENDRA_ANSWER_MODEL = qwen2.5:7b-instruct'; \
 	check 'KENDRA_EMBEDDING_MODEL: bge-m3' \
 		'KENDRA_EMBEDDING_MODEL = bge-m3'; \
+	check 'KENDRA_SOURCE_REVISION:' \
+		'ingest service still passes KENDRA_SOURCE_REVISION through (pipeline_revision provenance)'; \
 	exit $$status
 
 # Confirms a drill's own .env (in the current directory, not .env.example)
