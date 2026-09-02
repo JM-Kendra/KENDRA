@@ -33,6 +33,25 @@ COPY tests ./tests
 
 CMD ["python", "-m", "pytest", "-q"]
 
+FROM test AS eval-runner
+
+# The gold-evaluation runner (kendra_api.evaluation.run) needs `git` for its
+# source-revision preflight (docs/incidents/INC-001-ghost-evaluation-runs.md)
+# and, separately, must resolve `git rev-parse HEAD` inside a container that
+# bind-mounts the repository -- which Git refuses by default ("detected
+# dubious ownership") when the mount's owning uid differs from the
+# container's. Baked here rather than passed per-invocation (GIT_CONFIG_*
+# env vars, or `git config --global` at runtime) so a plain container run
+# never needs the retry Milestone 13's first release round hit. `*` is safe
+# specifically because this image's only use is mounting one operator-chosen
+# repo checkout for evaluation -- it is not a general-purpose Git tool image.
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/* \
+    && git config --system --add safe.directory '*'
+
+ENTRYPOINT ["python", "-m", "kendra_api.evaluation.run"]
+
 FROM base AS runtime
 
 # Baked at build time so a plain `docker compose up` (no export, no rebuild) still
