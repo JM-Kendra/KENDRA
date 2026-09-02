@@ -90,6 +90,29 @@ listed in Section 5.
    use rather than silently loaded. No network access required at any point
    during staging or ingestion. **Not implemented this round** — docs only.
 
+4. **Runner-side retrieval probe.** `ADR-014`'s evaluation gate uses a
+   count-based tolerance (`N = 47` of 50 cases must agree) because the
+   evaluation runner records no retrieval score, similarity, or distance for
+   any case — only the final citations that survived into an answer
+   (Milestone 13 round 6, `v17.md` Task 2b). This makes it impossible to
+   confirm *why* a drill and a release evaluation disagree on a given case:
+   whether the disagreement reflects a different top-k retrieval set (the
+   mechanism `ADR-014` Section 1 attributes round 5's divergence to) or
+   something else entirely (a generator regression, a scoring defect) that a
+   count-based tolerance would silently absorb as if it were the same,
+   already-understood variance.
+
+   **Proposed scope:** extend `kendra_api.evaluation.run` to record, per
+   case, the retrieved chunk IDs and similarity scores actually returned by
+   the retriever (already computed internally; not currently surfaced past
+   the citation-building step), alongside the existing citation-level output
+   in `cases.jsonl`. Validate the recorded scores against the answer's own
+   citations as a consistency check (a cited chunk should appear in the
+   recorded top-k above the configured threshold). This is the stated
+   prerequisite for `ADR-014`'s intended successor criterion — "every
+   differing case must show a different retrieved chunk set" — which cannot
+   be checked today. **Not implemented this round** — docs only.
+
 ## 1. Why not headline accuracy alone
 
 `docs/PRODUCT_BRIEF.md`'s provisional pilot targets and

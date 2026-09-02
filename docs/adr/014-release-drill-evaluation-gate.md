@@ -1,8 +1,6 @@
 # ADR-014: The release-drill evaluation gate
 
-**Status:** Proposed. **Not accepted and not activated. The evaluation gate's
-band (`N` in Section 2) is explicitly left unset — the operator sets it before
-round 7 runs under this ADR.**
+**Status:** Accepted 2026-09-02 by the operator. **`N = 47`** (Section 2).
 **Date drafted:** 2026-09-02
 **Amends:** the informal gate used by every from-scratch drill since Milestone
 13 round 3 (`source_revision == RC; accuracy 0.82; TP 32/FN 8/FP 1/TN 9;
@@ -11,11 +9,11 @@ itself written down as a preregistered decision record until now.
 **Basis:** Milestone 13 round 6's Task 2 diagnostics (`v17.md`), and round 5's
 drill failure (`v16.md`) that prompted them.
 
-> **Gating.** This record proposes a two-part criterion. The deployment gate
+> **Gating.** This record sets a two-part criterion. The deployment gate
 > (Section 2, first bullet) is exact and unchanged from what every prior round
-> already required. The evaluation gate (Section 2, second bullet) introduces
-> a new per-case agreement threshold, `N` of 50, which this record does **not**
-> set. Round 7 does not run against this ADR until an operator sets `N`.
+> already required. The evaluation gate (Section 2, second bullet) sets a
+> per-case agreement threshold, `N = 47` of 50. Round 7 runs against this
+> ADR.
 
 ## 1. Context
 
@@ -100,34 +98,42 @@ control for, and had never been examined until it failed.
   volume; all nine documents reach `ready` with per-document `chunk_count`
   and `page_count` equal to the release stack's own values (Task 2a's
   comparison, now made a standing gate element rather than a one-off
-  diagnostic); `pipeline_revision` is stamped from the baked source revision,
-  not `"unknown"` (if Task 2e's fix has landed by the drill in question);
-  `/api/v1/health` reports no `source_revision_mismatch_overridden`; the
-  drill's own audit chain verifies `PASS` at 50; zero drill-project
-  containers/volumes/networks and no scratch clone remain after teardown.
+  diagnostic); `pipeline_revision` is stamped from the baked source revision
+  and equals RC for all nine documents (Task 2e's fix has landed as of round
+  6 — this clause is unconditional, not contingent); `/api/v1/health` reports
+  `source_revision` equal to RC with no discrepancy, and the evaluation
+  runner's own `report.json` records `source_revision_mismatch_overridden:
+  false` (this is a field of the runner's preflight output, not of
+  `/api/v1/health` — corrected here; the two were conflated in the first
+  draft of this record); the drill's own audit chain verifies `PASS` at 50;
+  zero drill-project containers/volumes/networks and no scratch clone remain
+  after teardown.
 - **Evaluation gate — per-case agreement.** The drill's per-case
-  classification agrees with the release evaluation's on at least **`N` of
-  50** cases (`N` = `[OPERATOR TO SET — see Task 2c/2a data]`); the sole false
-  positive remains `KND-M5-UN-002` in both evaluations; the unsupported
-  false-answer rate is unchanged between the two evaluations; **every**
-  differing case is listed by ID, with its `expected_result`/predicted labels
-  in both evaluations, in the round's report and in `docs/DOST_DEMO.md`
-  Section 6.
+  classification agrees with the release evaluation's on at least **`N = 47`
+  of 50** cases; the sole false positive remains `KND-M5-UN-002` in both
+  evaluations; the unsupported false-answer rate is unchanged between the two
+  evaluations; **every** differing case is listed by ID, with its
+  `expected_result`/predicted labels in both evaluations, in the round's
+  report and in `docs/DOST_DEMO.md` Section 6.
 
-  **What the Task 2 data supports, for the operator setting `N`:** three runs
-  against a *fixed* index agreed on all 50 cases (0 disagreements observed in
-  100 case-comparisons: `diag-1` vs. release, `diag-2` vs. release, `diag-1`
-  vs. `diag-2`). The one drill against a *freshly built* index disagreed on 3
-  of 50 cases (94% agreement, `N = 47`). This is a single observation of the
-  index-rebuild variance, not a distribution — one drill cannot establish
-  whether 3/50 is typical, a lower bound, or an upper bound for that variance.
-  Setting `N` above 47 would fail the only index-rebuild drill on record before
-  ADR-014 existed; setting it at or below 47 accepts that one drill's variance
-  as within tolerance without a second data point confirming it is
-  representative. This record does not resolve that tension — it is the
-  operator's preregistration decision to make, in the same spirit as
-  `EXP-11`'s own frozen thresholds, not one Task 2's single drill can make for
-  them.
+  **Operator decision: N = 47.** (1) Three runs on a fixed index agreed on
+  50/50 cases, so generator-side variance on this hardware is zero; the
+  tolerance below exists solely for index-build variance, and any future
+  disagreement between two evaluations of the *same* index fails the gate
+  regardless of N. (2) The single index-rebuild observation on record is
+  47/50. Setting N above it would fail the only drill that has reached this
+  gate, so a pass in the next round would be luck rather than evidence;
+  setting N below it has no data behind it. (3) The shape constraints carry
+  the real weight: the sole false positive must remain `KND-M5-UN-002`, the
+  unsupported false-answer rate must be unchanged, and every differing case
+  is listed with both labels. A drill that loses supported cases to
+  abstention within the band passes; a drill that gains a single new
+  confident wrong answer fails at any N. (4) N equals one observation and is
+  provisional: it is revisited once three index-rebuild drills exist, and it
+  is expected to be superseded by a mechanism-based criterion (every
+  differing case must show a different retrieved chunk set) once the
+  evaluation runner records retrieval output — see Alternatives and
+  `docs/PILOT_PLAN.md` item 4.
 
 ## 3. Disclosure
 
@@ -178,3 +184,16 @@ it.** Round 5's drill remains, in its own report, a recorded gate failure.
    visible, matching this project's existing preference for per-case
    transparency (`misclassified_cases.md`, `docs/DOST_DEMO.md` Section 6)
    over aggregate-only reporting.
+4. **Mechanism-based criterion: every differing case must show a different
+   retrieved chunk set.** Rather than tolerating a count of disagreements,
+   this would require that any case whose classification differs between the
+   drill and release evaluations also show different top-k retrieval —
+   directly confirming the mechanism (index-build variance) rather than
+   inferring it from a count, and catching a disagreement caused by anything
+   *other* than retrieval (a generator regression, a scoring bug) as a real
+   failure regardless of how few cases it touches. **Not adopted yet: the
+   evaluation runner records no retrieval score, similarity, or distance for
+   any case** (round 6, `v17.md` Task 2b) — there is nothing to compare a
+   differing case's retrieval against today. This is the intended successor
+   to the `N = 47` count-based gate once that gap is closed; see
+   `docs/PILOT_PLAN.md` item 4.
