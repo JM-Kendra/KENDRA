@@ -418,6 +418,21 @@ false-answer rate unchanged (`0.1` in both). Both differing cases were
 already-disclosed borderline categories (`cross_document_comparison`,
 `direct_factual` under OCR extraction) — neither is a new failure mode.
 
+**Cross-round observation (two data points, stated as such, not a trend):**
+this is the second index-rebuild drill on record. Round 5's fresh-index
+drill (`M13.4-recovery-drill`) differed from its release evaluation on
+`KND-M5-CD-004`, `KND-M5-DF-005`, and `KND-M5-DF-018` (47/50); this round's
+(`M13.6-recovery-drill`) differed on `KND-M5-CD-004` and `KND-M5-DF-018`
+(48/50) — `DF-005` was stable this time. `CD-004` and `DF-018` have now
+moved on *both* independently built indexes; `DF-005` moved on only one.
+`DF-018`'s evidence chunk is OCR-extracted (`RMC_77_2024_Invoicing_QA_OCR.pdf`,
+`extraction_method: tesseract`), confirmed directly against this round's own
+`cases.jsonl`, not inherited from an earlier run. Two data points cannot
+establish whether `CD-004`/`DF-018` are structurally more index-sensitive
+than other cases or this is coincidence — explaining *why* is exactly what
+`PILOT_PLAN.md` item 4's retrieval probe (per-case retrieved chunk IDs and
+scores) is for; today the mechanism can only be inferred, not shown.
+
 **Wall-clock table** (marker-measured for stages 2–5; stage 1 inferred from
 container status text, "Up N seconds," rather than an explicit epoch marker;
 stages 6–9 completed within a few seconds each, consistent with prior

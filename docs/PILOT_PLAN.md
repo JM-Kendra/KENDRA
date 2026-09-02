@@ -113,6 +113,25 @@ listed in Section 5.
    differing case must show a different retrieved chunk set" — which cannot
    be checked today. **Not implemented this round** — docs only.
 
+5. **Scripted drill.** Every from-scratch drill through Milestone 13 round 7
+   has been run by hand, one command at a time, against
+   `docs/DOST_DEMO.md` Section 10 — which is also how round 7's own Rule 13
+   audit found a real gap (intake staging, Section 10's step 1) only *after*
+   the drill that needed it had already improvised past it. A procedure that
+   is read and typed by a person can drift from what the document says
+   without anyone noticing until the next audit; a script that *is* the
+   procedure cannot drift silently, and a step it cannot express becomes a
+   script defect at edit time rather than a live improvisation months later.
+   It would also close the wall-clock table's remaining gaps (Section 10's
+   stages 0, 1, 8–11 are not currently marker-measured) by construction,
+   since a script can time every stage without extra operator effort.
+
+   **Proposed scope:** a `scripts/drill.sh` (or a `make drill RC=<sha>`
+   target) that executes Section 10 top to bottom against a given release
+   commit, with per-stage start/end markers, and fails loudly — not
+   silently substituting a workaround — on any step that cannot complete as
+   scripted. **Not implemented this round** — docs only.
+
 ## 1. Why not headline accuracy alone
 
 `docs/PRODUCT_BRIEF.md`'s provisional pilot targets and
