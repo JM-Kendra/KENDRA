@@ -1,10 +1,49 @@
 # Pilot plan
 
-**Status:** Milestone 13 planning artifact for the `demo-dost-v1` demonstration
-release. This is a metric and gating plan, not evidence that a pilot has been
-approved, resourced, or run. It does not resolve any **AGENCY DECISION
-REQUIRED** item in `docs/DATA_GOVERNANCE.md` or any **pilot blocker** question
-in `docs/OPEN_QUESTIONS.md`; those remain open and are listed in Section 5.
+**Status:** Milestone 13 planning artifact for the `demo-dost-v1`/`demo-dost-v1.1`
+demonstration releases. This is a metric and gating plan, not evidence that a
+pilot has been approved, resourced, or run. It does not resolve any **AGENCY
+DECISION REQUIRED** item in `docs/DATA_GOVERNANCE.md` or any **pilot
+blocker** question in `docs/OPEN_QUESTIONS.md`; those remain open and are
+listed in Section 5.
+
+## Must fix before pilot
+
+1. **Extraction-retry gap.** `find_by_checksum`
+   (`apps/api/src/kendra_api/ingestion/registry.py`,
+   `apps/api/src/kendra_api/ingestion/pipeline.py`) treats any existing
+   `document_versions` row for a checksum — including one whose
+   `processing_state` is `failed` — as an unconditional duplicate, and
+   refuses to retry it. A document that fails extraction (for example,
+   `extraction_conflict`) has no ordinary retry path today: an operator must
+   directly delete the failed `document_versions`/`processing_runs`/
+   `index_generations` rows before the one-off ingestion command will accept
+   the same file again. Found during Milestone 13's from-scratch recovery
+   drill (`v11.md` Section 6, finding 2; `docs/DOST_DEMO.md`'s recovery-plan
+   section) when three of nine demonstration documents needed exactly this
+   manual database cleanup after an unrelated configuration bug was fixed.
+   In a real pilot, an operator without direct database access — the
+   expected case, per `docs/DATA_GOVERNANCE.md` Section 2's role
+   separation — would have no way to recover a document that failed
+   extraction for a fixable reason (a corrected extraction policy, a
+   reprocessed scan, a retried OCR pass) without escalating to whoever holds
+   that access.
+
+   **Proposed: `ADR-013`, retry semantics for failed registry rows.**
+   One-paragraph scope: decide how `find_by_checksum` (or the ingestion
+   pipeline calling it) should distinguish a `ready` version — a genuine
+   duplicate, correctly rejected — from a `failed` one, which represents an
+   admitted-but-unprocessed original that a corrected pipeline configuration
+   or a retried extraction attempt should be allowed to reprocess without
+   discarding the immutable admitted bytes already on disk; the decision
+   must also cover what happens to the failed row's original
+   `document_id`/`version_id` (reused vs. superseded) and whether a retry
+   requires operator confirmation given a `failed` state may also indicate a
+   genuinely corrupt or unusable source. **Not written here** — this section
+   only proposes the title and scope; implementing a fix without the ADR is
+   out of scope for this milestone (it touches duplicate-detection
+   semantics that the rest of the ingestion pipeline's tests and contract
+   currently assume are simple).
 
 ## 1. Why not headline accuracy alone
 
