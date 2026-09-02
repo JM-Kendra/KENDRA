@@ -1,6 +1,7 @@
 """FastAPI application factory for the Milestone 8 foundation."""
 
 import inspect
+import os
 from collections.abc import Sequence
 from contextlib import asynccontextmanager
 
@@ -119,6 +120,9 @@ def create_app(
     # Citations depend on this string; deriving it from the same resolver as
     # `source_revision` means the two can never disagree (Section 4).
     application.state.pipeline_git_revision = source_revision.revision
+    # Baked at build time only (Dockerfile ARG/ENV); no fallback resolution
+    # since a tag, unlike a commit, has no git-independent meaning to recover.
+    application.state.release_tag = os.environ.get("KENDRA_RELEASE_TAG", "")
     application.state.answering_enabled = resolved_settings.answering_enabled
     application.state.answer_model_name = resolved_settings.answer_model
     application.state.embedding_model_name = resolved_settings.embedding_model

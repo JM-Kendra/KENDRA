@@ -14,3 +14,10 @@ export function normalizeApiBaseUrl(value?: string): string {
 export function healthEndpoint(value?: string): string {
   return `${normalizeApiBaseUrl(value)}/api/v1/health`;
 }
+
+// Baked in at `npm run build` time via apps/web/Dockerfile's build ARG/ENV
+// (mirroring NEXT_PUBLIC_KENDRA_API_BASE_URL); never hard-coded here. Falls
+// back to "unknown" for a plain `npm run dev` where no build arg was supplied.
+export function gitCommit(): string {
+  return process.env.NEXT_PUBLIC_KENDRA_GIT_COMMIT || "unknown";
+}

@@ -71,3 +71,37 @@ async def test_health_returns_503_when_a_dependency_is_unavailable() -> None:
     assert body["answering_enabled"] is False
     assert body["source_revision"]
     assert isinstance(body["source_revision_dirty"], bool)
+
+
+@pytest.mark.asyncio
+async def test_health_reports_no_release_tag_when_unset(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.delenv("KENDRA_RELEASE_TAG", raising=False)
+    app = create_app(
+        Settings(_env_file=None, postgres_password="test-only"),
+        probes=[FakeProbe("postgres", True, "reachable")],
+    )
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.get("/api/v1/health")
+
+    assert response.json()["release_tag"] == ""
+
+
+@pytest.mark.asyncio
+async def test_health_reports_baked_release_tag(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("KENDRA_RELEASE_TAG", "demo-dost-v1")
+    app = create_app(
+        Settings(_env_file=None, postgres_password="test-only"),
+        probes=[FakeProbe("postgres", True, "reachable")],
+    )
+
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app),
+        base_url="http://testserver",
+    ) as client:
+        response = await client.get("/api/v1/health")
+
+    assert response.json()["release_tag"] == "demo-dost-v1"

@@ -154,20 +154,17 @@ async def _amain(args: argparse.Namespace) -> int:
     dataset_path = args.dataset or (repo_root / "evaluation" / "gold_cases.json")
     output_root = args.output_root or (repo_root / "evaluation" / "runs" / "M12-gold")
 
-    # Lock acquired before anything else, including dataset validation --
-    # docs/incidents/INC-001-ghost-evaluation-runs.md: two invocations of this
-    # same runner overlapped, unnoticed, against the same live API and the same
-    # question_audit table. A second invocation must refuse to start, loudly,
-    # the moment it's attempted -- not after doing other work first.
-    evaluation_run_id = f"eval-{uuid.uuid4()}"
-    lock_path = args.lock_path or (repo_root / "evaluation" / "runs" / ".lock")
-    container_name = args.container_name or f"kendra-eval-{evaluation_run_id}"
-    try:
-        lock = RunLock.acquire(lock_path, run_id=evaluation_run_id, container_name=container_name)
-    except RunLockHeld as exc:
-        print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
-        return 1
-
+    # Every preflight check -- dataset validation, API health, Ollama model
+    # presence, source-revision match -- runs BEFORE the lock is acquired.
+    # Milestone 13 follow-up: previously the lock was acquired first and left
+    # stale by a preflight failure that never touched a live run at all (a bad
+    # dataset checksum, a `git` ownership error), forcing an operator to
+    # manually confirm and clear a lock that never protected anything.
+    # docs/incidents/INC-001-ghost-evaluation-runs.md's actual failure mode --
+    # a client-side process dying while the container it started kept running
+    # against the live API -- can only happen once case-asking has begun, so
+    # only failures from that point on may leave the lock in place; nothing
+    # before it needs the same protection.
     try:
         dataset = load_and_validate_dataset(
             dataset_path=dataset_path,
@@ -187,43 +184,61 @@ async def _amain(args: argparse.Namespace) -> int:
 
     ollama_client: httpx.AsyncClient | None = None
     revision_mismatch_overridden = False
-    try:
-        if args.fake_model:
-            client, _audit_sink = build_fake_evaluation_client(
-                dataset,
-                request_timeout_seconds=request_timeout_seconds,
-                hang_seconds=args.fake_model_hang_seconds,
+    if args.fake_model:
+        client, _audit_sink = build_fake_evaluation_client(
+            dataset,
+            request_timeout_seconds=request_timeout_seconds,
+            hang_seconds=args.fake_model_hang_seconds,
+        )
+        health_body = {
+            "source_revision": "fake-model-eval",
+            "source_revision_dirty": False,
+            "answer_model": "fake-model",
+            "embedding_model": "fake-model",
+            "retrieval_top_k": None,
+            "retrieval_score_threshold": None,
+        }
+    else:
+        client = http_evaluation_client(args.api_base, timeout_seconds=request_timeout_seconds)
+        try:
+            health_body = await check_api_health(
+                client.raw, allow_unknown_revision=args.allow_unknown_revision
             )
-            health_body = {
-                "source_revision": "fake-model-eval",
-                "source_revision_dirty": False,
-                "answer_model": "fake-model",
-                "embedding_model": "fake-model",
-                "retrieval_top_k": None,
-                "retrieval_score_threshold": None,
-            }
-        else:
-            client = http_evaluation_client(args.api_base, timeout_seconds=request_timeout_seconds)
-            try:
-                health_body = await check_api_health(
-                    client.raw, allow_unknown_revision=args.allow_unknown_revision
-                )
-                ollama_client = httpx.AsyncClient(base_url=args.ollama_base.rstrip("/"), timeout=10.0)
-                await check_ollama_has_models(
-                    ollama_client,
-                    answer_model=health_body.get("answer_model", ""),
-                    embedding_model=health_body.get("embedding_model", ""),
-                )
-                revision_mismatch_overridden = check_source_revision_matches_head(
-                    health_body,
-                    repo_root=repo_root,
-                    allow_mismatch=args.allow_revision_mismatch,
-                )
-            except PreflightError as exc:
-                print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
-                await client.aclose()
-                return 1
+            ollama_client = httpx.AsyncClient(base_url=args.ollama_base.rstrip("/"), timeout=10.0)
+            await check_ollama_has_models(
+                ollama_client,
+                answer_model=health_body.get("answer_model", ""),
+                embedding_model=health_body.get("embedding_model", ""),
+            )
+            revision_mismatch_overridden = check_source_revision_matches_head(
+                health_body,
+                repo_root=repo_root,
+                allow_mismatch=args.allow_revision_mismatch,
+            )
+        except PreflightError as exc:
+            print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
+            await client.aclose()
+            if ollama_client is not None:
+                await ollama_client.aclose()
+            return 1
 
+    # Preflight has fully passed -- a run now genuinely begins. From here on,
+    # a crash or a killed process must leave the lock in place on purpose
+    # (INC-001), so every remaining failure path is a bug to fix, not a
+    # missing except clause to add.
+    evaluation_run_id = f"eval-{uuid.uuid4()}"
+    lock_path = args.lock_path or (repo_root / "evaluation" / "runs" / ".lock")
+    container_name = args.container_name or f"kendra-eval-{evaluation_run_id}"
+    try:
+        lock = RunLock.acquire(lock_path, run_id=evaluation_run_id, container_name=container_name)
+    except RunLockHeld as exc:
+        print(f"PREFLIGHT FAILED: {exc}", file=sys.stderr)
+        await client.aclose()
+        if ollama_client is not None:
+            await ollama_client.aclose()
+        return 1
+
+    try:
         timestamp = datetime.now(UTC)
         config = RunConfig(
             dataset_path=str(dataset_path),

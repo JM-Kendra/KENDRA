@@ -20,6 +20,12 @@ FROM source AS build
 ARG NEXT_PUBLIC_KENDRA_API_BASE_URL=http://127.0.0.1:8000
 ENV NEXT_PUBLIC_KENDRA_API_BASE_URL=${NEXT_PUBLIC_KENDRA_API_BASE_URL}
 
+# Baked at build time, never hard-coded -- see docker-compose.yml's `web`
+# build.args and the Makefile `build` target. Empty by default; gitCommit()
+# in src/lib/config.ts falls back to "unknown" when no build arg was supplied.
+ARG NEXT_PUBLIC_KENDRA_GIT_COMMIT=""
+ENV NEXT_PUBLIC_KENDRA_GIT_COMMIT=${NEXT_PUBLIC_KENDRA_GIT_COMMIT}
+
 RUN npm run build
 
 FROM node:24-bookworm-slim AS runtime

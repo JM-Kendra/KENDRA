@@ -10,7 +10,6 @@ stale baked revision after the real commits landed.
 
 from __future__ import annotations
 
-import shutil
 import subprocess
 from pathlib import Path
 
@@ -22,28 +21,13 @@ from kendra_api.evaluation.preflight import check_source_revision_matches_head
 pytestmark = pytest.mark.milestone12
 
 
-def _repo_root() -> Path:
-    if shutil.which("git") is None:
-        pytest.skip("git is not installed in this environment")
-    completed = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        cwd=Path(__file__).resolve().parent,
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        pytest.skip("not running inside a git checkout")
-    return Path(completed.stdout.strip())
-
-
 def _real_head(repo_root: Path) -> str:
     return subprocess.run(
         ["git", "rev-parse", "HEAD"], cwd=repo_root, capture_output=True, text=True, check=True
     ).stdout.strip()
 
 
-def test_matching_revision_returns_false_and_does_not_raise():
-    repo_root = _repo_root()
+def test_matching_revision_returns_false_and_does_not_raise(repo_root):
     head = _real_head(repo_root)
 
     overridden = check_source_revision_matches_head(
@@ -53,18 +37,14 @@ def test_matching_revision_returns_false_and_does_not_raise():
     assert overridden is False
 
 
-def test_mismatch_raises_preflight_error_by_default():
-    repo_root = _repo_root()
-
+def test_mismatch_raises_preflight_error_by_default(repo_root):
     with pytest.raises(PreflightError, match="source_revision mismatch"):
         check_source_revision_matches_head(
             {"source_revision": "0" * 40}, repo_root=repo_root, allow_mismatch=False
         )
 
 
-def test_mismatch_with_override_returns_true_instead_of_raising():
-    repo_root = _repo_root()
-
+def test_mismatch_with_override_returns_true_instead_of_raising(repo_root):
     overridden = check_source_revision_matches_head(
         {"source_revision": "0" * 40}, repo_root=repo_root, allow_mismatch=True
     )
@@ -72,9 +52,7 @@ def test_mismatch_with_override_returns_true_instead_of_raising():
     assert overridden is True
 
 
-def test_missing_or_unknown_source_revision_is_a_mismatch():
-    repo_root = _repo_root()
-
+def test_missing_or_unknown_source_revision_is_a_mismatch(repo_root):
     with pytest.raises(PreflightError, match="source_revision mismatch"):
         check_source_revision_matches_head(
             {"source_revision": None}, repo_root=repo_root, allow_mismatch=False

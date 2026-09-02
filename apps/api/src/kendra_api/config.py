@@ -43,9 +43,12 @@ class Settings(BaseSettings):
     pdf_max_bytes: int = Field(default=50 * 1024 * 1024, gt=0)
     pdf_max_pages: int = Field(default=500, gt=0, le=10_000)
     minimum_page_text_chars: int = Field(default=40, ge=1)
+    # ADR-007 (accepted 2026-08-19) adopts native-primary-detection-v1 as the
+    # runtime configuration: "KENDRA_EXTRACTION_COMPLETENESS_POLICY=native-primary-detection-v1"
+    # (docs/adr/007-native-primary-detection.md Section 2.3).
     extraction_completeness_policy: Literal[
         "native-page-token-coverage-v1", "native-primary-detection-v1"
-    ] = "native-page-token-coverage-v1"
+    ] = "native-primary-detection-v1"
     extraction_candidate_minimum_agreement: float = Field(
         default=0.90, ge=0.0, le=1.0
     )

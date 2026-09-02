@@ -89,28 +89,7 @@ async def _run_fake_model_with_lock(repo_root: Path, tmp_path: Path, *, lock_pat
     return await _amain(args)
 
 
-def _repo_root() -> Path:
-    import shutil
-    import subprocess
-
-    if shutil.which("git") is None:
-        pytest.skip("git is not installed in this environment")
-    completed = subprocess.run(
-        ["git", "rev-parse", "--show-toplevel"],
-        cwd=Path(__file__).resolve().parent,
-        capture_output=True,
-        text=True,
-    )
-    if completed.returncode != 0:
-        pytest.skip("not running inside a git checkout")
-    root = Path(completed.stdout.strip())
-    if not (root / "evaluation" / "gold_cases.json").exists():
-        pytest.skip("evaluation/gold_cases.json not present in this checkout")
-    return root
-
-
-async def test_amain_refuses_to_start_when_the_lock_already_exists(tmp_path):
-    repo_root = _repo_root()
+async def test_amain_refuses_to_start_when_the_lock_already_exists(tmp_path, repo_root):
     lock_path = tmp_path / ".lock"
     RunLock.acquire(lock_path, run_id="eval-stale", container_name="kendra-eval-stale")
 
@@ -124,8 +103,7 @@ async def test_amain_refuses_to_start_when_the_lock_already_exists(tmp_path):
     assert json.loads(lock_path.read_text())["run_id"] == "eval-stale"
 
 
-async def test_amain_releases_the_lock_on_a_clean_exit(tmp_path):
-    repo_root = _repo_root()
+async def test_amain_releases_the_lock_on_a_clean_exit(tmp_path, repo_root):
     lock_path = tmp_path / ".lock"
 
     exit_code = await _run_fake_model_with_lock(repo_root, tmp_path / "out", lock_path=lock_path)
@@ -134,10 +112,15 @@ async def test_amain_releases_the_lock_on_a_clean_exit(tmp_path):
     assert not lock_path.exists()
 
 
-async def test_amain_leaves_the_lock_in_place_on_a_preflight_failure(tmp_path):
-    # A bad dataset sha256 fails preflight (dataset validation) after the lock is
-    # already acquired -- that is not a "clean exit", so the lock must remain.
-    repo_root = _repo_root()
+async def test_amain_never_acquires_the_lock_on_a_preflight_failure(tmp_path, repo_root):
+    # Milestone 13 follow-up: a bad dataset sha256 fails preflight (dataset
+    # validation), which now runs entirely before the lock is acquired -- a
+    # failure here never touched a live run, so it must not leave anything
+    # for a human to find and manually clear. This replaces a prior version
+    # of this test that asserted the lock *remained* on this same scenario,
+    # which was the bug docs/DOST_DEMO.md's recovery drill exposed: a runner
+    # retry after an unrelated preflight failure had to manually confirm and
+    # remove a stale lock that never protected an in-flight run.
     lock_path = tmp_path / ".lock"
     argv = [
         "--repo-root",
@@ -157,4 +140,43 @@ async def test_amain_leaves_the_lock_in_place_on_a_preflight_failure(tmp_path):
     exit_code = await _amain(args)
 
     assert exit_code == 1
+    assert not lock_path.exists()
+
+
+async def test_amain_leaves_the_lock_in_place_on_a_genuine_mid_run_failure(tmp_path, repo_root):
+    # docs/incidents/INC-001-ghost-evaluation-runs.md: once a run has actually
+    # begun (preflight passed, lock acquired, cases in flight), a crash or a
+    # killed process must leave the lock in place on purpose so the failure
+    # is loud, not silent. This must not regress even after Milestone 13's
+    # reordering moved preflight ahead of lock acquisition. Simulated here
+    # with a --scored-worksheet path that does not exist: preflight and the
+    # entire case-asking loop complete successfully (the lock is acquired and
+    # would normally be released next), but loading the worksheet afterward
+    # raises before lock.release() is ever reached.
+    lock_path = tmp_path / ".lock"
+    missing_worksheet = tmp_path / "does-not-exist.json"
+    argv = [
+        "--repo-root",
+        str(repo_root),
+        "--phase",
+        "cold",
+        "--fake-model",
+        "--fake-model-hang-seconds",
+        "0.1",
+        "--request-timeout-seconds",
+        "0.1",
+        "--output-root",
+        str(tmp_path / "out"),
+        "--seed",
+        "7",
+        "--lock-path",
+        str(lock_path),
+        "--scored-worksheet",
+        str(missing_worksheet),
+    ]
+    args = parse_args(argv)
+
+    with pytest.raises(FileNotFoundError):
+        await _amain(args)
+
     assert lock_path.is_file()

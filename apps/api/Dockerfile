@@ -27,11 +27,48 @@ COPY src ./src
 
 FROM base AS test
 
+# `git` is needed by tests/test_evaluation_lock.py and
+# tests/test_evaluation_source_revision_preflight.py, which exercise the real
+# evaluation runner's git-based preflight against a throwaway repository built
+# fresh in `tmp_path` (tests/conftest.py's `repo_root` fixture) rather than
+# resolving an on-disk `.git` checkout from wherever this test file happens to
+# live -- the latter only ever worked when pytest ran against a live checkout,
+# never inside this isolated build.
+RUN apt-get update \
+    && apt-get install --yes --no-install-recommends git \
+    && rm -rf /var/lib/apt/lists/*
+
 RUN python -m pip install --no-cache-dir ".[test]"
 
 COPY tests ./tests
 
+# The lock tests' throwaway repo also needs the real gold-dataset validator
+# and dataset file that kendra_api.evaluation.dataset loads dynamically by
+# path at `<repo_root>/scripts/validate_gold_cases.py` -- neither lives under
+# this image's own build context (./apps/api). Pulled in from a second, named
+# build context (see README.md/CLAUDE.md's build command: `--build-context
+# fixtures=.` from the repository root) rather than widening this image's
+# build context to the whole repository just for two files.
+COPY --from=fixtures scripts/validate_gold_cases.py ./tests/fixtures/gold_dataset/scripts/validate_gold_cases.py
+COPY --from=fixtures evaluation/gold_cases.json ./tests/fixtures/gold_dataset/evaluation/gold_cases.json
+
 CMD ["python", "-m", "pytest", "-q"]
+
+FROM test AS eval-runner
+
+# The gold-evaluation runner (kendra_api.evaluation.run) must resolve
+# `git rev-parse HEAD` inside a container that bind-mounts the repository --
+# which Git refuses by default ("detected dubious ownership") when the
+# mount's owning uid differs from the container's. Baked here rather than
+# passed per-invocation (GIT_CONFIG_* env vars, or `git config --global` at
+# runtime) so a plain container run never needs the retry Milestone 13's
+# first release round hit. `*` is safe specifically because this image's only
+# use is mounting one operator-chosen repo checkout for evaluation -- it is
+# not a general-purpose Git tool image. `git` itself is already installed in
+# the `test` stage this extends.
+RUN git config --system --add safe.directory '*'
+
+ENTRYPOINT ["python", "-m", "kendra_api.evaluation.run"]
 
 FROM base AS runtime
 
@@ -45,6 +82,13 @@ FROM base AS runtime
 # any other Dockerfile ENV.
 ARG KENDRA_SOURCE_REVISION=""
 ENV KENDRA_SOURCE_REVISION=${KENDRA_SOURCE_REVISION}
+
+# Same baking pattern as KENDRA_SOURCE_REVISION above, for the release tag
+# (e.g. "demo-dost-v1"). Empty by default -- a build taken before tagging (or
+# any non-release build) simply has no tag to report; main.py reads this via
+# a plain os.environ.get with an empty-string default, never fabricating one.
+ARG KENDRA_RELEASE_TAG=""
+ENV KENDRA_RELEASE_TAG=${KENDRA_RELEASE_TAG}
 
 RUN python -m pip install --no-cache-dir . \
     && groupadd --system kendra \
