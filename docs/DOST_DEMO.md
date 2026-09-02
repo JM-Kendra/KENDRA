@@ -403,6 +403,48 @@ docker compose -p kendra-recovery-drill exec api python scripts/verify_audit_cha
 docker compose -p kendra-recovery-drill down --volumes
 ```
 
-Executing this once, measuring it, and tearing it down cleanly is the
-Section 6 "Recovery plan" acceptance evidence for this milestone; see the
-final report for the actual measured run.
+### Measured run (2026-09-02, `kendra-recovery-drill` project)
+
+| Stage | Wall clock | Notes |
+|---|---:|---|
+| 1. Fresh volumes, `postgres`/`qdrant`/`ollama` healthy | 9s | |
+| 2. Stage models (Docling layout/table, `bge-m3`, `qwen2.5:7b-instruct`) | 22m 46s | Real network transfer into empty named volumes, not cache-warm. |
+| 3. Ingest all nine PDFs | 17m 9s | Not pure ingestion time — includes finding and fixing two real bugs mid-drill (below). A clean rerun with both fixes already in place would be materially faster; not separately re-measured, since the point of the drill was to prove recovery works, not to optimize its time. |
+| 4. Bring up `api`/`web`, confirm `/api/v1/health` ready | 9s | |
+| 5. Gold evaluation, 50 live cases (hardened runner, no override) | 2m 0s | `evaluation/runs/M13-recovery-drill/20260902T031954Z-ac0852bf/`, accuracy `0.80` — one case different from the release run's `0.82` on the identical model/config, consistent with the documented temperature-0 nondeterminism (Section 4, item 8), not a regression. |
+| 6. Verify hash chain from genesis | 23s | `PASS: 50 records, chain verified from genesis` — a fresh project starts its own chain at genesis, independent of the main dev stack's. |
+| 7. Tear down (`down --volumes`) | ~1s | No containers, volumes, or networks left afterward — confirmed via `docker compose -p kendra-recovery-drill ps -a`, `docker volume ls`, `docker network ls`. |
+| **Total, empty to torn down** | **46m 43s** | |
+
+**Two real, previously-undiscovered bugs were found and fixed during this
+drill, not worked around:**
+
+1. **`document-repository/{objects,manifests,.staging}` were not writable by
+   the containerized ingestion process.** The `ingest` service runs as the
+   non-root `kendra` user (uid 999) by design, but a directory created with
+   the host's default umask (`755`) grants write only to its owner. Every one
+   of the nine documents failed `admission_failure` on the first attempt.
+   Fixed by granting that user write access on the host directory (`chmod
+   o+w`); now in `README.md`'s Troubleshooting section.
+2. **`docker-compose.yml`'s `ingest` service never passed through
+   `KENDRA_EXTRACTION_COMPLETENESS_POLICY` or
+   `KENDRA_EXTRACTION_CANDIDATE_MINIMUM_AGREEMENT`.** Despite `.env` setting
+   the ADR-007-adopted policy, the one-off ingestion command silently fell
+   back to `Settings`' own default policy, which is stricter about
+   Docling/native-text disagreement — three of nine documents failed
+   `extraction_conflict` as a direct result. Fixed by adding both variables
+   to that service's `environment:` block (same commit as this document).
+   Retrying those three documents required first deleting their `failed`
+   `document_versions`/`processing_runs`/`index_generations` rows (the
+   registry's `find_by_checksum` treats any existing row for a checksum,
+   including a failed one, as an unconditional duplicate and refuses to
+   retry) — a real gap this drill surfaces and does not attempt to fix: **a
+   document that fails extraction currently has no ordinary retry path**
+   short of a direct database cleanup. Recorded here as a known limitation,
+   not resolved by this milestone.
+
+This was one continuous, uninterrupted session — nothing here was a resumed,
+previously-interrupted attempt — but it was not bug-free on the first try,
+and this document says so rather than presenting a retroactively cleaned-up
+narrative. Both fixes are now committed; a rerun today would not need the
+mid-drill database surgery step.
