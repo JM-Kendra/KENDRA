@@ -271,13 +271,20 @@ Both are supplied dynamically, never hand-typed into a committed file:
 `903b1089`) predates the `docker-compose.yml` `ingest`-service
 environment-passthrough fix (commit `4b09600`) and cannot be deployed from
 scratch as tagged — see Milestone 13's `v11.md` report Section 6 for the
-two bugs that fix addresses. `v1.1` (Section 6.2 below) is expected to
-deploy from scratch with zero manual intervention now that those fixes are
-in place; the from-scratch drill run against the pushed `v1.1` tag itself
-(not the working tree) is what will confirm that claim rather than merely
-assert it — see the recovery-drill section of this document once that run
-completes. Use `v1.1` for any new demonstration; `v1` remains tagged and
-unaltered as the historical record it always was.
+two bugs that fix addresses. `v1.1` (Section 6.2 below) fixed the two bugs `v1`'s drill found, but a
+from-tag drill against the pushed `v1.1` tag itself (Section 10, "Recovery
+drill against `demo-dost-v1.1`") found a third, different bug in the same
+family: the ownership-fix command itself fails on a genuinely fresh
+`document-repository/`, because it names three subdirectories that do not
+exist yet on a directory that has never been ingested into. **`v1.1`, as
+tagged and pushed, is therefore also not from-scratch deployable without a
+manual step** — the same disease as `v1`, a different organ. A corrected
+instruction is committed on the branch after the tag, but per the standing
+rule against re-pointing a pushed tag, it cannot retroactively make `v1.1`
+itself pass; only a future release's own from-tag drill can confirm that.
+Use `v1.1` for any new demonstration (it still reproduces the release gold
+eval's confusion matrix, Section 6.2); `v1` remains tagged and unaltered as
+the historical record it always was.
 
 ### 6.1 — `demo-dost-v1` (superseded)
 
@@ -338,9 +345,12 @@ reuse of `v1`'s run, the 2026-08-31 M12 runs, or any EXP-11 run.
 - All three demo-script cases matched their scripted outcome exactly:
   `KND-M5-DF-009` (`supported`, 1 citation), `KND-M5-DF-020` (`supported`,
   2 citations), `KND-M5-UN-007` (`insufficient_evidence`, 0 citations).
-- **From-scratch deployability:** not yet confirmed at the time this section
-  was written — see the recovery-drill section of this document for the
-  from-tag drill result, added in a follow-up commit once that drill runs.
+- **From-scratch deployability: refuted, as tagged.** The from-tag drill
+  (Section 10, "Recovery drill against `demo-dost-v1.1`") found the
+  ownership-fix command itself fails on a genuinely fresh
+  `document-repository/`. A manual `mkdir -p` step was needed — see that
+  section for the exact finding and the corrected instruction, which
+  post-dates this tag and does not retroactively change this result.
 
 ## 7. Hardware requirements
 
@@ -532,3 +542,61 @@ specific pair of numbers is not evidence for it.
 
 Both fixes are now committed and confirmed sufficient: a from-scratch
 bring-up with them in place needs no manual intervention at any stage.
+
+### Recovery drill against `demo-dost-v1.1` (2026-09-02, from the pushed tag)
+
+Milestone 13's follow-up round required a drill run specifically against the
+pushed `demo-dost-v1.1` tag — a fresh `git clone`, `git checkout
+demo-dost-v1.1`, not the working tree — to prove the tag itself, not just
+the branch, deploys from scratch with zero manual intervention.
+
+**The drill found a real bug and stopped at the first manual-step
+opportunity, per its own governing instruction** ("if any stage needs a
+manual step, stop the drill, record exactly what was needed, and report —
+do not work around it and then describe the drill as clean"):
+
+- Fresh clone at `demo-dost-v1.1` (commit `6a671dee7df6d8fb263deb4a372f87c91d71816f`),
+  `.env` created from `.env.example`, `document-repository/` and `intake/`
+  created fresh, all nine PDFs and manifests staged under `intake/`.
+- `document-repository/` confirmed genuinely empty (`stat`: no `objects/`,
+  `manifests/`, `.staging/` subdirectories; mode `775`, host-owned).
+- The README's own documented ownership-fix command, run exactly as
+  written, failed:
+  ```
+  chown: /repo/objects: No such file or directory
+  chown: /repo/manifests: No such file or directory
+  chown: /repo/.staging: No such file or directory
+  ```
+- **Root cause:** `objects/`, `manifests/`, and `.staging/` are created
+  lazily by `LocalDocumentAdmissionStore.admit()` on the first ingestion
+  attempt (`mkdir(parents=True, ...)`), not pre-existing on a genuinely
+  fresh repository. The Milestone 13 Task 1 fix that produced this command
+  was written and verified against a long-lived dev environment where these
+  subdirectories already existed from prior milestones' accumulated
+  ingestion history — it was never exercised against a truly empty
+  directory until this drill.
+- The drill stopped here. No Compose project was ever brought up under
+  `kendra-recovery-drill` for this attempt (confirmed empty via `docker
+  compose -p kendra-recovery-drill ps -a`, `docker volume ls`, `docker
+  network ls`), so there was nothing to tear down. Stages 2–7 (model
+  staging, ingestion, api/web bring-up, gold eval, chain verification,
+  teardown) were not reached and are not claimed to have passed.
+- A corrected instruction (`mkdir -p` the three subdirectories before the
+  existing `chown`/`chmod`) was smoke-tested directly against this same
+  fresh directory afterward — `mkdir -p` + `chown -R 999:999` + `chmod 755`
+  succeeded, confirmed via `stat` (`999:999`, mode `755`, all three paths).
+  This is diagnosis, not a redone drill: the corrected instruction now lives
+  in `README.md`, but it was committed after the `demo-dost-v1.1` tag and,
+  per the standing rule against re-pointing a pushed tag, cannot
+  retroactively make that tag pass this drill. It is available for a future
+  release's own from-tag drill to confirm.
+- The main dev stack's `question_audit` count was verified unchanged (400)
+  both before this drill attempt and after stopping it.
+
+**Result: `demo-dost-v1.1`, as tagged and pushed, is not confirmed
+from-scratch deployable.** This is the second distinct bug this drill
+methodology has found in as many releases (v1: env-passthrough and
+ownership-vs-permission; v1.1: the ownership fix's own untested assumption
+of pre-existing subdirectories) — evidence for running the drill against
+every release tag before calling it demo-ready, not evidence against the
+ownership-fix approach itself.

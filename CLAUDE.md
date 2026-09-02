@@ -16,10 +16,13 @@ and confirmed.
 - `demo-dost-v1` — commit `903b1089` — **superseded**. It predates the `docker-compose.yml`
   `ingest`-service env-passthrough fix (`4b09600`) and cannot be deployed from scratch as
   tagged. See `docs/DOST_DEMO.md`.
-- `demo-dost-v1.1` — commit `6a671dee` — **current**. Gold eval reproduced `v1`'s exact
-  confusion matrix (`0.82` accuracy, sole FP `KND-M5-UN-002`) with zero preflight retries
-  (Task 2's fix confirmed). The tag itself is created immediately after this commit, at
-  this same commit (tags need not sit at branch tip). See `docs/DOST_DEMO.md` Section 6.2.
+- `demo-dost-v1.1` — commit `6a671dee` — **current for the answering/eval story, but not
+  confirmed from-scratch deployable**. Gold eval reproduced `v1`'s exact confusion matrix
+  (`0.82` accuracy, sole FP `KND-M5-UN-002`) with zero preflight retries (Task 2's fix
+  confirmed). A from-tag drill found the Task 1 ownership-fix command itself fails on a
+  genuinely fresh `document-repository/` (the three subdirectories don't exist yet to
+  `chown`). A corrected `README.md` instruction is committed after the tag but cannot
+  retroactively fix the tagged state. See `docs/DOST_DEMO.md` Section 6.2 and Section 10.
 
 ## Binding invariants — never violate these
 
