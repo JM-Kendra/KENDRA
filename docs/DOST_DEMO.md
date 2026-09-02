@@ -441,6 +441,16 @@ releases and the timing is specific to one measured run on one workstation.
 The commands below are the reusable procedure:
 
 ```bash
+# Two directories used throughout this block. SCRATCH_CLONE_DIR is the fresh
+# clone this entire procedure runs inside (cwd for steps 0-8); MAIN_REPO_DIR
+# is the long-lived checkout the operator started this procedure from, whose
+# own evaluation/runs/ step 7 preserves the drill's output into. Set both
+# once before step 0 -- e.g.:
+#   MAIN_REPO_DIR="$(pwd)"
+#   SCRATCH_CLONE_DIR=/path/to/scratch/kendra-recovery-drill
+#   git clone <origin> "$SCRATCH_CLONE_DIR" && git -C "$SCRATCH_CLONE_DIR" checkout <RC>
+#   cd "$SCRATCH_CLONE_DIR"
+
 # 0. .env from the template, with a disposable local password, plus two
 #    port overrides. A drill runs a second full stack on the same host as
 #    the still-running main dev stack, which otherwise collides on the
@@ -491,7 +501,8 @@ KENDRA_SOURCE_REVISION=$(git rev-parse HEAD) docker compose -p kendra-recovery-d
 docker compose -p kendra-recovery-drill up -d api web
 curl -s http://127.0.0.1:8001/api/v1/health | python3 -m json.tool
 
-# 5. Enable answering for the duration of this eval only, then run the gold
+# 5. Enable answering for the duration of this eval only (recreate api with
+#    KENDRA_ANSWERING_ENABLED=true, confirm via health), then run the gold
 #    evaluation with the hardened runner against this fresh project (named
 #    container, no --rm, default lock, default revision preflight, --seed
 #    0). --seed only shuffles the order cases are processed in -- it has no
@@ -500,6 +511,11 @@ curl -s http://127.0.0.1:8001/api/v1/health | python3 -m json.tool
 #    Pinning it here anyway makes case-processing order reproducible across
 #    runs, which round 5's drill omitted (it drew a random seed instead).
 #    Adjust --output-root/--container-name per the current round's report.
+KENDRA_API_PORT=8001 KENDRA_WEB_PORT=3001 KENDRA_ANSWERING_ENABLED=true \
+  docker compose -p kendra-recovery-drill up -d --force-recreate --no-deps api
+curl -s http://127.0.0.1:8001/api/v1/health | python3 -c \
+  "import json,sys; d=json.load(sys.stdin); print('answering_enabled:', d['answering_enabled'])"
+
 docker run --name kendra-eval-recovery-drill \
   --network kendra-recovery-drill_kendra_private \
   -v "$(pwd)":/repo -w /repo kendra-api-eval-runner \
@@ -528,8 +544,8 @@ docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
 #    runner_failures.md, scoring_worksheet.json) this way; only the
 #    fragments quoted in that round's report survived. evaluation/runs/ is
 #    git-ignored, so this is a plain file copy, not a commit.
-rsync -a "$SCRATCH_CLONE_DIR/evaluation/runs/" "$(pwd)/evaluation/runs/"
-ls -la "$(pwd)/evaluation/runs/"
+rsync -a "$SCRATCH_CLONE_DIR/evaluation/runs/" "$MAIN_REPO_DIR/evaluation/runs/"
+ls -la "$MAIN_REPO_DIR/evaluation/runs/"
 
 # 8. Tear down completely — this drill must not leave state behind.
 docker compose -p kendra-recovery-drill down --volumes
