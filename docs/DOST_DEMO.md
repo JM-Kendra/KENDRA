@@ -398,6 +398,15 @@ assumed to work at usable latency.
   tagging (Section 10's `v1.1` stage-2 footnote).**
 - No real agency, confidential, personal, or mixed-permission document may
   be loaded (`README.md` "Safety boundary").
+- **The demo stack's Ollama volume must contain only the two documented
+  models** (`bge-m3`, `qwen2.5:7b-instruct`); any additional model present is
+  to be recorded in the report of the round that finds it, not silently
+  removed or ignored. Precedent: `qwen2.5:14b-instruct` (9.0 GB) has been
+  present on the main dev stack's `kendra_ollama_data` volume since `EXP-11`'s
+  Stage 1 (`B1_LARGER` arm, `evaluation/runs/EXP-11/stage1-20260901T120327Z-221e1bcd/`,
+  2026-09-01) — a fully accounted-for experiment, not an unexplained
+  addition, simply never cleaned up from the shared, persistent volume
+  afterward (Milestone 13 round 5, `v16.md` Task 2).
 
 ## 9. Pilot success metrics
 
