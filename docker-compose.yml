@@ -245,10 +245,12 @@ services:
         server_pid=$$!;
         trap 'kill "$$server_pid"' EXIT;
         until ollama list >/dev/null 2>&1; do sleep 1; done;
-        ollama pull "$${KENDRA_EMBEDDING_MODEL}"
+        ollama pull "$${KENDRA_EMBEDDING_MODEL}" &&
+        ollama pull "$${KENDRA_ANSWER_MODEL}"
     environment:
       OLLAMA_HOST: 127.0.0.1:11434
       KENDRA_EMBEDDING_MODEL: ${KENDRA_EMBEDDING_MODEL:-bge-m3}
+      KENDRA_ANSWER_MODEL: ${KENDRA_ANSWER_MODEL:-qwen2.5:7b-instruct}
     volumes:
       - ollama_data:/root/.ollama
     read_only: true

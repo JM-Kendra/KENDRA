@@ -111,7 +111,7 @@ The manifest schema is intentionally closed:
 }
 ```
 
-Before the first offline run, stage the Docling layout/table models and BGE-M3 while approved network access is available:
+Before the first offline run, stage the Docling layout/table models and both Ollama models — the embedding model (`KENDRA_EMBEDDING_MODEL`, `bge-m3`) and the answer model (`KENDRA_ANSWER_MODEL`, `qwen2.5:7b-instruct`) — while approved network access is available. `ollama-model-loader` pulls both, in sequence, failing if either pull fails:
 
 ```bash
 docker compose --profile ingestion-setup run --rm docling-model-loader

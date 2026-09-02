@@ -391,7 +391,11 @@ assumed to work at usable latency.
   `ollama-model-loader`) — the deployment can then run fully offline
   (`ARCHITECTURE.md` Section 3), though offline operation itself remains
   `EXP-07`-gated per that document, not independently re-verified by this
-  milestone.
+  milestone. **This bullet is true of `ollama-model-loader` as of the
+  `demo-dost-v1.2` round; before that fix, the loader pulled only the
+  embedding model (`bge-m3`) — the answer model was never staged by any
+  documented procedure, a gap the `v1.2` from-scratch drill caught before
+  tagging (Section 10's `v1.1` stage-2 footnote).**
 - No real agency, confidential, personal, or mixed-permission document may
   be loaded (`README.md` "Safety boundary").
 
