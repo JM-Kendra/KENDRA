@@ -478,6 +478,18 @@ docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
 
 # 7. Tear down completely — this drill must not leave state behind.
 docker compose -p kendra-recovery-drill down --volumes
+
+# 8. Remove the scratch clone itself. A plain `rm -rf` fails partway through:
+#    admitted originals under document-repository/objects/ are 0444-mode,
+#    owned by uid 999 (the ingest container's user), per the immutability
+#    invariant (`ARCHITECTURE.md` Section 9) -- the host user that created the
+#    clone cannot delete files it does not own. Use a one-off privileged
+#    container instead, the same technique as the ownership fix, mounting the
+#    scratch clone's *parent* directory (mounting the clone itself as the
+#    container's root and trying to remove it from inside fails with
+#    "Resource busy").
+docker run --rm -v "$(dirname "$SCRATCH_CLONE_DIR")":/scratch alpine sh -c \
+  "rm -rf /scratch/$(basename "$SCRATCH_CLONE_DIR")"
 ```
 
 ### Attempt 1 — bugs found and fixed (2026-09-02, `kendra-recovery-drill` project)
