@@ -543,6 +543,28 @@ specific pair of numbers is not evidence for it.
 Both fixes are now committed and confirmed sufficient: a from-scratch
 bring-up with them in place needs no manual intervention at any stage.
 
+**Object-store isolation note (added in a later round):** `docker-compose.yml`
+binds `KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}` — a relative
+host path — for both `api` and `ingest`; there is no compose override file.
+Attempts 1 and 2 above ran under a different Compose project name
+(`kendra-recovery-drill`), which does give Postgres, Qdrant, and Ollama fresh,
+isolated named volumes (Compose names volumes per-project automatically), but
+a *relative bind mount* is not project-scoped the same way: run from the same
+working tree as the main dev stack, `kendra-recovery-drill`'s `api`/`ingest`
+resolved `./document-repository` to the exact same host directory the main
+stack was already using. The registry (Postgres) and vector store (Qdrant)
+were genuinely fresh and isolated in both attempts; the object store on disk
+was not. This does not invalidate Attempts 1 and 2's numbers: content-addressed
+writes of the same nine PDFs are idempotent (the same checksum resolves to the
+same already-admitted original), so re-ingesting the same corpus into a
+shared object store cannot corrupt or duplicate anything — but it does mean
+those two attempts were not the fully isolated drill their "fresh clone,
+separate project" framing implied. From the from-tag drill onward (the
+section below, and all future drills), the fix is to clone the repository
+into its own scratch directory and give it its own `document-repository/` and
+`intake/`, so the object store is genuinely isolated too, not just the
+databases.
+
 ### Recovery drill against `demo-dost-v1.1` (2026-09-02, from the pushed tag)
 
 Milestone 13's follow-up round required a drill run specifically against the
