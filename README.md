@@ -171,8 +171,8 @@ docker compose --env-file .env.example config --quiet
 ## Demonstration releases
 
 A tagged demonstration release (for example `demo-dost-v1`) bakes its Git
-commit and tag into both images rather than requiring anyone to remember
-which checkout produced them:
+commit into both images (and its tag into the `api` image) rather than
+requiring anyone to remember which checkout produced them:
 
 1. Confirm the working tree is clean and tests pass (`docker run --rm
    kendra-api-test`, `docker build --target test ./apps/web`).
@@ -213,4 +213,4 @@ release like this one is measured against.
 - If the document store is unavailable, confirm `KENDRA_DOCUMENT_STORE_HOST_PATH` exists and Docker can read it.
 - If ports 3000 or 8000 are occupied, change `KENDRA_WEB_PORT` or `KENDRA_API_PORT` in `.env`; keep both bind hosts at `127.0.0.1`.
 - If you change `NEXT_PUBLIC_KENDRA_API_BASE_URL`, rebuild `web` because browser-visible Next.js variables are compiled into the image.
-- If one-off ingestion fails with `admission_failure` on every document, the host `document-repository/objects`, `document-repository/manifests`, and `document-repository/.staging` directories are not writable by the container's non-root `kendra` user (uid 999) — the `ingest` service runs as that user by design, but a directory created with a default host umask (`755`, owner-only write) blocks it. Grant that user write access (e.g. `chmod o+w document-repository/{objects,manifests,.staging}`, or set a matching group) before ingesting into a freshly created `document-repository/`. Found and fixed during Milestone 13's from-scratch recovery drill; see `docs/DOST_DEMO.md`'s recovery plan.
+- If one-off ingestion fails with `admission_failure` on every document, the host `document-repository/objects`, `document-repository/manifests`, and `document-repository/.staging` directories are not writable by the container's non-root `kendra` user (uid 999) — the `ingest` service runs as that user by design, but a directory created with a default host umask (`755`, owner-only write) blocks it. Grant that user write access (e.g. `chmod o+w document-repository/{objects,manifests,.staging}`, or set a matching group) before ingesting into a freshly created `document-repository/`. Note that `chmod o+w` makes those directories writable by any local user on the host, which in principle lets an admitted, `0444`-mode original be unlinked and replaced despite its immutable file mode (`ARCHITECTURE.md` Section 9's immutability invariant is enforced by application logic, not the filesystem) — acceptable under this MVP's single-trusted-operator boundary, but worth a narrower group-based grant instead of `o+w` on a multi-user host. Found and fixed during Milestone 13's from-scratch recovery drill; see `docs/DOST_DEMO.md`'s recovery plan.

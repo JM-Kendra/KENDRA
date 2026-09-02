@@ -78,11 +78,12 @@ curl -s -X POST http://127.0.0.1:8000/api/v1/questions \
   | python3 -m json.tool
 ```
 
-Expected: `status: supported`, two claims (April 27, 2024 effective date;
-fifteen days from the April 12, 2024 publication), citation into
-`RMC_77_2024_Invoicing_QA_OCR.pdf` page 11 — the 12-page image-only OCR
-document, worth noting explicitly since OCR text is never treated as
-authoritative and the excerpt should be checked against the rendered page.
+Expected: `status: supported`, one claim stating both required facts (April
+27, 2024 effective date; fifteen days from the April 12, 2024 publication),
+two citations into `RMC_77_2024_Invoicing_QA_OCR.pdf` page 11 — the 12-page
+image-only OCR document, worth noting explicitly since OCR text is never
+treated as authoritative and the excerpt should be checked against the
+rendered page.
 
 ### 3:45–5:30 — Fail-closed abstention, with its audit record
 
@@ -403,7 +404,7 @@ docker compose -p kendra-recovery-drill exec api python scripts/verify_audit_cha
 docker compose -p kendra-recovery-drill down --volumes
 ```
 
-### Measured run (2026-09-02, `kendra-recovery-drill` project)
+### Attempt 1 — bugs found and fixed (2026-09-02, `kendra-recovery-drill` project)
 
 | Stage | Wall clock | Notes |
 |---|---:|---|
@@ -411,7 +412,7 @@ docker compose -p kendra-recovery-drill down --volumes
 | 2. Stage models (Docling layout/table, `bge-m3`, `qwen2.5:7b-instruct`) | 22m 46s | Real network transfer into empty named volumes, not cache-warm. |
 | 3. Ingest all nine PDFs | 17m 9s | Not pure ingestion time — includes finding and fixing two real bugs mid-drill (below). A clean rerun with both fixes already in place would be materially faster; not separately re-measured, since the point of the drill was to prove recovery works, not to optimize its time. |
 | 4. Bring up `api`/`web`, confirm `/api/v1/health` ready | 9s | |
-| 5. Gold evaluation, 50 live cases (hardened runner, no override) | 2m 0s | `evaluation/runs/M13-recovery-drill/20260902T031954Z-ac0852bf/`, accuracy `0.80` — one case different from the release run's `0.82` on the identical model/config, consistent with the documented temperature-0 nondeterminism (Section 4, item 8), not a regression. |
+| 5. Gold evaluation, 50 live cases (hardened runner, no override) | 2m 0s | `evaluation/runs/M13-recovery-drill/20260902T031954Z-ac0852bf/`, accuracy `0.80` — see Attempt 2 below for why, and the corrected attribution. |
 | 6. Verify hash chain from genesis | 23s | `PASS: 50 records, chain verified from genesis` — a fresh project starts its own chain at genesis, independent of the main dev stack's. |
 | 7. Tear down (`down --volumes`) | ~1s | No containers, volumes, or networks left afterward — confirmed via `docker compose -p kendra-recovery-drill ps -a`, `docker volume ls`, `docker network ls`. |
 | **Total, empty to torn down** | **46m 43s** | |
@@ -446,5 +447,41 @@ drill, not worked around:**
 This was one continuous, uninterrupted session — nothing here was a resumed,
 previously-interrupted attempt — but it was not bug-free on the first try,
 and this document says so rather than presenting a retroactively cleaned-up
-narrative. Both fixes are now committed; a rerun today would not need the
-mid-drill database surgery step.
+narrative.
+
+**Attempt 1's `0.80` was not nondeterminism — it was a real confound, caught
+on review before this claim shipped unverified.** Because the extraction
+policy fix landed mid-drill, six of the nine documents in that run's index
+were extracted under `Settings`' default policy
+(`native-page-token-coverage-v1`) and only the three retried documents used
+the ADR-007 policy (`native-primary-detection-v1`) — a mixed-policy corpus,
+not the single, consistent one the release evaluation used. Attributing the
+`0.80` figure to temperature-0 nondeterminism without checking this would
+have been exactly the "assumed, not checked" mistake this project's own
+documents exist to prevent. Instead of shipping that guess, the drill was
+torn down and redone once, clean, per the resume rule's own "tear it down
+completely first and redo that part" instruction:
+
+### Attempt 2 — clean, both fixes already in place (2026-09-02, same project)
+
+| Stage | Wall clock | Notes |
+|---|---:|---|
+| 1. Fresh volumes, services healthy | 12s | |
+| 2. Stage models | 17m 50s | |
+| 3. Ingest all nine PDFs | 3m 57s | **All nine succeeded on the first attempt** — no `admission_failure`, no `extraction_conflict`, no database surgery. This is the pure ingestion time Attempt 1 could not isolate. |
+| 4. Rebuild `api` with `KENDRA_SOURCE_REVISION` baked, bring up `api`/`web`, confirm health | 1m 38s | |
+| 5. Gold evaluation, 50 live cases, hardened runner, no override | 2m 3s | `evaluation/runs/M13-recovery-drill/20260902T035701Z-4b09600c/` |
+| 6. Verify hash chain from genesis | 24s | `PASS: 50 records, chain verified from genesis` |
+| 7. Tear down (`down --volumes`) | ~2s | Confirmed empty afterward, same as Attempt 1. |
+| **Total, empty to torn down** | **27m 27s** | |
+
+**Accuracy on the single-policy corpus: `0.82` — `TP 32/FN 8/FP 1/TN 9`,
+identical to the release evaluation's confusion matrix (Section 6).** This
+confirms the confound hypothesis directly rather than leaving it asserted:
+the `0.80`/`0.82` difference in Attempt 1 was the mixed extraction policy,
+not model nondeterminism. Temperature-0 nondeterminism (Section 4, item 8)
+remains a real, separately-documented property of this system; this
+specific pair of numbers is not evidence for it.
+
+Both fixes are now committed and confirmed sufficient: a from-scratch
+bring-up with them in place needs no manual intervention at any stage.
