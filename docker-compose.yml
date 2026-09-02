@@ -108,6 +108,11 @@ services:
       KENDRA_ANSWER_TIMEOUT_SECONDS: ${KENDRA_ANSWER_TIMEOUT_SECONDS:-120}
       KENDRA_RETRIEVAL_TOP_K: ${KENDRA_RETRIEVAL_TOP_K:-8}
       KENDRA_RETRIEVAL_SCORE_THRESHOLD: ${KENDRA_RETRIEVAL_SCORE_THRESHOLD:-0.5}
+      # ADR-012: "labeled" (R1_LABELED) is the default as of 2026-09-02,
+      # adopted on net-benefit grounds despite EXP-13's own frozen hypothesis
+      # threshold not being met -- see that ADR. "current" (pre-EXP-13
+      # behavior) remains fully implemented and selectable.
+      KENDRA_EVIDENCE_RENDERING: ${KENDRA_EVIDENCE_RENDERING:-labeled}
     volumes:
       - type: bind
         source: ${KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}

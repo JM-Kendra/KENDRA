@@ -65,6 +65,7 @@ def _attach_answering(application: FastAPI, settings: Settings) -> None:
         model=settings.answer_model,
         timeout_seconds=settings.answer_timeout_seconds,
         seed=settings.model_seed,
+        rendering_mode=settings.evidence_rendering,
     )
     application.state.document_store = LocalDocumentStore(settings.document_store_root)
 
