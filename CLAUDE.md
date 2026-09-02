@@ -137,8 +137,12 @@ and confirmed.
 ## Commands
 
 ```bash
-# Backend tests, isolated, no live services
-docker build --target test -t kendra-api-test ./apps/api && docker run --rm kendra-api-test
+# Backend tests, isolated, no live services -- run from the repo root; the
+# --build-context flag pulls scripts/validate_gold_cases.py and
+# evaluation/gold_cases.json into the image for the lock tests' throwaway
+# repo fixture (apps/api/tests/conftest.py), since neither lives under
+# apps/api's own build context.
+docker build --target test --build-context fixtures=. -t kendra-api-test ./apps/api && docker run --rm kendra-api-test
 
 # Frontend tests and typecheck
 docker build --target test -t kendra-web-test ./apps/web

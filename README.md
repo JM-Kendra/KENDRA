@@ -147,10 +147,10 @@ Do not add `--volumes` unless you intentionally want to delete derived local ser
 
 ## Automated checks
 
-Backend tests run in an isolated test image and do not require live services:
+Backend tests run in an isolated test image and do not require live services. Run this from the repository root — the `--build-context fixtures=.` flag pulls in `scripts/validate_gold_cases.py` and `evaluation/gold_cases.json` from the repo root, which the evaluation-runner lock tests need to build a throwaway git repository in `tmp_path` (see `apps/api/tests/conftest.py`); neither file lives under `apps/api`'s own build context:
 
 ```bash
-docker build --target test -t kendra-api-test ./apps/api
+docker build --target test --build-context fixtures=. -t kendra-api-test ./apps/api
 docker run --rm kendra-api-test
 ```
 
@@ -175,8 +175,9 @@ release — see `docs/DOST_DEMO.md`) bakes its Git commit into both images
 (and its tag into the `api` image) rather than requiring anyone to remember
 which checkout produced them:
 
-1. Confirm the working tree is clean and tests pass (`docker run --rm
-   kendra-api-test`, `docker build --target test ./apps/web`).
+1. Confirm the working tree is clean and tests pass (`docker build --target
+   test --build-context fixtures=. -t kendra-api-test ./apps/api && docker
+   run --rm kendra-api-test`, `docker build --target test ./apps/web`).
 2. Tag the commit: `git tag demo-dost-v1.1`.
 3. Rebuild with the tag baked in:
 
