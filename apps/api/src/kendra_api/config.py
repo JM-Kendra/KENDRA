@@ -70,12 +70,14 @@ class Settings(BaseSettings):
     # further; identical across every arm of a model comparison, it becomes a
     # controlled variable rather than an unrecorded source of variance.
     model_seed: int = Field(default=0)
-    # EXP-13 (docs/experiment-decisions/EXP-13-preregistration.md): "current" is
-    # this deployment's unchanged default (apps/api/src/kendra_api/answering/
-    # model_client.py's render_evidence, byte-identical to pre-EXP-13 behavior).
-    # "labeled" selects render_evidence_with_labels (R1_LABELED) -- experimental,
-    # never the default, not adopted regardless of EXP-13's outcome.
-    evidence_rendering: Literal["current", "labeled"] = "current"
+    # ADR-012: "labeled" (render_evidence_with_labels, EXP-13's R1_LABELED) is
+    # the default as of 2026-09-02, adopted on net-benefit grounds (full-set
+    # live accuracy 0.72 -> 0.82, zero regressions, zero label leaks) despite
+    # EXP-13's own frozen 5-of-6 hypothesis threshold not being met -- see
+    # ADR-012 Section 3. "current" (apps/api/src/kendra_api/answering/
+    # model_client.py's render_evidence, byte-identical to pre-EXP-13
+    # behavior) remains fully implemented and selectable.
+    evidence_rendering: Literal["current", "labeled"] = "labeled"
 
     @field_validator("document_store_root")
     @classmethod

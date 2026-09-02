@@ -499,3 +499,51 @@ rendering creates its own risk — a claim echoing a filename/page it was never
 supposed to see — see `EXP-13-preregistration.md` Section 7's label-leak
 check). That is `EXP-13`'s own, separate, frozen question; this section
 establishes only the diagnostic finding that motivated it.
+
+## (h) A new defect class from adopting labeled rendering: fact-incomplete supported answers
+
+**Status: this section documents a consequence of a product decision, not a
+new diagnostic run.** `ADR-012` adopted `KENDRA_EVIDENCE_RENDERING=labeled`
+as the default on 2026-09-02, on grounds separate from `EXP-13`'s own frozen
+hypothesis (which was **not** supported — part (g) and
+`EXP-13-preregistration.md` Section 8 stand unaltered). Adoption exposes a
+defect class that could not occur under the prior default, because
+`render_evidence()`'s unlabeled output gave the model nothing to selectively
+report *from*: a **`supported`, correctly cited answer that omits one or
+more of a case's required facts.**
+
+Two confirmed instances, both from `evaluation/runs/EXP-13/20260902T005308Z-35770ed8/`:
+
+| case_id | claim (verbatim) | facts present | fact omitted |
+|---|---|---|---|
+| `KND-M5-CD-005` | "The penalty stated in RR No. 11-2024 and RMC No. 77-2024 for non-issuance of a required invoice after the applicable transition period is the same, both setting the penalty at not less than One Thousand Pesos (Php 1,000.00) but not more than Fifty Thousand Pesos (Php 50,000.00), and imprisonment for not less than two (2) years but not more than four (4) years." | fine range; imprisonment range | "Both cite Section 264(a) of the Tax Code" |
+| `KND-M5-DF-005` | "Business taxpayers are not required to replace its existing BIR Certificate of Registration that displays the Registration Fee. The COR shall retain its validity although the Registration Fee is shown therein, and taxpayers are no longer required to pay the Annual Registration Fee." | no replacement required; COR remains valid | "Updating is necessary only when registration information other than the Registration Fee changes" |
+
+Both are **2 of 3** required facts — not a fabrication, not a wrong claim,
+not a citation defect (both claims' citations resolve correctly, per the
+same admission-based construction every other citation in this project
+uses) — a *partial* answer presented with the same confidence and the same
+`supported` status as a complete one.
+
+**Fact-completeness is not machine-enforced anywhere in this pipeline** —
+checked directly against `_run_pipeline`
+(`apps/api/src/kendra_api/answering/service.py`): its gate validates
+structure (non-empty claim text, resolvable `evidence_id`s, server-built
+citations) and has no mechanism to compare a claim against a case's full
+`expected_answer_facts` set. That comparison exists today only as the human
+review this project's own `EVALUATION_METHOD.md` and part (c) above already
+require for atomic-fact scoring in general — this defect class is a specific,
+now-confirmed instance of exactly the gap those documents already describe,
+not a new category of unmonitored risk.
+
+**`KND-M5-UN-002` persists unchanged** under `labeled` rendering — identical
+`supported` result to the `current`-rendering baseline (part (a)). Not a
+consequence of this adoption; recorded here only to avoid it being read as a
+new occurrence.
+
+**What this does not establish:** the rate at which this defect occurs —
+two instances from one run is not a rate, and no claim is made here about
+how often a future `supported` answer under `labeled` rendering will be
+complete versus partial. `ADR-012` Section 4 records this as a known,
+expected defect class going forward, to be checked for explicitly in future
+gold-evaluation review, not as a bounded or characterized risk.
