@@ -407,6 +407,24 @@ assumed to work at usable latency.
   2026-09-01) — a fully accounted-for experiment, not an unexplained
   addition, simply never cleaned up from the shared, persistent volume
   afterward (Milestone 13 round 5, `v16.md` Task 2).
+- **The demonstration stack's own index is not fully provenance-stamped.**
+  Its nine indexed documents' `processing_runs` rows all carry
+  `pipeline_revision = 'unversioned'` — a literal `Settings` class default
+  from Milestone 9 (`3ce70b6`), removed when Milestone 12 (`4f57903`)
+  introduced real revision stamping via `resolve_source_revision()`. These
+  nine documents were ingested before that change and have simply never been
+  re-ingested since; current code cannot itself produce `'unversioned'`
+  (Milestone 13 round 6, `v17.md` Task 2e). `extractor_identity` is recorded
+  for all nine and does state the extraction policy and tool versions used
+  (`policy=native-primary-detection-v1;detector=docling-2.117.0;…`), but the
+  **code commit** that built this index cannot be named — only the policy
+  name and tool versions, not a `git` SHA. An evaluator who specifically
+  wants a fully provenance-stamped index — every row's `pipeline_revision`
+  equal to a real, checkable commit — should be shown a fresh deployment
+  instead of this long-lived one; Section 10's from-scratch procedure
+  produces exactly that in about 35 minutes, and its ingest step (fixed
+  round 6) now stamps every row with the deploying commit rather than
+  `"unknown"`.
 
 ## 9. Pilot success metrics
 
