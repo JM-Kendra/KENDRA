@@ -547,6 +547,34 @@ specific pair of numbers is not evidence for it.
 Both fixes are now committed and confirmed sufficient: a from-scratch
 bring-up with them in place needs no manual intervention at any stage.
 
+**Answer-model staging footnote (added in a later round):** the "stage
+models" commands both Attempts above ran (`docling-model-loader` /
+`ollama-model-loader`) cannot have staged `qwen2.5:7b-instruct` as recorded
+in both stage-2 rows above — `ollama-model-loader` pulled only
+`KENDRA_EMBEDDING_MODEL` (`bge-m3`) at the time these attempts ran; no
+documented procedure staged the answer model at all (see Section 8's
+corrected bullet). Both attempts' live gold evaluations nonetheless used a
+real, working `qwen2.5:7b-instruct` — the 50-case runs above would not have
+passed the runner's `check_ollama_has_models` preflight otherwise. **How the
+`kendra-recovery-drill` project's separate, nominally-fresh `ollama_data`
+volume ended up with that model is not established.** Checked and ruled out
+or left open: the volume was declared as a plain named volume with no
+`name:`/`external:` override at the commit these attempts ran against
+(`git show 46d2ccf:docker-compose.yml`), so it was genuinely project-scoped,
+not shared by declaration; no leftover `kendra-recovery-drill_ollama_data`
+volume exists today to inspect directly; the operator's shell history shows
+no `ollama pull qwen2.5:7b-instruct` in the relevant window, only an earlier
+`ollama run qwen2.5:7b-instruct "Reply with exactly: GPU OK"` GPU-check
+against the **main** stack's `kendra-ollama-1` container (`ollama run`
+auto-pulls a missing model), from the `2026-08-26` GPU-enablement commit —
+well before this drill and against a different container/volume entirely;
+and the main stack's own `qwen2.5:7b-instruct` shows a `MODIFIED` timestamp
+newer than that commit, meaning something re-touched it in between that
+none of these checks account for. **Not established** — reported as an open
+question rather than an invented explanation. From `demo-dost-v1.2` onward,
+`ollama-model-loader` stages both models, closing the gap regardless of how
+these two historical attempts obtained theirs.
+
 **Object-store isolation note (added in a later round):** `docker-compose.yml`
 binds `KENDRA_DOCUMENT_STORE_HOST_PATH:-./document-repository}` — a relative
 host path — for both `api` and `ingest`; there is no compose override file.
