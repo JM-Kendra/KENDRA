@@ -45,6 +45,32 @@ listed in Section 5.
    semantics that the rest of the ingestion pipeline's tests and contract
    currently assume are simple).
 
+2. **Entrypoint-based `document-repository` init.** A fresh deployment still
+   needs one privileged host command before its first ingestion: `chown` the
+   three store subdirectories (`objects/`, `manifests/`, `.staging/`, created
+   first with `mkdir -p` since they do not pre-exist on a genuinely fresh
+   `document-repository/`) to uid/gid `999` so the non-root `ingest`
+   container can write into them (`README.md` Troubleshooting; found not to
+   cover a truly fresh repository by the `demo-dost-v1.1` from-tag recovery
+   drill, `docs/DOST_DEMO.md` Section 10). A pilot operator should not need a
+   privileged Docker command and host-level `chown` before the first
+   ingestion of the deployment.
+
+   The proper fix moves that step inside the `ingest` container itself: have
+   its entrypoint start as root, `mkdir -p` and `chown 999:999` the three
+   store directories under the mounted `document-repository/`, then drop to
+   uid 999 (for example via `gosu`/`su-exec`) before invoking the actual
+   ingestion command — zero host-side steps for the operator. Scope: touches
+   `apps/api/Dockerfile`'s `ingest` build (or a dedicated entrypoint stage)
+   and `docker-compose.yml`'s `ingest` service definition; the process that
+   actually handles documents must still end up running as uid 999, not
+   root, so the non-root design intent is preserved; and the immutability
+   invariant (`ARCHITECTURE.md` Section 9 — enforced by application logic,
+   not filesystem permissions) must be stated as unaffected, since this only
+   changes who creates and owns empty directories before any document
+   exists, not how already-admitted originals are protected. **Not
+   implemented this round** — docs only.
+
 ## 1. Why not headline accuracy alone
 
 `docs/PRODUCT_BRIEF.md`'s provisional pilot targets and
