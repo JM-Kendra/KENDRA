@@ -25,14 +25,27 @@ and confirmed.
   but a from-tag drill found the ownership-fix command itself fails on a genuinely fresh
   `document-repository/` — not from-scratch deployable as tagged. See `docs/DOST_DEMO.md`
   Section 6.2 and Section 10.
-- `demo-dost-v1.2` — commit `b8286729` — **current**. First tag drilled from a fresh origin
-  clone, top to bottom, *before* being tagged (Milestone 13 round 7 rule 13: every drill
-  command had to already be documented, no mid-drill fixes) — from-scratch deployability is
-  confirmed as tagged, not merely asserted. Gated under `ADR-014` (Accepted, `N = 47` of 50
-  per-case agreement between the drill and release evaluations, full per-case disclosure of
-  every differing case), which replaced the prior rounds' informal exact-confusion-matrix
-  requirement after that proved not reliably achievable across independently built vector
-  indexes. See `docs/DOST_DEMO.md` Section 6.3 and Section 10.
+- `demo-dost-v1.2` — commit `b8286729` — **superseded**. First tag drilled from a fresh
+  origin clone, top to bottom, *before* being tagged (Milestone 13 round 7 rule 13: every
+  drill command had to already be documented, no mid-drill fixes) — from-scratch
+  deployability confirmed as tagged, not merely asserted, and gated under `ADR-014`
+  (`N = 47` of 50 per-case agreement). Remains valid as tagged for both deployability and
+  answering; superseded for the demonstration script specifically because the UI failed
+  from the `localhost` origin (CORS), the heading read a stale "Milestone 8," and the
+  answering toggle and offline-verification procedure were undocumented or broken. See
+  `docs/DOST_DEMO.md` Section 6.3 and Section 10.
+- `demo-dost-v1.3` — commit `003b0621` — **current**. Web/procedure hardening only — no
+  change to answering, retrieval, ingestion, or evaluation code. Fixes: browser calls the
+  api via a same-origin server-side rewrite (`apps/web/next.config.ts`), the heading shows
+  the product name and release tag (server-rendered, not only after client-side hydration)
+  instead of a stale milestone number, `make answering-on`/`answering-off` replace a manual
+  `.env` `sed` that silently no-op'd when the key was absent, and an offline-verification
+  procedure and script (`scripts/offline_check.sh`) are documented, with a warning against
+  `nmcli networking off` (it took down Docker's own bridge interfaces on this host).
+  Re-drilled and re-gated under `ADR-014` (`N = 48` of 50) rather than assuming carry-over
+  from `v1.2`; the drill and release eval ran one commit before the tag (a disclosed,
+  frontend-only discrepancy — see `docs/DOST_DEMO.md` Section 6.4). See `docs/DOST_DEMO.md`
+  Section 6.4 and Section 10.
 
 ## Binding invariants — never violate these
 
@@ -149,12 +162,12 @@ and confirmed.
 
 ```bash
 # Backend tests, isolated, no live services -- the containerized subset only
-# (120 passed, 2 skipped, 43 deselected as of demo-dost-v1.2). Equivalent to
+# (121 passed, 2 skipped, 43 deselected as of demo-dost-v1.3). Equivalent to
 # `docker build --target test --build-context fixtures=. -t kendra-api-test
 # ./apps/api && docker run --rm kendra-api-test`, run from the repo root.
 make test
 
-# Complete backend suite (141 passed, 43 deselected, 0 skipped), including 21
+# Complete backend suite (142 passed, 43 deselected, 0 skipped), including 21
 # tests that need a real on-disk git checkout and only run bind-mounted.
 make test-full
 

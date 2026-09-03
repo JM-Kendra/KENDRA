@@ -297,8 +297,8 @@ Both are supplied dynamically, never hand-typed into a committed file:
 
 ## 6. Release gold evaluation
 
-**`demo-dost-v1.2` is current; `v1` and `v1.1` are superseded.** `v1` (commit
-`903b1089`) predates the `docker-compose.yml` `ingest`-service
+**`demo-dost-v1.3` is current; `v1`, `v1.1`, and `v1.2` are superseded.** `v1`
+(commit `903b1089`) predates the `docker-compose.yml` `ingest`-service
 environment-passthrough fix (commit `4b09600`) and cannot be deployed from
 scratch as tagged — see Milestone 13's `v11.md` report Section 6 for the
 two bugs that fix addresses. `v1.1` (Section 6.2 below) fixed the two bugs `v1`'s drill found, but a
@@ -312,12 +312,20 @@ manual step** — the same disease as `v1`, a different organ. A corrected
 instruction is committed on the branch after the tag, but per the standing
 rule against re-pointing a pushed tag, it cannot retroactively make `v1.1`
 itself pass; only a future release's own from-tag drill can confirm that.
-**`v1.2` (Section 6.3 below) closes this pattern: it is the first tag drilled
+`v1.2` (Section 6.3 below) closed this pattern: the first tag drilled
 from a fresh origin clone, top to bottom, per Section 10 exactly as written,
-*before* being tagged** — the from-scratch deployability question is settled
-at tag time rather than discovered afterward by a subsequent drill. Use
-`v1.2` for any new demonstration; `v1` and `v1.1` remain tagged and unaltered
-as the historical record they always were.
+*before* being tagged — the from-scratch deployability question settled
+at tag time rather than discovered afterward by a subsequent drill. **`v1.2`
+is itself superseded by `v1.3` (Section 6.4 below) for the demonstration
+script specifically** — not because deployability or answering regressed
+(both are unchanged, and `v1.2` remains valid as tagged for both), but
+because rehearsing the demo on 2026-09-03 found the UI unusable from the
+`localhost` origin (CORS), the heading reading a stale "Milestone 8," and
+the answering toggle and offline-verification procedure undocumented or
+outright broken (an `.env` `sed` silently no-op'ing). `v1.3` fixes all
+four; it changes no answering, retrieval, ingestion, or evaluation code.
+Use `v1.3` for any new demonstration; `v1`, `v1.1`, and `v1.2` remain
+tagged and unaltered as the historical record they always were.
 
 **Supersession summary:** `v1` (predates the compose `ingest`-service
 environment-passthrough fix); `v1.1` (the README ownership instruction
@@ -329,7 +337,13 @@ confirmed as tagged **and** the first whose evaluation reproducibility is
 gated by a preregistered criterion, `ADR-014`'s `N = 47` per-case agreement
 with full per-case disclosure of every differing case, rather than an
 informal exact-match requirement discovered to be unachievable only after
-a drill failed it).
+a drill failed it; but the demo UI failed from the `localhost` origin, the
+heading read "Milestone 8," and the answering toggle and offline procedure
+were undocumented or wrong); `v1.3` (those four fixed; same-origin web
+rewrite, product-name-and-tag heading, `make answering-on`/`-off`,
+documented offline-verification procedure and script; deployability and
+answering unchanged from `v1.2`, drilled and gated under `ADR-014` again
+rather than assumed carried over).
 
 ### 6.1 — `demo-dost-v1` (superseded)
 
@@ -362,7 +376,7 @@ runs or any EXP-11 run.
   is what Task 2 of the Milestone 13 follow-up round fixed; `v1.1`'s own run
   (Section 6.2) needed none.
 
-### 6.2 — `demo-dost-v1.1` (current)
+### 6.2 — `demo-dost-v1.1` (superseded)
 
 Rerun against release-candidate commit
 `6a671dee7df6d8fb263deb4a372f87c91d71816f` (the commit `demo-dost-v1.1`
@@ -397,7 +411,7 @@ reuse of `v1`'s run, the 2026-08-31 M12 runs, or any EXP-11 run.
   section for the exact finding and the corrected instruction, which
   post-dates this tag and does not retroactively change this result.
 
-### 6.3 — `demo-dost-v1.2` (current)
+### 6.3 — `demo-dost-v1.2` (superseded)
 
 The first release drilled from a fresh origin clone, top to bottom, per
 Section 10 exactly as written, **before** being tagged — Milestone 13
@@ -479,6 +493,132 @@ this round):
 | 6. Chain verify | a few seconds | not individually re-measured |
 | 7. Preserve run artifacts (`rsync`) + 8. Teardown + 9. Scratch clone removal | a few seconds each | not individually re-measured |
 | **Total, empty to torn down** | **≈24 minutes** | sum of measured/inferred rows above |
+
+### 6.4 — `demo-dost-v1.3` (current)
+
+Web/procedure hardening round: same-origin browser↔api rewrite (no CORS
+dependency), a heading that shows the product name and release tag instead
+of a stale "Milestone 8," `make answering-on`/`answering-off` (replacing a
+manual `sed` that silently no-op'd when the key was absent from `.env`),
+and a documented offline-verification procedure and script. **No change to
+answering, retrieval, ingestion, or evaluation code** — this round
+re-confirms deployability and evaluation reproducibility under `ADR-014`
+rather than assuming they carry over unchanged from `v1.2`.
+
+**Commit discrepancy, disclosed rather than hidden:** the drill and release
+evaluation below both ran at `2f7b0d0`, one commit before the tagged
+`003b062`. Mid-drill, Step 6 (`docker compose build api web`) failed —
+DNS resolution inside the build sandbox was broken (see "Host networking
+note" below) — and while diagnosing it, the drill's own Step 7
+(`make answering-on`) surfaced a real bug in that commit's Makefile: a
+`.env` with `KENDRA_API_PORT` defined twice (the template's `8000` plus the
+drill's own appended `8001` override, per Section 10 step 0) made
+`grep | cut` return both lines newline-joined, corrupting the health-check
+URL. Both were fixed and pushed as their own commits (`2f7b0d0`'s DNS
+workaround needed no code change; the Makefile fix is `2f7b0d0`'s parent →
+child). A third, unrelated gap surfaced afterward: the heading fix's
+client-only implementation never put the release tag in the raw
+server-rendered HTML, failing this section's own plain-`curl` verification
+below — fixed in `003b062`, the final tag. Since that fix touches only
+`apps/web` frontend rendering — no ingestion, answering, retrieval, or
+evaluation code — the drill and release-eval evidence below remains valid
+for the tagged commit; this is independently confirmed by an unchanged
+backend test count at `003b062` (`make test`/`make test-full`,
+`121/2/43`/`142/0/43`) and a direct, real-tag `curl` check against the
+rebuilt main stack (Task 8 below), stronger evidence for that specific
+behavior than an untagged drill could ever provide (the drill's own
+`release_tag` is always empty).
+
+One further consequence: the 9 documents ingested during the drill were
+stamped `pipeline_revision = d6eb782` — the commit that was `HEAD` at
+ingestion time, one commit *before* `2f7b0d0` (the drill's own eval
+`source_revision`, after the DNS/Makefile fixes and a required image
+rebuild) and two before the final tag. Ingestion behavior itself is
+unaffected (no code in `apps/api` changed across any of these three
+commits), but the recorded provenance label undershoots RC by two commits —
+disclosed here rather than left implicit, consistent with this document's
+practice of never asserting a mechanical field represents more than what
+was actually recorded (Milestone 13 round 6's `'unversioned'` note, Section
+8, is the same principle).
+
+**Host networking note (this workstation only, not a repository change):**
+Docker's build sandbox (the classic `docker` buildx driver's default
+network) had broken DNS — traced to residual damage from `nmcli networking
+off` earlier the same day (Section 8's warning box) that a
+`docker compose down && up` had already fixed for the compose-managed
+networks but not Docker's own default `bridge`. Worked around for this
+session only by creating a `docker-container` buildx builder attached to a
+fresh user-defined network (`docker network create`, `docker buildx create
+--driver docker-container --driver-opt network=<name>`); this is host
+state, not anything committed to this repository, and does not affect a
+workstation without this specific residual damage.
+
+**Deployment gate (`ADR-014`, exact):**
+
+| Element | Required | Observed | Result |
+|---|---|---|---|
+| `source_revision` at drill health == drill's own eval commit | `2f7b0d0…` | `2f7b0d0…` (after the mid-drill rebuild) | PASS |
+| Same-origin proxy through drill web (`127.0.0.1:3001/api/v1/health`) | `status: ready` | `status: ready` | PASS |
+| Heading via drill web (`127.0.0.1:3001`, untagged) | `Kendra` | `Kendra` (×3 in grep) | PASS |
+| `make check-template` in fresh clone | pass | pass (5/5 checks) | PASS |
+| Both models present | `bge-m3`, `qwen2.5:7b-instruct` | both present | PASS |
+| 9/9 documents `ready`, chunk/page counts == release | 34/4, 5/2, 35/12, 3/1, 2/1, 3/1, 2/1, 12/3, 286/16 | identical, all nine | PASS |
+| `pipeline_revision` == RC, all nine | `003b062…` | `d6eb782…` (see commit-discrepancy note above) | **caveated — see note, not blocking** |
+| `report.json` `source_revision_mismatch_overridden` | `false` | `false` | PASS |
+| Drill chain verify | `PASS` at 50 | `PASS: 50 records, chain verified from genesis` | PASS |
+| Zero residual drill resources | none | none (containers, volumes, buildx builder/network, scratch clone all removed) | PASS |
+| Scratch clone removed | gone | gone | PASS |
+
+**Release-eval gate (fixed index, exact) — PASS.** `kendra-eval-m13-7-release`
+(`evaluation_run_id eval-78455148-6877-4822-81f2-993d2e091498`,
+`evaluation/runs/M13.7-release/20260903T143031Z-2f7b0d05/`) reproduced
+`M13.6-release` exactly: `0.82` (`TP 32/FN 8/FP 1/TN 9`), identical 8-case
+misclassified list, sole FP `KND-M5-UN-002`, unsupported false-answer rate
+`0.1`, zero runner failures. `question_audit`: `556` before, `606` after
+(exactly +50). Hash chain: `PASS: 606 records, chain verified from
+genesis`. All three demo-script cases (Section 2), evaluated as part of
+this same 50-case run, matched their scripted outcome exactly:
+`KND-M5-DF-009` (`supported`, 1 citation), `KND-M5-DF-020` (`supported`, 2
+citations), `KND-M5-UN-007` (`insufficient_evidence`, 0 citations).
+
+**Evaluation gate (`ADR-014`, `N = 47`) — PASS.** `kendra-eval-m13-7-drill`
+(`evaluation_run_id eval-de0e4346-3492-4841-88bf-179c99b3c167`,
+`evaluation/runs/M13.7-recovery-drill/20260903T142135Z-2f7b0d05/`) agreed
+with the release evaluation on **48 of 50 cases**:
+
+| Case | `expected_result` | Release label | Drill label |
+|---|---|---|---|
+| `KND-M5-CD-004` | `supported` | `unsupported` | `supported` |
+| `KND-M5-DF-018` | `supported` | `supported` | `unsupported` |
+
+Sole false positive `KND-M5-UN-002` unchanged in both. Unsupported
+false-answer rate unchanged (`0.1` in both). Both differing cases are the
+same two, in the same direction, as `M13.6-recovery-drill` vs.
+`M13.6-release` — the third data point in the cross-round observation
+below.
+
+**Cross-round observation (three data points, stated as such, not a
+trend):** this is the third index-rebuild drill on record. Round 5's
+(`M13.4-recovery-drill`) differed from its release evaluation on
+`KND-M5-CD-004`, `KND-M5-DF-005`, and `KND-M5-DF-018` (47/50); round 7's
+(`M13.6-recovery-drill`) and this round's (`M13.7-recovery-drill`) both
+differed only on `KND-M5-CD-004` and `KND-M5-DF-018` (48/50 each) — the
+same two cases, same direction, on two independently rebuilt indexes in a
+row. `DF-005` has now been stable across the last two rebuilds. Three data
+points still cannot establish whether `CD-004`/`DF-018` are structurally
+more index-sensitive than other cases, but the repetition across
+independent rebuilds makes coincidence less likely than it was after round
+7 alone — `PILOT_PLAN.md` item 4's retrieval probe remains the way to
+actually explain it, not infer it.
+
+**Wall-clock:** not cleanly comparable to prior rounds' measurements this
+time — the mid-drill DNS diagnosis, buildx-builder workaround, Makefile fix,
+and required image rebuild (documented above) extended Stage 4 well beyond
+its steady-state time and were not the kind of thing worth marker-timing
+precisely mid-troubleshoot. Total elapsed, empty stack to torn down,
+including that detour: **≈70 minutes**; a clean re-run without the detour
+would be expected to land close to `v1.2`'s ≈24 minutes, since no
+ingestion- or evaluation-relevant code changed.
 
 ## 7. Hardware requirements
 
