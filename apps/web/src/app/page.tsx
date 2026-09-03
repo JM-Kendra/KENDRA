@@ -12,6 +12,7 @@ type ServiceState = {
 type HealthResponse = {
   status: "ready" | "not_ready";
   services: Record<string, ServiceState>;
+  release_tag?: string;
 };
 
 type ViewState =
@@ -47,10 +48,15 @@ export default function Home() {
     void refresh();
   }, [refresh]);
 
+  const productLabel =
+    view.kind === "loaded" && view.health.release_tag
+      ? `Kendra ${view.health.release_tag}`
+      : "Kendra";
+
   return (
     <main>
       <section className="hero" aria-labelledby="page-title">
-        <p className="eyebrow">Milestone 8 · Local foundation</p>
+        <p className="eyebrow">{productLabel} · Local foundation</p>
         <h1 id="page-title">Kendra service readiness</h1>
         <p className="lede">
           This local scaffold checks its required services without exposing connection
