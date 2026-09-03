@@ -699,8 +699,10 @@ property and not a fluke of either run.
 `evaluation/runs/M13.8-release/20260903T182308Z-372548fc/`): `accuracy
 0.82` (`TP 32/FN 8/FP 1/TN 9`), sole FP `KND-M5-UN-002`, eight-case
 misclassified list (`CD-004`, `CD-006`, `CD-009`, `CD-010`, `DF-008`,
-`DF-012`, `LT-003`, `LT-007`) identical in kind to `M13.6`/`M13.7`.
-`question_audit`: `606` before, `656` after (exactly `+50`). Chain: `PASS:
+`DF-012`, `LT-003`, `LT-007`) — an exact case-set match to
+`M13.6-release`/`M13.7-release`, confirmed by direct diff, not merely
+similar in kind (`v24.md` Task 5). `question_audit`: `606` before, `656`
+after (exactly `+50`). Chain: `PASS:
 656 records, chain verified from genesis`. All three demo-script cases
 matched their scripted outcome (`KND-M5-DF-009` `supported`/1 citation,
 `KND-M5-DF-020` `supported`/2 citations, `KND-M5-UN-007`
@@ -722,16 +724,20 @@ Sole FP `KND-M5-UN-002` unchanged in both. Unsupported false-answer rate
 unchanged (`0.1` in both).
 
 **`DF-005` correction — no longer described as stable.** Section 6.4 stated
-"`DF-005` has now been stable across the last two rebuilds" (rounds 6 and
-7). This round's drill breaks that: `DF-005` differs again, reverting to
-the same three-case set last seen at round 5 (`M13.4-recovery-drill`:
-`CD-004`, `DF-005`, `DF-018`). Four index-rebuild observations now exist on
-record (rounds 5, 7, 8, and this round — round 6 agreed on `CD-004`/`DF-018`
-only); two of four differ on all three cases, two differ on only
-`CD-004`/`DF-018`. This is not evidence of a stabilizing trend for `DF-005`
-in either direction — `PILOT_PLAN.md` item 4's retrieval probe remains the
-way to actually explain the mechanism, not a growing observation count on
-its own.
+"`DF-005` has now been stable across the last two rebuilds." This round's
+drill breaks that: `DF-005` differs again. Four index-rebuild run
+directories now exist on record, by name rather than by round number (round
+numbering and `M13.N` numbering do not line up one-to-one — `M13.6-recovery-drill`
+was itself produced in round 7, not round 6, per Section 6.4's own text; run
+directory is the unambiguous reference): `M13.4-recovery-drill` differed on
+three cases (`CD-004`, `DF-005`, `DF-018`); `M13.6-recovery-drill` and
+`M13.7-recovery-drill` each differed on two (`CD-004`, `DF-018` only);
+`M13.8-recovery-drill` (this round) differs on three again (`CD-004`,
+`DF-005`, `DF-018`). Two of four differ on all three cases, two differ on
+only `CD-004`/`DF-018`. This is not evidence of a stabilizing trend for
+`DF-005` in either direction — `PILOT_PLAN.md` item 4's retrieval probe
+remains the way to actually explain the mechanism, not a growing observation
+count on its own.
 
 **`make tag-evidence` output (required pre-tag check):**
 ```
@@ -742,14 +748,24 @@ release source_revision:  372548fc87070290e5815d2cfc79fbe03f455de9
 EQUAL
 ```
 
-**Wall-clock:** restart attempt (the one actually tagged): ≈35 min, empty
-stack to torn down (Stage 2 model staging ≈20 min dominates). The aborted
-first attempt added ≈39 min before its rule-13 stop (Stage 2 ≈35 min of
-that, degraded by transient network throttling, not reproduced on the
-restart). Total session time across both attempts, plus the fix/gate cycle
-between them, was substantially longer than a single clean drill — the cost
-of rule 13 being followed strictly rather than patched around, which is
-this round's entire point.
+**Wall-clock:** restart attempt (the one actually tagged): ≈37 min, empty
+stack to torn down (Stage 2 model staging ≈20 min dominates; the remainder
+is stages 1, 3–9 summed, most under a minute each). The aborted first
+attempt ran ≈54 min before its rule-13 stop (Stage 2 ≈35 min of that,
+degraded by transient network throttling, not reproduced on the restart;
+Stages 3–6 summed to a further ≈19 min before step 8a failed). Total
+session time across both attempts, plus the fix/gate cycle between them, was
+substantially longer than a single clean drill — the cost of rule 13 being
+followed strictly rather than patched around, which is this round's entire
+point.
+
+**On "both attempts' results were identical":** this rests on output
+captured to this report at the time the first attempt's evaluation
+completed, not on a preserved run directory — the first attempt's rule-13
+stop happened at step 8a, before step 9's rsync, so its
+`evaluation/runs/M13.8-recovery-drill/20260903T172639Z-4adfa978/` was
+destroyed with the scratch clone in step 11 and never reached the main
+repo. The comparison is only as reliable as that captured output.
 
 ## 7. Hardware requirements
 
