@@ -640,7 +640,7 @@ as tagged for both — but because its own evidence does not satisfy
 (`2f7b0d0`) and the drill's `pipeline_revision` (`d6eb782`) both differ from
 the tagged commit (`003b062`) — the same defect in kind that superseded
 `v1`, now recognized as a gate `FAIL` rather than reported as "caveated,
-not blocking" (`ADR-014` has no such outcome; see `v24.md` Task 0(b)) — and
+not blocking" (`ADR-014` has no such outcome; see `v30.md` Task 0(b)) — and
 because the drill that produced this evidence was patched in place
 mid-run (a host-level buildx workaround, a `git fetch`/`checkout` into the
 scratch clone, and continuing rather than restarting) instead of being torn
@@ -701,7 +701,7 @@ property and not a fluke of either run.
 misclassified list (`CD-004`, `CD-006`, `CD-009`, `CD-010`, `DF-008`,
 `DF-012`, `LT-003`, `LT-007`) — an exact case-set match to
 `M13.6-release`/`M13.7-release`, confirmed by direct diff, not merely
-similar in kind (`v24.md` Task 5). `question_audit`: `606` before, `656`
+similar in kind (`v30.md` Task 5). `question_audit`: `606` before, `656`
 after (exactly `+50`). Chain: `PASS:
 656 records, chain verified from genesis`. All three demo-script cases
 matched their scripted outcome (`KND-M5-DF-009` `supported`/1 citation,
