@@ -22,11 +22,14 @@ already merged.
 ## 2. Seven-minute demonstration guide
 
 Run from a freshly started stack (`docker compose up -d`, all five services
-healthy) with `KENDRA_ANSWERING_ENABLED=true` set for the session — Milestone
-10 answering is off by default and remains an unaccepted prototype (Section
-4). Every question below is asked against the nine-PDF, 50-case public BIR
-evaluation corpus already staged in `document-repository/`; `collection_id`
-is the fixed value `"default"`, matching what the gold-evaluation runner uses.
+healthy) with answering enabled for the session (`make answering-on` —
+`demo-dost-v1.3`; sets `KENDRA_ANSWERING_ENABLED=true` in `.env`, recreates
+`api`, and waits for readiness) — Milestone 10 answering is off by default
+and remains an unaccepted prototype (Section 4). Every question below is
+asked against the nine-PDF, 50-case public BIR evaluation corpus already
+staged in `document-repository/`; `collection_id` is the fixed value
+`"default"`, matching what the gold-evaluation runner uses. Restore
+`make answering-off` when the session ends.
 
 ### 0:00–0:45 — Show what's actually running, not asserted
 
@@ -674,13 +677,18 @@ docker compose -p kendra-recovery-drill up -d api web
 timeout 60 bash -c 'until curl -sf http://127.0.0.1:8001/api/v1/health | grep -Eq "\"status\":\s*\"ready\""; do sleep 2; done'
 curl -s http://127.0.0.1:8001/api/v1/health | python3 -m json.tool
 
-# 7. Enable answering for the duration of this eval only (recreate api with
-#    KENDRA_ANSWERING_ENABLED=true), wait for readiness the same way, confirm
-#    via health, then run the gold evaluation with the hardened runner
-#    against this fresh project (named container, no --rm, default lock,
-#    default revision preflight, --seed 0). --seed only shuffles the order
-#    cases are processed in -- it has no bearing on the generator's own
-#    output, whose seed is fixed separately and unconditionally
+# 7. Enable answering for the duration of this eval only, wait for
+#    readiness, and confirm via health, then run the gold evaluation with
+#    the hardened runner against this fresh project (named container, no
+#    --rm, default lock, default revision preflight, --seed 0). `make
+#    answering-on` (`demo-dost-v1.3`) replaces the hand-rolled
+#    force-recreate/readiness-wait/health-print sequence used through round
+#    7 -- it reads/writes KENDRA_API_PORT etc. from THIS directory's .env
+#    (already carrying KENDRA_API_PORT=8001 from step 0), and
+#    COMPOSE_PROJECT targets this drill's own compose project rather than
+#    the main stack. --seed only shuffles the order cases are processed in
+#    -- it has no bearing on the generator's own output, whose seed is fixed
+#    separately and unconditionally
 #    (apps/api/src/kendra_api/answering/model_client.py). Pinning it here
 #    anyway makes case-processing order reproducible across runs, which
 #    round 5's drill omitted (it drew a random seed instead). Adjust
@@ -688,11 +696,7 @@ curl -s http://127.0.0.1:8001/api/v1/health | python3 -m json.tool
 #    docker rm -f the eval container name first: a stale container left over
 #    from an earlier, aborted attempt at the same name otherwise makes
 #    `docker run --name ...` fail outright rather than start cleanly.
-KENDRA_API_PORT=8001 KENDRA_WEB_PORT=3001 KENDRA_ANSWERING_ENABLED=true \
-  docker compose -p kendra-recovery-drill up -d --force-recreate --no-deps api
-timeout 60 bash -c 'until curl -sf http://127.0.0.1:8001/api/v1/health | grep -Eq "\"status\":\s*\"ready\""; do sleep 2; done'
-curl -s http://127.0.0.1:8001/api/v1/health | python3 -c \
-  "import json,sys; d=json.load(sys.stdin); print('answering_enabled:', d['answering_enabled'])"
+make answering-on COMPOSE_PROJECT=kendra-recovery-drill
 
 docker rm -f kendra-eval-recovery-drill 2>/dev/null || true
 docker run --name kendra-eval-recovery-drill \
@@ -744,11 +748,11 @@ docker run --rm -v "$(dirname "$SCRATCH_CLONE_DIR")":/scratch alpine sh -c \
 
 A release evaluation run directly against the main stack (Section 6.1–6.3)
 follows the same runner-invocation pattern as step 7 above, minus the
-scratch-clone context: same `docker rm -f <container-name> 2>/dev/null ||
-true` pre-step before `docker run --name ...` (a stale container from an
-earlier attempt at the same name otherwise blocks the run), same
-readiness-wait loop on `/api/v1/health` after any `up`/`--force-recreate`
-before invoking the runner, rather than a fixed sleep.
+scratch-clone context: `make answering-on` / `make answering-off`
+(`demo-dost-v1.3`, no `COMPOSE_PROJECT` needed — the main stack is the
+default), same `docker rm -f <container-name> 2>/dev/null || true` pre-step
+before `docker run --name ...` (a stale container from an earlier attempt at
+the same name otherwise blocks the run).
 
 ### Attempt 1 — bugs found and fixed (2026-09-02, `kendra-recovery-drill` project)
 

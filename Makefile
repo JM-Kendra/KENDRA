@@ -1,4 +1,4 @@
-.PHONY: build test test-full verify-chain check-template drill-env
+.PHONY: build test test-full verify-chain check-template drill-env answering-on answering-off
 
 # Rebuilds api/web with KENDRA_SOURCE_REVISION (both images) and, once the
 # current commit is tagged, KENDRA_RELEASE_TAG (api) / NEXT_PUBLIC_KENDRA_GIT_COMMIT
@@ -86,6 +86,40 @@ check-template:
 # KENDRA_API_PORT=8000/KENDRA_WEB_PORT=3000/KENDRA_POSTGRES_PASSWORD=<placeholder>,
 # which is exactly the collision round 5's drill hit. Run from inside the
 # scratch clone.
+# Toggles KENDRA_ANSWERING_ENABLED in .env for the compose project rooted at
+# the current directory (the main stack by default; pass
+# COMPOSE_PROJECT=<name> to target a non-default project, e.g. a drill's own
+# scratch clone under docs/DOST_DEMO.md Section 10 -- `make answering-on
+# COMPOSE_PROJECT=kendra-recovery-drill`), recreates api, and waits for
+# health's own `status: ready` (same idiom as Section 10 step 6/7) rather
+# than a fixed sleep. A bare `sed -i 's/^KEY=.*/KEY=val/' .env` is a silent
+# no-op when the key is missing from .env -- that gap is exactly what stalled
+# round 1 of demo-dost-v1.3 hardening -- so this replaces the line if
+# present and appends it if absent. Prints answering_enabled from health and
+# exits non-zero if it doesn't match.
+define set-answering
+if grep -qE '^KENDRA_ANSWERING_ENABLED=' .env; then \
+	sed -i "s/^KENDRA_ANSWERING_ENABLED=.*/KENDRA_ANSWERING_ENABLED=$(1)/" .env; \
+else \
+	echo "KENDRA_ANSWERING_ENABLED=$(1)" >> .env; \
+fi; \
+proj_flag=""; \
+if [ -n "$(COMPOSE_PROJECT)" ]; then proj_flag="-p $(COMPOSE_PROJECT)"; fi; \
+docker compose $$proj_flag up -d --force-recreate api; \
+host=$$(grep -E '^KENDRA_API_BIND_HOST=' .env | cut -d= -f2-); host=$${host:-127.0.0.1}; \
+port=$$(grep -E '^KENDRA_API_PORT=' .env | cut -d= -f2-); port=$${port:-8000}; \
+timeout 60 bash -c "until curl -sf http://$$host:$$port/api/v1/health | grep -Eq '\"status\":[[:space:]]*\"ready\"'; do sleep 2; done"; \
+actual=$$(curl -s http://$$host:$$port/api/v1/health | python3 -c "import json,sys; print(str(json.load(sys.stdin)['answering_enabled']).lower())"); \
+echo "answering_enabled: $$actual"; \
+if [ "$$actual" != "$(1)" ]; then echo "FAIL: expected $(1), got $$actual"; exit 1; fi
+endef
+
+answering-on:
+	@$(call set-answering,true)
+
+answering-off:
+	@$(call set-answering,false)
+
 drill-env:
 	@if [ ! -f .env ]; then echo "FAIL no .env in $$(pwd)"; exit 1; fi; \
 	echo "--- .env differences from .env.example ---"; \
