@@ -57,6 +57,10 @@ secrets/
 /evaluation/runs/EXP-11/*
 !/evaluation/runs/EXP-11/packets/
 
+# scripts/offline_check.sh's own output (demo-dost-v1.3) -- ephemeral local
+# verification evidence, same treatment as /evaluation/runs/.
+/evaluation/offline-checks/
+
 # Language and tool caches
 __pycache__/
 *.py[cod]

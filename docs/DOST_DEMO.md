@@ -553,6 +553,73 @@ assumed to work at usable latency.
   produces exactly that in about 35 minutes, and its ingest step (fixed
   round 6) now stamps every row with the deploying commit rather than
   `"unknown"`.
+- **Operator-reported, not a run this session performed:** two online
+  passes of the three demo-script questions, run from the operator's own
+  terminal on 2026-09-03 ahead of this round, returned `supported` /
+  `supported` / `insufficient_evidence` and advanced `question_audit`
+  550 → 553 → 556.
+
+### Offline verification procedure
+
+`demo-dost-v1.3`. Confirms answering behaves identically with the network
+uplink disconnected — required because this MVP is meant to run fully
+offline (`ARCHITECTURE.md` Section 3) — by diffing an "online" pass of the
+three demo-script questions against an "offline" pass of the same three.
+
+```bash
+make answering-on
+scripts/offline_check.sh online
+
+# Identify the uplink, then disconnect it -- NOT `nmcli networking off`,
+# see the warning below.
+nmcli device status
+nmcli device disconnect <uplink>          # or physically unplug the cable
+
+ping -c 2 1.1.1.1                         # must fail
+curl 127.0.0.1:8000/api/v1/health         # must still succeed (loopback only)
+
+# Hard-refresh http://localhost:3000 -- page loads fully, no CORS/DNS
+# dependency (demo-dost-v1.3, Section 5) -- and ask one question through the UI.
+
+scripts/offline_check.sh offline
+scripts/offline_check.sh diff <YYYYMMDD>  # date the online pass ran under
+
+nmcli device connect <uplink>
+make answering-off
+```
+
+Expected: the same three statuses in both phases, three `identical` lines
+from the `diff` invocation, and `question_audit` grown by exactly the
+number of questions actually asked (three from the script per phase, plus
+one from the UI question above).
+
+> **Do not use `nmcli networking off` to go offline.** Observed on this
+> host, 2026-09-03: it took down Docker's own bridge interfaces —
+> `docker0` and a project bridge (`br-*`) both went `NO-CARRIER` — and both
+> of the stack's published ports returned `ERR_EMPTY_RESPONSE` /
+> connection failures from the host, even though every container stayed
+> `healthy` inside Docker. That is a false offline-failure signal, not a
+> true test of the deployment's own offline capability. Disconnect the
+> uplink device itself (`nmcli device disconnect <uplink>`) or unplug the
+> cable instead — this leaves Docker's bridges alone and only removes the
+> host's path to the internet.
+>
+> **Optional host hardening** (an operator's own sudo change to this
+> workstation, not something this repository does): tell NetworkManager to
+> never manage Docker's interfaces, so a future `nmcli networking off`
+> cannot repeat this failure mode either.
+>
+> ```ini
+> # /etc/NetworkManager/conf.d/99-docker-unmanaged.conf
+> [keyfile]
+> unmanaged-devices=interface-name:docker0;interface-name:br-*;interface-name:veth*
+> ```
+>
+> ```bash
+> sudo systemctl reload NetworkManager
+> ```
+
+**Result:** `[to be recorded by the operator after running the procedure on a tagged build; not run as part of this round]`
 
 ## 9. Pilot success metrics
 
