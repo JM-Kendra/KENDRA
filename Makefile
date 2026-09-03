@@ -106,8 +106,8 @@ fi; \
 proj_flag=""; \
 if [ -n "$(COMPOSE_PROJECT)" ]; then proj_flag="-p $(COMPOSE_PROJECT)"; fi; \
 docker compose $$proj_flag up -d --force-recreate api; \
-host=$$(grep -E '^KENDRA_API_BIND_HOST=' .env | cut -d= -f2-); host=$${host:-127.0.0.1}; \
-port=$$(grep -E '^KENDRA_API_PORT=' .env | cut -d= -f2-); port=$${port:-8000}; \
+host=$$(grep -E '^KENDRA_API_BIND_HOST=' .env | tail -1 | cut -d= -f2-); host=$${host:-127.0.0.1}; \
+port=$$(grep -E '^KENDRA_API_PORT=' .env | tail -1 | cut -d= -f2-); port=$${port:-8000}; \
 timeout 60 bash -c "until curl -sf http://$$host:$$port/api/v1/health | grep -Eq '\"status\":[[:space:]]*\"ready\"'; do sleep 2; done"; \
 actual=$$(curl -s http://$$host:$$port/api/v1/health | python3 -c "import json,sys; print(str(json.load(sys.stdin)['answering_enabled']).lower())"); \
 echo "answering_enabled: $$actual"; \
