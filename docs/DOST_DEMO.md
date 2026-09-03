@@ -650,6 +650,107 @@ not for the `demo-dost-v1.3` tag itself. `v1.3`'s web and procedure changes
 (same-origin rewrite, heading, answering toggles, offline-verification
 script) are unaffected by this and carry forward unchanged into `v1.4`.
 
+### 6.5 — `demo-dost-v1.4` (current)
+
+Corrects `v1.3`'s defect directly: both `ADR-014` gates' evidence is
+recorded **at the tagged commit itself**, checked mechanically by `make
+tag-evidence` rather than asserted in prose, and the drill that produced
+that evidence was drilled from a fresh clone under rule 13 (`docs/DOST_DEMO.md`
+Section 10) — including one genuine rule-13 restart, documented below rather
+than hidden. No answering, retrieval, ingestion, or evaluation code changed
+from `v1.3`; web and procedure changes (same-origin rewrite, heading,
+`make answering-on`/`-off`, offline-verification script) carry forward
+unchanged.
+
+**Rule-13 event during the drill (disclosed, not smoothed over):** the first
+drill attempt failed at step 8a (`pipeline_revision.txt`) with "Permission
+denied" — the eval-runner container creates the run directory `root:root`,
+mode `755`, and a bare host-side redirect cannot write into it. Per rule 13:
+the drill stopped, the stack was torn down completely (containers, three
+named volumes, both drill networks — confirmed zero residual), and the fix
+(capture the query output on the host, then write it via the same one-off
+privileged-container technique already used for the ownership fix and
+scratch-clone removal, rather than a bare redirect) was committed
+(`372548f`), re-passed the full test gate, and pushed as the new RC. The
+drill then restarted from a **fresh** clone at that RC — the one restart
+permitted per session; none remained. Both drill attempts' gold-evaluation
+results were identical (`accuracy 0.80`, same ten misclassified cases),
+independent evidence that the result is a real, reproducible index-rebuild
+property and not a fluke of either run.
+
+**Deployment gate (`ADR-014`) — PASS, all elements, at RC `372548fc87070290e5815d2cfc79fbe03f455de9`:**
+
+| Element | Result |
+|---|---|
+| `source_revision` at drill health == RC | PASS |
+| Same-origin proxy through drill web (port 3001) | PASS |
+| Heading via drill web, untagged | PASS |
+| `make check-template` in fresh clone | PASS (5/5) |
+| Both models present | PASS |
+| 9/9 documents `ready`, chunk/page counts == release | PASS |
+| `pipeline_revision` == RC, all nine | **PASS** — the element `v1.3` reported `FAIL`-in-substance as "caveated" |
+| `source_revision_mismatch_overridden` | PASS (`false`) |
+| Drill chain verify | PASS (50 records) |
+| Zero residual drill resources | PASS |
+| Scratch clone removed | PASS |
+
+**Release-eval gate (fixed index, exact) — PASS.** `kendra-eval-m13-8-release`
+(`evaluation_run_id eval-6ba65b19-b891-4617-8c7f-c994a50b6190`,
+`evaluation/runs/M13.8-release/20260903T182308Z-372548fc/`): `accuracy
+0.82` (`TP 32/FN 8/FP 1/TN 9`), sole FP `KND-M5-UN-002`, eight-case
+misclassified list (`CD-004`, `CD-006`, `CD-009`, `CD-010`, `DF-008`,
+`DF-012`, `LT-003`, `LT-007`) identical in kind to `M13.6`/`M13.7`.
+`question_audit`: `606` before, `656` after (exactly `+50`). Chain: `PASS:
+656 records, chain verified from genesis`. All three demo-script cases
+matched their scripted outcome (`KND-M5-DF-009` `supported`/1 citation,
+`KND-M5-DF-020` `supported`/2 citations, `KND-M5-UN-007`
+`insufficient_evidence`/0 citations).
+
+**Evaluation gate (`ADR-014`, `N = 47`) — PASS, exactly at the threshold.**
+`kendra-eval-m13-8-drill` (`evaluation_run_id
+eval-15eb88b8-3d86-4c8b-9654-bb4dc173a3f5`, `evaluation/runs/M13.8-recovery-drill/20260903T180834Z-372548fc/`)
+agreed with the release evaluation on **47 of 50 cases** — computed directly
+from both runs' `cases.jsonl`, not assumed from the aggregate accuracy:
+
+| Case | `expected_result` | Release label | Drill label |
+|---|---|---|---|
+| `KND-M5-CD-004` | `supported` | `unsupported` | `supported` |
+| `KND-M5-DF-005` | `supported` | `supported` | `unsupported` |
+| `KND-M5-DF-018` | `supported` | `supported` | `unsupported` |
+
+Sole FP `KND-M5-UN-002` unchanged in both. Unsupported false-answer rate
+unchanged (`0.1` in both).
+
+**`DF-005` correction — no longer described as stable.** Section 6.4 stated
+"`DF-005` has now been stable across the last two rebuilds" (rounds 6 and
+7). This round's drill breaks that: `DF-005` differs again, reverting to
+the same three-case set last seen at round 5 (`M13.4-recovery-drill`:
+`CD-004`, `DF-005`, `DF-018`). Four index-rebuild observations now exist on
+record (rounds 5, 7, 8, and this round — round 6 agreed on `CD-004`/`DF-018`
+only); two of four differ on all three cases, two differ on only
+`CD-004`/`DF-018`. This is not evidence of a stabilizing trend for `DF-005`
+in either direction — `PILOT_PLAN.md` item 4's retrieval probe remains the
+way to actually explain the mechanism, not a growing observation count on
+its own.
+
+**`make tag-evidence` output (required pre-tag check):**
+```
+candidate:            372548fc87070290e5815d2cfc79fbe03f455de9
+drill  source_revision:   372548fc87070290e5815d2cfc79fbe03f455de9
+drill  pipeline_revision: 372548fc87070290e5815d2cfc79fbe03f455de9
+release source_revision:  372548fc87070290e5815d2cfc79fbe03f455de9
+EQUAL
+```
+
+**Wall-clock:** restart attempt (the one actually tagged): ≈35 min, empty
+stack to torn down (Stage 2 model staging ≈20 min dominates). The aborted
+first attempt added ≈39 min before its rule-13 stop (Stage 2 ≈35 min of
+that, degraded by transient network throttling, not reproduced on the
+restart). Total session time across both attempts, plus the fix/gate cycle
+between them, was substantially longer than a single clean drill — the cost
+of rule 13 being followed strictly rather than patched around, which is
+this round's entire point.
+
 ## 7. Hardware requirements
 
 `docs/ARCHITECTURE.md` Section 11 states these as **planning assumptions, not

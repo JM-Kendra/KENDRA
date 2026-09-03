@@ -34,18 +34,24 @@ and confirmed.
   from the `localhost` origin (CORS), the heading read a stale "Milestone 8," and the
   answering toggle and offline-verification procedure were undocumented or broken. See
   `docs/DOST_DEMO.md` Section 6.3 and Section 10.
-- `demo-dost-v1.3` — commit `003b0621` — **current**. Web/procedure hardening only — no
-  change to answering, retrieval, ingestion, or evaluation code. Fixes: browser calls the
-  api via a same-origin server-side rewrite (`apps/web/next.config.ts`), the heading shows
-  the product name and release tag (server-rendered, not only after client-side hydration)
-  instead of a stale milestone number, `make answering-on`/`answering-off` replace a manual
-  `.env` `sed` that silently no-op'd when the key was absent, and an offline-verification
-  procedure and script (`scripts/offline_check.sh`) are documented, with a warning against
-  `nmcli networking off` (it took down Docker's own bridge interfaces on this host).
-  Re-drilled and re-gated under `ADR-014` (`N = 48` of 50) rather than assuming carry-over
-  from `v1.2`; the drill and release eval ran one commit before the tag (a disclosed,
-  frontend-only discrepancy — see `docs/DOST_DEMO.md` Section 6.4). See `docs/DOST_DEMO.md`
-  Section 6.4 and Section 10.
+- `demo-dost-v1.3` — commit `003b0621` — **superseded**. Web/procedure hardening was
+  valid and carries forward unchanged into `v1.4`, but the tag itself fails `ADR-014` at
+  the tagged commit: its release eval's `source_revision` (`2f7b0d0`) and its drill's
+  `pipeline_revision` (`d6eb782`) both differ from the tag (`003b062`) — a gate `FAIL`,
+  not the "caveated, not blocking" this round originally reported (`ADR-014` has no such
+  outcome) — and the drill that produced that evidence was patched in place rather than
+  restarted from a fresh clone. See `docs/DOST_DEMO.md` Section 6.4's supersession note.
+- `demo-dost-v1.4` — commit `372548fc` — **current**. Corrects `v1.3`'s defect: both
+  `ADR-014` gates' evidence is recorded at the tagged commit itself, checked mechanically
+  by `make tag-evidence` (`scripts/tag_evidence.sh`) rather than asserted in prose, and the
+  drill was run under a strict "no in-place patching" rule (drill Section 10) — including
+  one genuine rule-13 restart (a `pipeline_revision.txt`-write permission bug, found, fixed
+  as a gated commit, and the drill restarted from a fresh clone) — rather than worked
+  around live. No change to answering, retrieval, ingestion, or evaluation code from
+  `v1.3`. Evaluation gate: `N = 47` of 50, exactly at the threshold — differing cases
+  `KND-M5-CD-004`, `KND-M5-DF-005`, `KND-M5-DF-018`; `DF-005` is no longer described as
+  stable (it differed again this round, after two prior rounds where it agreed). See
+  `docs/DOST_DEMO.md` Section 6.5 and Section 10.
 
 ## Binding invariants — never violate these
 
@@ -164,7 +170,7 @@ and confirmed.
 
 ```bash
 # Backend tests, isolated, no live services -- the containerized subset only
-# (121 passed, 2 skipped, 43 deselected as of demo-dost-v1.3). Equivalent to
+# (121 passed, 2 skipped, 43 deselected as of demo-dost-v1.4). Equivalent to
 # `docker build --target test --build-context fixtures=. -t kendra-api-test
 # ./apps/api && docker run --rm kendra-api-test`, run from the repo root.
 make test
