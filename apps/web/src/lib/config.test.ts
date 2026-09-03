@@ -14,6 +14,12 @@ describe("frontend configuration", () => {
       "must not contain credentials",
     );
   });
+
+  it("falls back to a relative, same-origin path when no base URL is configured", () => {
+    expect(healthEndpoint()).toBe("/api/v1/health");
+    expect(healthEndpoint(undefined)).toBe("/api/v1/health");
+    expect(healthEndpoint("")).toBe("/api/v1/health");
+  });
 });
 
 describe("gitCommit", () => {

@@ -17,7 +17,7 @@ RUN npm run typecheck && npm test
 
 FROM source AS build
 
-ARG NEXT_PUBLIC_KENDRA_API_BASE_URL=http://127.0.0.1:8000
+ARG NEXT_PUBLIC_KENDRA_API_BASE_URL=""
 ENV NEXT_PUBLIC_KENDRA_API_BASE_URL=${NEXT_PUBLIC_KENDRA_API_BASE_URL}
 
 # Baked at build time, never hard-coded -- see docker-compose.yml's `web`

@@ -92,7 +92,7 @@ Run every command from the repository root.
 
    HTTP `200` means PostgreSQL, Qdrant, Ollama, and the configured document-store root are reachable. HTTP `503` identifies unavailable dependencies using safe status codes; the response never includes connection strings, paths, credentials, or raw exceptions. Ollama readiness checks its local API only. Model selection belongs to EXP-04 and is not claimed by this milestone.
 
-7. Open [http://127.0.0.1:3000](http://127.0.0.1:3000). The page displays the same readiness information and clearly marks ingestion and question answering as unavailable.
+7. Open [http://127.0.0.1:3000](http://127.0.0.1:3000) (or `http://localhost:3000` — both work identically as of `demo-dost-v1.3`, no CORS dependency; the browser calls the api at the page's own origin, proxied server-side). The page displays the same readiness information and clearly marks ingestion and question answering as unavailable.
 
 ## One-off PDF ingestion
 

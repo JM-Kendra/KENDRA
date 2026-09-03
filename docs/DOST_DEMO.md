@@ -36,7 +36,11 @@ curl -s http://127.0.0.1:8000/api/v1/health | python3 -m json.tool
 
 Point out `source_revision` and `release_tag` in the response (Section 5) —
 both are baked into the image at build time, not typed in by hand — and the
-same commit in the web footer at the bottom of `http://127.0.0.1:3000`.
+same commit in the web footer at the bottom of the UI. Either
+`http://localhost:3000` or `http://127.0.0.1:3000` works, with no CORS
+dependency: the browser always calls the api at the page's own origin,
+proxied server-side by `apps/web/next.config.ts`'s rewrite
+(`demo-dost-v1.3`; see Section 5).
 
 ### 0:45–2:15 — A supported, cited answer (single document)
 
@@ -256,9 +260,32 @@ Both are supplied dynamically, never hand-typed into a committed file:
   both as `source_revision` and `release_tag` in `/api/v1/health`.
 - **web image:** `apps/web/Dockerfile`'s `build` stage takes
   `ARG NEXT_PUBLIC_KENDRA_GIT_COMMIT=""`, inlined into the client bundle by
-  Next.js at `npm run build` time (same mechanism as the existing
-  `NEXT_PUBLIC_KENDRA_API_BASE_URL`); `apps/web/src/app/layout.tsx` renders
+  Next.js at `npm run build` time; `apps/web/src/app/layout.tsx` renders
   it in a page footer via `apps/web/src/lib/config.ts`'s `gitCommit()`.
+  The web heading shows the same information — `release_tag` from
+  `/api/v1/health`, the availability banner's own fetch reused, not a
+  second one — falling back to just "Kendra" when `release_tag` is empty
+  (`demo-dost-v1.3`; an untagged build, or a commit before the api's own
+  build args were supplied, both show the fallback).
+- **The browser never needs the api's host** (`demo-dost-v1.3`,
+  fixing a bug found while rehearsing the demo: `http://localhost:3000`
+  worked for the footer but the availability banner showed "API
+  unavailable", because the browser called the api directly at the
+  build-time-baked `NEXT_PUBLIC_KENDRA_API_BASE_URL` — a cross-origin call
+  from the `localhost` page origin that the api's CORS policy rejects).
+  `NEXT_PUBLIC_KENDRA_API_BASE_URL` is now empty by default
+  (`ARG NEXT_PUBLIC_KENDRA_API_BASE_URL=""` in `apps/web/Dockerfile`,
+  `${NEXT_PUBLIC_KENDRA_API_BASE_URL:-}` in `docker-compose.yml`), so
+  `apps/web/src/lib/config.ts`'s `healthEndpoint()` resolves to a relative
+  path and every browser fetch lands on the page's own origin. A Next.js
+  server-side rewrite (`apps/web/next.config.ts`'s `rewrites()`, `/api/:path*`
+  → `http://${KENDRA_API_INTERNAL_HOST:-api}:${KENDRA_API_INTERNAL_PORT:-8000}/api/:path*`,
+  both read from the container's environment at server start, not baked in)
+  then proxies that request to the api container over the compose network.
+  Both `http://localhost:3000` and `http://127.0.0.1:3000` work identically,
+  with no CORS dependency either way. An operator can still set
+  `NEXT_PUBLIC_KENDRA_API_BASE_URL` to an absolute URL to override this and
+  have the browser call the api directly.
 - **`make build`** (`Makefile`) computes all three from `git` at build time —
   `git rev-parse HEAD` for the two commit variables, `git describe --tags
   --exact-match HEAD` (empty, harmlessly, on an untagged commit) for the

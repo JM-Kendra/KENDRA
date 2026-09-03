@@ -270,13 +270,24 @@ services:
       context: ./apps/web
       target: runtime
       args:
-        NEXT_PUBLIC_KENDRA_API_BASE_URL: ${NEXT_PUBLIC_KENDRA_API_BASE_URL:-http://127.0.0.1:8000}
+        # Empty by default so the browser calls the api at the page's own
+        # origin (proxied by apps/web/next.config.ts's rewrite to
+        # KENDRA_API_INTERNAL_HOST:KENDRA_API_INTERNAL_PORT below) rather
+        # than a build-time-baked absolute host -- see
+        # docs/DOST_DEMO.md Section 5. An operator can still set this to an
+        # absolute URL to override.
+        NEXT_PUBLIC_KENDRA_API_BASE_URL: ${NEXT_PUBLIC_KENDRA_API_BASE_URL:-}
         # Bakes the current Git commit into the client bundle at build time
         # (Dockerfile's `build` stage ARG/ENV) for the web footer. Never
         # hard-coded; see the Makefile `build` target.
         NEXT_PUBLIC_KENDRA_GIT_COMMIT: ${NEXT_PUBLIC_KENDRA_GIT_COMMIT:-}
     environment:
       NODE_ENV: production
+      # Read at server start by next.config.ts's rewrite (not baked into the
+      # client bundle) -- the container-to-container target for the /api
+      # proxy. Defaults match this file's own `api` service name/port.
+      KENDRA_API_INTERNAL_HOST: ${KENDRA_API_INTERNAL_HOST:-api}
+      KENDRA_API_INTERNAL_PORT: ${KENDRA_API_INTERNAL_PORT:-8000}
     ports:
       - ${KENDRA_WEB_BIND_HOST:-127.0.0.1}:${KENDRA_WEB_PORT:-3000}:3000
     depends_on:
