@@ -985,11 +985,20 @@ docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
 #     processing_runs is not touched by answering, so this value is
 #     unaffected by step 7's evaluation run. $DRILL_RUN_DIR is the specific
 #     run directory the step-7 runner printed (e.g.
-#     evaluation/runs/M13.8-recovery-drill/20260904T.../).
-docker compose -p kendra-recovery-drill exec -T postgres \
+#     evaluation/runs/M13.8-recovery-drill/20260904T.../). The runner
+#     container creates that directory as root, mode 755 -- the host user
+#     cannot write into it directly (a genuinely fresh drill hit exactly
+#     this, "Permission denied", round 8). Capture the query output on the
+#     host first (a plain command substitution, no write involved), then
+#     write it with the same one-off privileged-container technique already
+#     used for the ownership fix (step 2) and the scratch-clone removal
+#     (step 11), rather than a bare host-side redirect.
+pipeline_revisions="$(docker compose -p kendra-recovery-drill exec -T postgres \
   psql -U kendra -d kendra -Atc \
-  "SELECT DISTINCT pipeline_revision FROM processing_runs ORDER BY 1" \
-  > "$DRILL_RUN_DIR/pipeline_revision.txt"
+  "SELECT DISTINCT pipeline_revision FROM processing_runs ORDER BY 1")"
+docker run --rm -e PIPELINE_REVISIONS="$pipeline_revisions" \
+  -v "$DRILL_RUN_DIR":/out alpine sh -c \
+  'printf "%s\n" "$PIPELINE_REVISIONS" > /out/pipeline_revision.txt'
 cat "$DRILL_RUN_DIR/pipeline_revision.txt"
 
 # 9. Preserve the drill's own evaluation/runs/ before tearing anything down —
