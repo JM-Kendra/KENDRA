@@ -1,4 +1,4 @@
-.PHONY: build test test-full verify-chain check-template drill-env answering-on answering-off
+.PHONY: build test test-full verify-chain check-template drill-env answering-on answering-off tag-evidence
 
 # Rebuilds api/web with KENDRA_SOURCE_REVISION (both images) and, once the
 # current commit is tagged, KENDRA_RELEASE_TAG (api) / NEXT_PUBLIC_KENDRA_GIT_COMMIT
@@ -119,6 +119,15 @@ answering-on:
 
 answering-off:
 	@$(call set-answering,false)
+
+# Mechanical ADR-014 one-commit check: candidate (HEAD), drill's
+# report.json source_revision, drill's pipeline_revision.txt (Section 10
+# step 8a), and release's report.json source_revision must all be the same
+# commit -- EQUAL is the precondition for creating a release tag; see
+# scripts/tag_evidence.sh and docs/DOST_DEMO.md Section 10's "Tag step".
+# Usage: make tag-evidence TAG=<name> DRILL=<run-dir> RELEASE=<run-dir>
+tag-evidence:
+	@scripts/tag_evidence.sh "$(TAG)" "$(DRILL)" "$(RELEASE)"
 
 drill-env:
 	@if [ ! -f .env ]; then echo "FAIL no .env in $$(pwd)"; exit 1; fi; \
