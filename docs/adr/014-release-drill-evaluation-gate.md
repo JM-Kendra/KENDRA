@@ -91,6 +91,13 @@ control for, and had never been examined until it failed.
 
 ## 2. Decision, structured as two gates
 
+Every element of both gates below is `PASS` or `FAIL`; there is no third
+outcome — an element that is only partially met (e.g. a provenance field
+recorded one commit before the release candidate rather than at it) is
+`FAIL`, not "caveated" or "not blocking" (`demo-dost-v1.3` reported such an
+element as caveated; that was a misapplication of this ADR, corrected in
+`docs/DOST_DEMO.md` Section 6.4's supersession note).
+
 - **Deployment gate — exact, unchanged.** `source_revision` at the drill's
   `/api/v1/health` equals the release commit (RC); `make check-template`
   passes inside the fresh clone before any manual step; both documented

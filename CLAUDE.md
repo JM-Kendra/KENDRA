@@ -131,7 +131,9 @@ and confirmed.
 - Do not change `evaluation/gold_cases.json` from `initial_expert_review_required`. These
   experiments validate representation fidelity, not legal or tax interpretation.
 - **Never use `--allow-revision-mismatch` on the evaluation runner.**
-- Do not push. Commit locally; the operator pushes.
+- Push the working branch after each commit. Never push `main` directly
+  outside a merge round. Push a release tag only after `make tag-evidence`
+  prints `EQUAL` for the tagged commit.
 
 ## Layout
 

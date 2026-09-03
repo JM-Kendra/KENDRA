@@ -297,7 +297,8 @@ Both are supplied dynamically, never hand-typed into a committed file:
 
 ## 6. Release gold evaluation
 
-**`demo-dost-v1.3` is current; `v1`, `v1.1`, and `v1.2` are superseded.** `v1`
+**`demo-dost-v1.4` is current; `v1`, `v1.1`, `v1.2`, and `v1.3` are
+superseded.** `v1`
 (commit `903b1089`) predates the `docker-compose.yml` `ingest`-service
 environment-passthrough fix (commit `4b09600`) and cannot be deployed from
 scratch as tagged — see Milestone 13's `v11.md` report Section 6 for the
@@ -322,9 +323,16 @@ script specifically** — not because deployability or answering regressed
 because rehearsing the demo on 2026-09-03 found the UI unusable from the
 `localhost` origin (CORS), the heading reading a stale "Milestone 8," and
 the answering toggle and offline-verification procedure undocumented or
-outright broken (an `.env` `sed` silently no-op'ing). `v1.3` fixes all
-four; it changes no answering, retrieval, ingestion, or evaluation code.
-Use `v1.3` for any new demonstration; `v1`, `v1.1`, and `v1.2` remain
+outright broken (an `.env` `sed` silently no-op'ing). `v1.3` fixed all
+four; it changed no answering, retrieval, ingestion, or evaluation code.
+**`v1.3` is itself superseded by `v1.4` (Section 6.5 below)** — not for
+deployability or answering, both unchanged and both still valid as tagged
+in `v1.3` — but because its release evaluation's `source_revision` and its
+drill's `pipeline_revision` were both recorded one or more commits before
+the `v1.3` tag itself, an `ADR-014` deployment-gate `FAIL` at the tagged
+commit (see Section 6.4's supersession note), and because that round's
+drill was patched in place rather than restarted from a fresh clone. Use
+`v1.4` for any new demonstration; `v1`, `v1.1`, `v1.2`, and `v1.3` remain
 tagged and unaltered as the historical record they always were.
 
 **Supersession summary:** `v1` (predates the compose `ingest`-service
@@ -342,8 +350,13 @@ heading read "Milestone 8," and the answering toggle and offline procedure
 were undocumented or wrong); `v1.3` (those four fixed; same-origin web
 rewrite, product-name-and-tag heading, `make answering-on`/`-off`,
 documented offline-verification procedure and script; deployability and
-answering unchanged from `v1.2`, drilled and gated under `ADR-014` again
-rather than assumed carried over).
+answering unchanged from `v1.2` — but its own drill/release evaluation
+ran one or more commits before the tag it was meant to certify, an
+`ADR-014` deployment-gate `FAIL` at the tagged commit, and its drill was
+patched in place rather than restarted); `v1.4` (evidence recorded at the
+tagged commit itself, both gates `PASS` or the round does not tag, mechanically
+checked by `make tag-evidence` rather than asserted in prose; web/procedure
+changes carried forward unchanged from `v1.3`).
 
 ### 6.1 — `demo-dost-v1` (superseded)
 
@@ -620,6 +633,23 @@ including that detour: **≈70 minutes**; a clean re-run without the detour
 would be expected to land close to `v1.2`'s ≈24 minutes, since no
 ingestion- or evaluation-relevant code changed.
 
+**`v1.3` is itself superseded by `v1.4` (Section 6.5 below).** Not for
+deployability or answering — both are unchanged, and `v1.3` remains valid
+as tagged for both — but because its own evidence does not satisfy
+`ADR-014` at the tagged commit: the release evaluation's `source_revision`
+(`2f7b0d0`) and the drill's `pipeline_revision` (`d6eb782`) both differ from
+the tagged commit (`003b062`) — the same defect in kind that superseded
+`v1`, now recognized as a gate `FAIL` rather than reported as "caveated,
+not blocking" (`ADR-014` has no such outcome; see `v24.md` Task 0(b)) — and
+because the drill that produced this evidence was patched in place
+mid-run (a host-level buildx workaround, a `git fetch`/`checkout` into the
+scratch clone, and continuing rather than restarting) instead of being torn
+down and restarted from a fresh clone at a new RC. The `M13.7-recovery-drill`
+and `M13.7-release` run directories remain valid evidence **for `2f7b0d0`**,
+not for the `demo-dost-v1.3` tag itself. `v1.3`'s web and procedure changes
+(same-origin rewrite, heading, answering toggles, offline-verification
+script) are unaffected by this and carry forward unchanged into `v1.4`.
+
 ## 7. Hardware requirements
 
 `docs/ARCHITECTURE.md` Section 11 states these as **planning assumptions, not
@@ -783,6 +813,22 @@ a live demo session and validates one clean end-to-end recovery path.
 | **Qdrant** unavailable or a generation is stale | `/api/v1/health`'s `qdrant` service reports `not_ready`, or retrieval returns no candidates for a known-answerable question | No grounded answer; never fall back to cached excerpts | `docker compose restart qdrant`; if the generation itself is suspect, re-run ingestion (Section 9's from-scratch commands) rather than trusting a partial index |
 | **OCR (Tesseract, via Docling)** fails on the 12-page scanned document | Ingestion for `RMC_77_2024_Invoicing_QA_OCR.pdf` reports a page `unextractable`; the two OCR-sourced demo questions in Section 2 have no citation to offer | Mark the page's terminal state explicitly; never substitute empty or fabricated text as a successful extraction | Re-run ingestion for that one document (`docker compose --profile ingestion run --rm ingest RMC_77_2024_Invoicing_QA_OCR.pdf --manifest RMC_77_2024_Invoicing_QA_OCR.manifest.json`); if it keeps failing, drop that document from the live script and use only the Section 2.1 (`KND-M5-DF-009`) and Section 3.5 (abstention) segments |
 
+> **Rule 13 (no in-place patching of a drill).** If this procedure hits
+> anything not documented below — a build failure, a Makefile bug, a host
+> problem — the drill stops, the drill stack is torn down, and the fix (if
+> it is a repository fix) becomes a new commit that goes through this
+> document's own test gate (Section 6's Task 5/Task 3 gate: `make
+> check-template`, `make test`, `make test-full`, `vitest run`, `tsc
+> --noEmit`, `docker compose --env-file .env.example config --quiet`) before
+> being adopted as a new release candidate. The drill then restarts from a
+> **fresh clone** at the new RC — never a `git fetch`/`checkout` into the
+> already-running scratch clone, and never a rebuild or fix applied in place
+> while the drill continues. One restart is permitted per session; a second
+> failure means the round stops and reports `NOT TAGGED` rather than
+> attempting a third pass. `demo-dost-v1.3` did not follow this (a host-level
+> buildx-builder workaround, a `git fetch` into the scratch clone, and
+> continuing the same drill run) — see Section 6.4's supersession note.
+
 ### Tested from-scratch bring-up
 
 A full fresh-volumes bring-up, executed once under a separate Compose
@@ -878,7 +924,13 @@ done
 #    image without it), bring them up, and wait for readiness on the health
 #    endpoint's own status field rather than guessing a fixed sleep -- every
 #    drill through round 7 used an undocumented sleep here instead, timed
-#    only by trial and error on one workstation.
+#    only by trial and error on one workstation. This build needs working
+#    DNS on Docker's *default* bridge (the classic `docker` buildx driver's
+#    sandbox uses it for `pip install`, independent of the compose-managed
+#    networks) -- check first with `docker run --rm alpine:3 nslookup
+#    pypi.org`. If that fails, the fix is `sudo systemctl restart docker`
+#    by the operator, not a host-level buildx-builder workaround grafted
+#    onto the drill (demo-dost-v1.3's mistake, rule 13 above).
 KENDRA_SOURCE_REVISION=$(git rev-parse HEAD) docker compose -p kendra-recovery-drill build api web
 docker compose -p kendra-recovery-drill up -d api web
 timeout 60 bash -c 'until curl -sf http://127.0.0.1:8001/api/v1/health | grep -Eq "\"status\":\s*\"ready\""; do sleep 2; done'
@@ -927,6 +979,19 @@ docker rm kendra-eval-recovery-drill
 docker compose -p kendra-recovery-drill run --rm --no-deps --entrypoint python \
   -v "$(pwd)/scripts:/scripts:ro" api /scripts/verify_audit_chain.py
 
+# 8a. Record the drill's distinct pipeline_revision values before teardown --
+#     the drill database is gone after step 10, and `make tag-evidence`
+#     (Section 6) needs this value but cannot query a torn-down database.
+#     processing_runs is not touched by answering, so this value is
+#     unaffected by step 7's evaluation run. $DRILL_RUN_DIR is the specific
+#     run directory the step-7 runner printed (e.g.
+#     evaluation/runs/M13.8-recovery-drill/20260904T.../).
+docker compose -p kendra-recovery-drill exec -T postgres \
+  psql -U kendra -d kendra -Atc \
+  "SELECT DISTINCT pipeline_revision FROM processing_runs ORDER BY 1" \
+  > "$DRILL_RUN_DIR/pipeline_revision.txt"
+cat "$DRILL_RUN_DIR/pipeline_revision.txt"
+
 # 9. Preserve the drill's own evaluation/runs/ before tearing anything down —
 #    it lives inside the scratch clone and is deleted with it in step 11.
 #    Round 5's drill lost its entire run directory (cases.jsonl,
@@ -960,6 +1025,16 @@ scratch-clone context: `make answering-on` / `make answering-off`
 default), same `docker rm -f <container-name> 2>/dev/null || true` pre-step
 before `docker run --name ...` (a stale container from an earlier attempt at
 the same name otherwise blocks the run).
+
+**Tag step — required pre-tag command.** Once both the drill (with its
+`pipeline_revision.txt`, step 8a above) and the release evaluation directory
+exist, run `make tag-evidence TAG=<name> DRILL=<drill-run-dir>
+RELEASE=<release-run-dir>` before creating the annotated tag. Its output
+must print `EQUAL` — candidate `HEAD`, drill `source_revision`, drill
+`pipeline_revision`, and release `source_revision` all equal to the
+candidate — before the tag is created. A prose argument that the evidence is
+"close enough" does not substitute for this; `NOT EQUAL` means no tag, full
+stop (`demo-dost-v1.3`'s mistake — see Section 6.4).
 
 ### Attempt 1 — bugs found and fixed (2026-09-02, `kendra-recovery-drill` project)
 
