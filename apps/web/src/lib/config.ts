@@ -21,6 +21,16 @@ export function healthEndpoint(value?: string): string {
   return `${normalizeApiBaseUrl(value)}/api/v1/health`;
 }
 
+// Server-only: the container-to-container api target for the initial,
+// server-rendered health fetch (apps/web/src/app/page.tsx) -- never sent to
+// the browser. Mirrors next.config.ts's rewrite defaults, which the browser
+// uses for every subsequent client-side refresh instead.
+export function internalHealthEndpoint(): string {
+  const host = process.env.KENDRA_API_INTERNAL_HOST || "api";
+  const port = process.env.KENDRA_API_INTERNAL_PORT || "8000";
+  return `http://${host}:${port}/api/v1/health`;
+}
+
 // Baked in at `npm run build` time via apps/web/Dockerfile's build ARG/ENV
 // (mirroring NEXT_PUBLIC_KENDRA_API_BASE_URL); never hard-coded here. Falls
 // back to "unknown" for a plain `npm run dev` where no build arg was supplied.
